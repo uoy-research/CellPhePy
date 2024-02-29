@@ -5,7 +5,7 @@ build-backend = "flit.buildapi"
 [project]
 name =  "py-project-toml"
 authors = [
-    {name = "Daniel Ciborowski", email = "dciborow@microsoft.com"},
+    {name = "Stuart Lacy", email = "stuart.lacy@york.ac.uk"},
 ]
 description = "Sample Python Project for creating a new Python Module"
 readme = "README.md"
