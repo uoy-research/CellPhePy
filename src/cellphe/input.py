@@ -38,7 +38,7 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFr
     elif source == 'Trackmate':
         df = pd.read_csv(file)
         # Lines 2-4 in the raw file contain additional header information and can be safely discarded
-        out = df.loc[3:df.shape[0], ['FRAME', 'TRACK_ID', 'LABEL']]
+        out = df.loc[3 : df.shape[0], ["FRAME", "TRACK_ID", "LABEL"]]
         out = out.rename(
             columns={
                 "Frame": "FrameID",
