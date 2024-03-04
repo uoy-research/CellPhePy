@@ -3,11 +3,12 @@ requires = ["flit"]
 build-backend = "flit.buildapi"
 
 [project]
-name =  "py-project-toml"
+name =  "cellphe"
+version = "0.0.1"
 authors = [
     {name = "Stuart Lacy", email = "stuart.lacy@york.ac.uk"},
 ]
-description = "Sample Python Project for creating a new Python Module"
+description = "CellPhe: Toolkit for cell phenotyping from time-lapse videos"
 readme = "README.md"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -20,7 +21,9 @@ classifiers = [
     "Programming Language :: Python :: 3.11"
 ]
 requires-python = ">=3.8.1"
-dynamic = ["version"]
+dependencies = [
+    "pandas"
+]
 
 [project.optional-dependencies]
 spark = [
@@ -52,7 +55,7 @@ Source = "https://github.com/microsoft/python-package-template"
 Tracker = "https://github.com/microsoft/python-package-template/issues"
 
 [tool.flit.module]
-name = "python_package"
+name = "cellphe"
 
 [tool.bandit]
 exclude_dirs = ["build","dist","tests","scripts"]
