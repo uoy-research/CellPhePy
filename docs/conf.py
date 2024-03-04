@@ -4,8 +4,9 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Path setup --------------------------------------------------------------
+from __future__ import annotations
 
+# -- Path setup --------------------------------------------------------------
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -23,7 +24,7 @@ copyright = "2024, Stuart Lacy"
 author = "Stuart Lacy"
 
 # The full version, including alpha/beta/rc tags
-release = "0.1.0"
+release = "0.0.1"
 
 
 # -- General configuration ---------------------------------------------------
@@ -39,6 +40,7 @@ extensions = [
     "sphinx.ext.viewcode",  # Add links to highlighted source code
     "sphinx.ext.napoleon",  # to render Google format docstrings
     "sphinx.ext.githubpages",
+    "sphinx.ext.autosummary",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
