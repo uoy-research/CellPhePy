@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import pandas as pd
 
-def copy_features(file: str, minframes: int, source: str = "Phase") -> pandas.DataFrame:
+
+def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFrame:
     """
     Copy metadata and cell-frame features from an existing PhaseFocus or Trackmate table
 
@@ -29,14 +31,12 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pandas.Da
         raise ValueError(f"Invalid source value '{source}'. Must be one of {', '.join(sources)}")
 
     if source == 'Phase':
-        full_ft = pandas.read_csv(file, skiprows=1)
-        full_ft['ROI_filename'] = df['Frame'].astype(str) + '-' + df['Tracking ID'].astype(str)
-
+        df = pd.read_csv(file, skiprows=1)
+        df['ROI_filename'] = df['Frame'].astype(str) + '-' + df['Tracking ID'].astype(str)
         out = df[['Frame', 'Tracking ID', 'ROI_filename', 'Volume (µm³)', 'Sphericity ()']]
-
         out = out.rename(columns={'Frame': 'FrameID', 'Tracking ID': 'CellID', 'Volume (µm³)': 'Volume', 'Sphericity ()': 'Sphericity'})
     elif source == 'Trackmate':
-        df = pandas.read_csv(file)
+        df = pd.read_csv(file)
         # Lines 2-4 in the raw file contain additional header information and can be safely discarded
         out = df.loc[3:df.shape[0], ['FRAME', 'TRACK_ID', 'LABEL']]
         out = out.rename(
