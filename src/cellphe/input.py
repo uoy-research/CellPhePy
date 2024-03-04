@@ -57,6 +57,6 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFr
     out = out.groupby("CellID").filter(lambda x: x["FrameID"].count() >= minframes)
 
     # Order by CellID and FrameID to help manual inspection of the data
-    out = out.sort_values(['CellID', 'FrameID'])
+    out = out.sort_values(["CellID", "FrameID"])
 
     return out
