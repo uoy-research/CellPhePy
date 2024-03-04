@@ -40,10 +40,11 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFr
         # Lines 2-4 in the raw file contain additional header information and can be safely discarded
         out = df.loc[3:df.shape[0], ['FRAME', 'TRACK_ID', 'LABEL']]
         out = out.rename(
-            columns = {
-                'FRAME': 'FrameID',
-                'TRACK_ID': 'CellID',
-                'LABEL': 'ROI_filename'
+            columns={
+                "Frame": "FrameID",
+                "Tracking ID": "CellID",
+                "Volume (µm³)": "Volume",
+                "Sphericity ()": "Sphericity",
             }
         )
         out['FrameID'] = out['FrameID'].astype(int) + 1  # Convert from 0-indexed to 1-indexed
