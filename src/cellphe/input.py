@@ -47,7 +47,7 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFr
                 "Sphericity ()": "Sphericity",
             }
         )
-        out['FrameID'] = out['FrameID'].astype(int) + 1  # Convert from 0-indexed to 1-indexed
+        out["FrameID"] = out["FrameID"].astype(int) + 1  # Convert from 0-indexed to 1-indexed
 
     # Want IDs as integers
     out["CellID"] = out["CellID"].astype(int)
