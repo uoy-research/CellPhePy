@@ -50,8 +50,8 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFr
         out['FrameID'] = out['FrameID'].astype(int) + 1  # Convert from 0-indexed to 1-indexed
 
     # Want IDs as integers
-    out['CellID'] = out['CellID'].astype(int)
-    out['FrameID'] = out['FrameID'].astype(int)
+    out["CellID"] = out["CellID"].astype(int)
+    out["FrameID"] = out["FrameID"].astype(int)
 
     # Restrict to cells which are in minimum number of frames
     out = out.groupby('CellID').filter(lambda x: x['FrameID'].count() >= minframes)
