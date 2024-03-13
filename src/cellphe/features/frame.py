@@ -46,3 +46,32 @@ def var_from_centre(boundaries: np.array) -> list[float]:
     dists_from_centre = np.power(boundaries - means, 2)
     distances = np.sqrt(dists_from_centre.sum(axis=1))
     return np.mean(distances), np.var(distances, ddof=1)
+
+
+def curvature(boundaries: np.array, gap: int) -> float:
+    """
+    Identifies the curvature of a boundary condition.
+
+    :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
+    :param gap: The gap.
+
+    :return: The curvature as a float.
+    """
+    # Create index array
+    n_points = boundaries.shape[0]
+    indices = np.arange(n_points)
+    # Offset the indices by the gaps in both directions
+    indices_mgap = (indices + n_points - gap) % n_points
+    indices_pgap = (indices + gap) % n_points
+
+    # Get the coordinates in these orderings
+    boundaries_mgap = boundaries[indices_mgap,]
+    boundaries_pgap = boundaries[indices_pgap,]
+
+    # Calculate the euclidean distance between them
+    i1 = np.linalg.norm(boundaries - boundaries_mgap, axis=1)
+    i2 = np.linalg.norm(boundaries - boundaries_pgap, axis=1)
+    i3 = np.linalg.norm(boundaries_mgap - boundaries_pgap, axis=1)
+
+    # Calculate curvature
+    return np.mean(i1 + i2 - i3)
