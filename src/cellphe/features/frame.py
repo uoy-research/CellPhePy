@@ -17,29 +17,31 @@ def extract_features(_df: pd.DataFrame, _roi_folder: str, _frame_folder: str, _f
 
      Calculates 74 features related to size, shape, texture and movement for each cell on every non-missing frame,
      as well as the cell density around each cell on each frame.
-     NB: while the ROI filenames are expected to be provided in \code{df} and found in \code{roi_folder},
-     the frame filenames are just expected to follow the naming convention \code{<some text>-<FrameID>.tiff},
-     where FrameID is a 4 digit leading zero-padded number, corresponding to the \code{FrameID} column in \code{df}.
+     NB: while the ROI filenames are expected to be provided in ``df`` and found
+     in ``roi_folder``,
+     the frame filenames are just expected to follow the naming convention
+     ``<some text>-<FrameID>.tiff``,
+     where FrameID is a 4 digit leading zero-padded number, corresponding to the
+     ``FrameID`` column in ``df``.
 
      :param df: DataFrame where every row corresponds to a combination of a cell
-     tracked in a frame. It must have at least columns \code{CellID}, \code{FrameID} and
-     \code{ROI_filename} along with any additional features.
+     tracked in a frame. It must have at least columns ``CellID``, ``FrameID`` and
+     ``ROI_filename`` along with any additional features.
      :param roi_folder: A path to a directory containing multiple Report Object Instance
-     (ROI) files named in the format \code{cellid}-\code{frameid}.roi
+     (ROI) files named in the format ``cellid``-``frameid``.roi
      :param frame_folder: A path to a directory containing multiple frames in TIFF format.
-     It is assumed these are named under the pattern \code{<experiment name>-<frameid>.tif}, where
-     \code{<frameid>} is a 4 digit zero-padded integer.
+     It is assumed these are named under the pattern ``<experiment
+     name>-<frameid>.tif``, where
+     ``<frameid>`` is a 4 digit zero-padded integer.
      :param framerate: The frame-rate, used to provide a meaningful measurement unit for velocity,
-        otherwise a scaleless unit is implied with \code{framerate=1}.
+        otherwise a scaleless unit is implied with ``framerate=1``.
     :return: A dataframe with 77+N columns (where N is the number of imported features)
      and 1 row per cell per frame it's present in:
-     \itemize{
-       \item{\code{FrameID}: the numeric frameID}
-       \item{\code{CellID}: the numeric cellID}
-       \item{\code{ROI_filename}: the ROI filename}
-       \item{\code{...}: 74 frame specific features}
-       \item{\code{...}: Any other data columns that were present in \code{df}}
-     }
+       * ``FrameID``: the numeric frameID
+       * ``CellID``: the numeric cellID
+       * ``ROI_filename``: the ROI filename
+       * ``...``: 74 frame specific features
+       * ``...``: Any other data columns that were present in ``df``
     """
     return None
 
