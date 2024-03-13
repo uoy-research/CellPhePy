@@ -1,3 +1,10 @@
+"""
+    cellphe.processing.image
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Functions related to processing images.
+"""
+
 from __future__ import annotations
 
 import numpy as np

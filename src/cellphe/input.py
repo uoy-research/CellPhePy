@@ -1,3 +1,11 @@
+"""
+    cellphe.input
+    ~~~~~~~~~~~~~
+
+    Functions related to importing feature tables into CellPhe from various
+    microscopy platforms.
+"""
+
 from __future__ import annotations
 
 import pandas as pd
@@ -16,7 +24,8 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFr
     :param minframes: The minimum number of frames a cell must be tracked for to
     be included in the output features.
     :type minframes: int
-    :param source: The name of the software that produced the metadata file, either 'Phase' or 'Trackmate' are currently supported.
+    :param source: The name of the software that produced the metadata file,
+    either 'Phase' or 'Trackmate' are currently supported.
     :type source: str
     :return: A dataframe with 1 row corresponding to 1 cell tracked in 1 frame
     with the following columns:

@@ -1,15 +1,25 @@
+"""
+    cellphe.features.frame
+    ~~~~~~~~~~~~~~~~~~~~~~
+
+    Functions for extracting frame-level features.
+"""
+
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 
 
-def extract_features(df: pd.DataFrame, roi_folder: str, frame_folder: str, framerate: float) -> pd.DataFrame:
+def extract_features(_df: pd.DataFrame, _roi_folder: str, _frame_folder: str, _framerate: float) -> pd.DataFrame:
     r"""
      Calculates cell features from timelapse videos
 
-     Calculates 74 features related to size, shape, texture and movement for each cell on every non-missing frame, as well as the cell density around each cell on each frame.
-     NB: while the ROI filenames are expected to be provided in \code{df} and found in \code{roi_folder}, the frame filenames are just expected to follow the naming convention \code{<some text>-<FrameID>.tiff}, where FrameID is a 4 digit leading zero-padded number, corresponding to the \code{FrameID} column in \code{df}.
+     Calculates 74 features related to size, shape, texture and movement for each cell on every non-missing frame,
+     as well as the cell density around each cell on each frame.
+     NB: while the ROI filenames are expected to be provided in \code{df} and found in \code{roi_folder},
+     the frame filenames are just expected to follow the naming convention \code{<some text>-<FrameID>.tiff},
+     where FrameID is a 4 digit leading zero-padded number, corresponding to the \code{FrameID} column in \code{df}.
 
      :param df: DataFrame where every row corresponds to a combination of a cell
      tracked in a frame. It must have at least columns \code{CellID}, \code{FrameID} and
@@ -31,7 +41,7 @@ def extract_features(df: pd.DataFrame, roi_folder: str, frame_folder: str, frame
        \item{\code{...}: Any other data columns that were present in \code{df}}
      }
     """
-    pass
+    return None
 
 
 def var_from_centre(boundaries: np.array) -> list[float]:
