@@ -55,8 +55,7 @@ def var_from_centre(boundaries: np.array) -> list[float]:
     :return: A tuple of the mean distance from the centre and the variance.
     """
     means = boundaries.mean(axis=0)
-    dists_from_centre = np.power(boundaries - means, 2)
-    distances = np.sqrt(dists_from_centre.sum(axis=1))
+    distances = np.linalg.norm(boundaries - means, axis=1)
     return np.mean(distances), np.var(distances, ddof=1)
 
 
