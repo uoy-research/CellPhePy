@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from scipy.spatial.distance import pdist, squareform
 
 
 def extract_features(_df: pd.DataFrame, _roi_folder: str, _frame_folder: str, _framerate: float) -> pd.DataFrame:
@@ -86,3 +87,30 @@ def curvature(boundaries: np.array, gap: int) -> float:
 
     # Calculate curvature
     return np.mean(i1 + i2 - i3)
+
+
+def minimum_box(boundaries: np.array) -> np.array:
+    """
+    Finds the minimum box around some boundary coordinates.
+
+    :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
+
+    :return: A 1D numpy array of an [x,y] pair.
+    """
+    n_points = boundaries.shape[0]
+    distances = squareform(pdist(boundaries))
+    max_dist = distances.argmax()
+    row = max_dist // n_points
+    col = max_dist % n_points
+
+    keepy1 = boundaries[row, 1]
+    keepx1 = boundaries[row, 0]
+    keepy2 = boundaries[col, 1]
+    keepx2 = boundaries[col, 0]
+
+    alpha = np.arctan((keepy1 - keepy2) / (keepx1 - keepx2))
+    # rotating points by -alpha makes keepx1-keepx2 lie along x-axis
+    roty = keepy1 - np.sin(alpha) * (boundaries[:, 0] - keepx1) + np.cos(alpha) * (boundaries[:, 1] - keepy1)
+    rotx = keepx1 + np.cos(alpha) * (boundaries[:, 0] - keepx1) + np.sin(alpha) * (boundaries[:, 1] - keepy1)
+
+    return np.array([rotx.max() - rotx.min(), roty.max() - roty.min()])
