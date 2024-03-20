@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from pybind11_rdp import rdp
 from scipy.spatial.distance import pdist, squareform
 
 
@@ -114,3 +115,59 @@ def minimum_box(boundaries: np.array) -> np.array:
     rotx = keepx1 + np.cos(alpha) * (boundaries[:, 0] - keepx1) + np.sin(alpha) * (boundaries[:, 1] - keepy1)
 
     return np.array([rotx.max() - rotx.min(), roty.max() - roty.min()])
+
+
+def polygon(boundaries: np.array) -> np.array:
+    """
+    Calculates the minimal polygon around a set of points using the
+    Ramer-Douglas-Peucker method.
+    Uses the pybind11_rdp implementation.
+    https://github.com/cubao/pybind11-rdp
+
+    :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
+
+    :return: A 2D array comprising the minimal set of points.
+
+    """
+    # The original implementation had epsilon hardcoded to 2.5
+    # It also didn't return the last point in the way this implementation does.
+    return rdp(boundaries, epsilon=2.5)
+
+
+def polygon_features(boundaries: np.array) -> np.array:
+    """
+    Derives features from the minimal polygon surrounding the boundary
+    coordinates.
+
+    :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
+
+    :return: A 1D array with 4 values:
+        -[0] The longest edge
+        -[1] The smallest interior angle
+        -[2] The variance of the interior angles
+        -[3] The variance of the edges
+
+    """
+    # Fit reduced polygon
+
+    # Identify edges
+
+    # Determine the interior angles
+
+    # Calculate features
+    pass
+
+
+def polygon_angle(points: np.array) -> np.array:
+    """
+    Calculate interior angles from a polygon.
+
+    :param points: An N x 3 matrix.
+
+    :return: A 1D array of length N, each entry representing an angle.
+    """
+    points_sqrt = np.sqrt(points)
+    calc = (points[:, 0] + points[:, 1] - points[:, 2]) / (2.0 * points_sqrt[:, 0] * points_sqrt[:, 1])
+    res_acos = np.arccos(calc)
+    res_acos[np.abs(calc - 1) <= 0.001] = 2 * np.pi
+    return res_acos
