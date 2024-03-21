@@ -180,12 +180,14 @@ def test_polygon_real_example():
 
 
 def test_poly_class():
-    # expected = np.array([12.727922, 6.283185, 0.000000, 0.000000])
-    assert 5 == 5
+    boundaries = np.column_stack((np.arange(1, 11), np.arange(11, 21)))
+    expected = np.array([12.727922, 6.283185, 0.000000, 0.000000])
+    output = polygon_features(boundaries)
+    assert expected == pytest.approx(output)
 
 
 def test_poly_angle():
-    input = np.arange(1, 16).reshape(3, 5).transpose()
+    input = np.sqrt(np.arange(1, 16).reshape(3, 5).transpose())
     expected = np.array([2.526113, 1.983286, 1.776365, 1.654226, 1.570796])
     output = polygon_angle(input)
     assert expected == pytest.approx(output)

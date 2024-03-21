@@ -149,13 +149,33 @@ def polygon_features(boundaries: np.array) -> np.array:
 
     """
     # Fit reduced polygon
+    points = polygon(boundaries)
 
-    # Identify edges
+    # Form tensor of these points rotated
+    points1 = np.roll(points, -1, axis=0)
+    points2 = np.roll(points, -2, axis=0)
+    mat_all = np.stack([np.stack([points, points1]), np.stack([points, points2]), np.stack([points1, points2])])
+
+    # For each point, calculate distance between:
+    #   - Original point and rotated by 1
+    #   - Original point and rotated by 2
+    #   - Rotated by 1 and rotated by 2
+    # These are the edges
+    matt_differences = mat_all[:, 0, :, :] - mat_all[:, 1, :, :]
+    lengths = np.linalg.norm(matt_differences, axis=2)
+    # Convert into the same order / format as the original version
+    lengths = lengths.transpose()[:, np.array([0, 2, 1])]
 
     # Determine the interior angles
+    angles = polygon_angle(lengths)
 
     # Calculate features
-    pass
+    min_angle = np.min(angles)
+    var_angle = np.var(angles, ddof=1)
+    max_length = np.max(lengths[:, 0])
+    var_length = np.var(lengths[:, 0], ddof=1)
+
+    return np.array([max_length, min_angle, var_angle, var_length])
 
 
 def polygon_angle(points: np.array) -> np.array:
@@ -166,8 +186,8 @@ def polygon_angle(points: np.array) -> np.array:
 
     :return: A 1D array of length N, each entry representing an angle.
     """
-    points_sqrt = np.sqrt(points)
-    calc = (points[:, 0] + points[:, 1] - points[:, 2]) / (2.0 * points_sqrt[:, 0] * points_sqrt[:, 1])
+    points_squared = points**2
+    calc = (points_squared[:, 0] + points_squared[:, 1] - points_squared[:, 2]) / (2.0 * points[:, 0] * points[:, 1])
     res_acos = np.arccos(calc)
     res_acos[np.abs(calc - 1) <= 0.001] = 2 * np.pi
     return res_acos
