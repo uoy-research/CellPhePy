@@ -191,3 +191,14 @@ def test_poly_angle():
     expected = np.array([2.526113, 1.983286, 1.776365, 1.654226, 1.570796])
     output = polygon_angle(input)
     assert expected == pytest.approx(output)
+
+
+def test_cooccurence_matrix():
+    image1 = np.arange(1, 21).reshape(4, 5).transpose()
+    image2 = np.concatenate((np.arange(1, 11), np.arange(21, 31))).reshape(4, 5).transpose()
+    mask = np.ones((5, 4)).astype("int") == 1
+    output = cooccurrence_matrix(image1, image2, mask, levels=10)
+    expected = np.zeros((10, 10))
+    expected[(0, 3, 3, 4, 4, 7, 7, 8, 9), (0, 1, 2, 5, 6, 7, 8, 8, 9)] = 1
+    expected[(1, 2, 5, 6), (0, 1, 6, 7)] = 2
+    assert (output == expected).all()

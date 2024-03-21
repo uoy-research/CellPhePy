@@ -12,6 +12,8 @@ import pandas as pd
 from pybind11_rdp import rdp
 from scipy.spatial.distance import pdist, squareform
 
+from cellphe.processing import normalise_image
+
 
 def extract_features(_df: pd.DataFrame, _roi_folder: str, _frame_folder: str, _framerate: float) -> pd.DataFrame:
     r"""
@@ -191,3 +193,37 @@ def polygon_angle(points: np.array) -> np.array:
     res_acos = np.arccos(calc)
     res_acos[np.abs(calc - 1) <= 0.001] = 2 * np.pi
     return res_acos
+
+
+def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, levels: int) -> np.array:
+    """
+    Calculate cooccurrence matrix between 2 images downscaled to a certain
+    level.
+
+    :param image1: The first image as a 2D numpy array.
+    :param image2: The second image as a 2D numpy array.
+    :param mask: A boolean mask with the same dimensions as image1 and image2
+    :param levels: Number of grayscale levels to downscale to.
+    :return: Returns a levels x levels matrix of the cooccurrences of each level
+    between the 2 images.
+    """
+    # Rescale both images to levels using the normalise_image function
+    image1_rescaled = np.floor(normalise_image(image1, 0, levels)[mask])
+    image2_rescaled = np.floor(normalise_image(image2, 0, levels)[mask])
+
+    # do the coccurrence calculation. This is using some indicing witchcraft
+    # from Julie's code
+    values, counts = np.unique(image1_rescaled + levels * (image2_rescaled - 1), return_counts=True)
+    # Restrict to positive indices
+    to_keep = values > 0
+    values = values[to_keep].astype("int")
+    counts = counts[to_keep]
+
+    # Format counts into pairwise matrix
+    cooc = np.zeros((levels, levels))
+    # NB: can't do 2D array indexing with 1D array as can in R
+    # so need to convert into x&y
+    x_vals = (values - 1) % levels
+    y_vals = (values - 1) // levels
+    cooc[x_vals, y_vals] = counts
+    return cooc
