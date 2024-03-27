@@ -211,7 +211,7 @@ def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, leve
     image1_rescaled = np.floor(normalise_image(image1, 0, levels)[mask])
     image2_rescaled = np.floor(normalise_image(image2, 0, levels)[mask])
 
-    # do the coccurrence calculation. This is using some indicing witchcraft
+    # do the coccurrence calculation. This is using some indexing witchcraft
     # from Julie's code
     values, counts = np.unique(image1_rescaled + levels * (image2_rescaled - 1), return_counts=True)
     # Restrict to positive indices
@@ -227,3 +227,77 @@ def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, leve
     y_vals = (values - 1) // levels
     cooc[x_vals, y_vals] = counts
     return cooc
+
+
+def haralick(cooc: np.array) -> np.array:
+    """
+    Calculates Haralick features from the given cooccurrence matrix.
+
+    :param cooc: Cooccurrence matrix.
+    :return: A Numpy array of size 14 corresponding to each of the features.
+    """
+    o_hara = np.zeros(14)
+    pglcm = cooc / cooc.sum()
+    pglcm_raw = pglcm.copy()
+    pglcm[pglcm == 0] = np.nan  # Silence numpy warnings
+    nx = pglcm.shape[0]
+    px = np.nansum(pglcm, axis=0)
+    py = np.nansum(pglcm, axis=1)
+
+    pxpy = np.repeat(px, nx).reshape(nx, nx) * np.repeat(py, nx).reshape(nx, nx, order="F")
+    pxpy[pxpy == 0] = np.nan  # Removing numpy warnings
+    px_y = np.zeros(2 * nx)
+    pxmy = np.zeros(nx)
+    vx = np.arange(1, nx + 1)
+    mx = np.sum(px * vx)
+    my = np.sum(py * vx)
+    stdevx = np.sum(px * (vx - mx) ** 2)
+    stdevy = np.sum(py * (vx - my) ** 2)
+    hxy1_0 = pglcm * np.log10(pxpy)
+    hxy2_0 = pxpy * np.log10(pxpy)
+    hxy2 = -np.nansum(hxy2_0)
+    op = np.arange(1, nx + 1).repeat(nx).reshape(nx, nx)
+    oq = op.transpose()
+    spq = op + oq
+    dpq = np.abs(op - oq)
+    o_hara[0] = np.nansum(pglcm**2)
+    o_hara[1] = np.nansum(dpq**2 * pglcm)
+    o_hara[2] = np.nansum(pglcm / (1 + dpq**2))
+    o_hara[3] = -np.nansum(pglcm * np.log10(pglcm))
+    stdev_mult = stdevx * stdevy
+    if stdev_mult == 0:
+        o_hara[4] = 0
+    else:
+        o_hara[4] = np.nansum((op - mx) * (oq - my) * pglcm / (np.sqrt(stdev_mult)))
+    o_hara[5] = np.nansum((op - ((mx + my) / 2)) ** 2 * pglcm)
+    o_hara[6] = np.nansum(spq * pglcm)
+    sen = np.zeros(2 * nx)
+    den_1 = np.zeros(nx)
+    den_2 = np.zeros(nx)
+    pglcm2 = pglcm[:, ::-1]
+    sen[0] = pglcm2[0, nx - 1]
+    den_1[0] = pglcm[0, nx - 1]
+    for i in range(1, nx):
+        rows = np.arange(i + 1)
+        cols = rows + nx - i - 1
+        sen[i] = np.nansum(pglcm2[rows, cols])
+        den_1[i] = np.nansum(pglcm[rows, cols])
+    for i in range(nx - 2):
+        rows = np.arange(i + 1, nx)
+        cols = np.arange(10 - i - 1)
+        sen[i + nx] = np.nansum(pglcm2[rows, cols])
+        den_2[nx - i - 2] = np.nansum(pglcm[rows, cols])
+    sen[nx + nx - 2] = pglcm2[nx - 1, 0]
+    sen[sen == 0] = np.nan
+    den_2[0] = pglcm[nx - 1, 0]
+    o_hara[7] = -np.nansum(sen * np.log10(sen))
+    den = den_1 + den_2
+    den[den == 0] = np.nan
+    o_hara[8] = -np.nansum(den * np.log10(den))
+    o_hara[9] = np.nansum(((dpq - o_hara[8]) ** 2) * pglcm)
+    o_hara[10] = np.nansum(((spq - o_hara[7]) ** 2) * pglcm)
+    o_hara[11] = np.sqrt(1 - np.exp(-2 * np.abs(hxy2 - o_hara[3])))
+    spq_mx_my = spq - mx - my
+    o_hara[12] = np.nansum(spq_mx_my**3 * pglcm)
+    o_hara[13] = np.nansum(spq_mx_my**4 * pglcm)
+    return o_hara
