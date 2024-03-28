@@ -228,3 +228,26 @@ def test_haralick():
     )
     output = haralick(input)
     assert expected == pytest.approx(output)
+
+
+def test_intensity_quantiles():
+    expected = np.array(
+        [0.3963749, 0.4367558, 0.3332230, 0.2120448, 0.2204704, 0.2337691, 0.3209318, 0.4305304, 0.4305304]
+    )
+    input = np.array(
+        [
+            [1, 1, 210],
+            [1, 2, 220],
+            [1, 3, 180],
+            [2, 1, 190],
+            [2, 2, 150],
+            [2, 3, 140],
+            [3, 1, 80],
+            [3, 2, 100],
+            [3, 3, 210],
+            [4, 3, 130],
+            [4, 4, 120],
+        ]
+    )
+    output = intensity_quantiles(input)
+    assert output == pytest.approx(expected)

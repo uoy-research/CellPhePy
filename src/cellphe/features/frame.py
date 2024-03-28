@@ -301,3 +301,26 @@ def haralick(cooc: np.array) -> np.array:
     o_hara[12] = np.nansum(spq_mx_my**3 * pglcm)
     o_hara[13] = np.nansum(spq_mx_my**4 * pglcm)
     return o_hara
+
+
+def intensity_quantiles(pixels: np.array) -> np.array:
+    """
+    Calculates the coefficient of variation in distance between pixels at
+    different quantiles of intensity.
+
+    :param pixels: A 2D array with 3 columns corresponding to x, y, and
+    intensity.
+    :return: A 1D array with length 9, corresponding to the coefficient of
+    variation between pixel distances at different quantile thresholds
+    (0.1-0.9).
+    """
+    # int conversion is needed as otherwise can have some points not included
+    # due to floating point imprecision (i.e. a quantile is 10.000001 so any
+    # pixels with an intensity of 10 aren't included when they ought to be
+    quantiles = np.quantile(pixels[:, 2], np.arange(0.1, 1.0, 0.1)).astype("int")
+    vals = np.zeros(9)
+    for i, thresh in enumerate(quantiles):
+        pixels_greater_thresh = pixels[:, 2] >= thresh
+        dist_pixels_thresh = pdist(pixels[pixels_greater_thresh, 0:2])
+        vals[i] = np.var(dist_pixels_thresh, ddof=1) / np.mean(dist_pixels_thresh)
+    return vals
