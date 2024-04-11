@@ -258,3 +258,10 @@ def test_haar_approximation():
     expected = np.array([[4.5, 16.5], [6.5, 18.5], [8.5, 20.5]])
     output = haar_approximation(input)
     assert output == pytest.approx(expected)
+
+
+def test_double_image():
+    input = np.arange(1, 5).reshape(2, 2, order="F")
+    expected = np.array([[1, 1, 3, 3], [1, 1, 3, 3], [2, 2, 4, 4], [2, 2, 4, 4]])
+    output = double_image(input)
+    assert output == pytest.approx(expected)

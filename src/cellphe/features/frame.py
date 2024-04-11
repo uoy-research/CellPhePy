@@ -327,7 +327,7 @@ def intensity_quantiles(pixels: np.array) -> np.array:
     return vals
 
 
-def haar_approximation(image):
+def haar_approximation(image: np.array) -> np.array:
     """
     Calculates the approximation coefficients of a 2D db1 (aka Haar) wavelet transform.
 
@@ -336,3 +336,14 @@ def haar_approximation(image):
     """
     cA, [cH, cV, cD] = pywt.dwt2(image, "db1")
     return cA / 2.0
+
+
+def double_image(image: np.array) -> np.array:
+    """
+    Doubles the size of an image.
+
+    :param image: 2D numpy array representing the downscaled image with
+    dimensions m x n.
+    :return: A 2D numpy array with dimensions 2m x 2n
+    """
+    return image.repeat(2, axis=0).repeat(2, axis=1)
