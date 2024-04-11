@@ -264,4 +264,4 @@ def test_double_image():
     input = np.arange(1, 5).reshape(2, 2, order="F")
     expected = np.array([[1, 1, 3, 3], [1, 1, 3, 3], [2, 2, 4, 4], [2, 2, 4, 4]])
     output = double_image(input)
-    assert output == pytest.approx(expected)
+    assert (output == expected).all()

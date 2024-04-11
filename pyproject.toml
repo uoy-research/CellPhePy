@@ -26,6 +26,7 @@ dependencies = [
     "pandas",
     "pybind11-rdp",
     "pywavelets",
+    "read-roi",
     "scipy"
 ]
 

@@ -8,7 +8,11 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+import numpy as np
 import pandas as pd
+from read_roi import read_roi_file
 
 
 def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFrame:
@@ -76,3 +80,17 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFr
     out = out.sort_values(["CellID", "FrameID"])
 
     return out
+
+
+def read_roi(filename: str) -> np.array:
+    """
+    Returns the coordinates from an ImageJ produced ROI file.
+
+    :param filename: Filepath to the ROI file (extension .roi).
+    :return: A 2D numpy array containing the coordinates.
+    """
+    fn_stripped = Path(filename).stem
+    roi = read_roi_file(filename)
+    x = roi[fn_stripped]["x"]
+    y = roi[fn_stripped]["y"]
+    return np.column_stack((x, y))
