@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pywt
 from pybind11_rdp import rdp
 from scipy.spatial.distance import pdist, squareform
 
@@ -324,3 +325,14 @@ def intensity_quantiles(pixels: np.array) -> np.array:
         dist_pixels_thresh = pdist(pixels[pixels_greater_thresh, 0:2])
         vals[i] = np.var(dist_pixels_thresh, ddof=1) / np.mean(dist_pixels_thresh)
     return vals
+
+
+def haar_approximation(image):
+    """
+    Calculates the approximation coefficients of a 2D db1 (aka Haar) wavelet transform.
+
+    :param image: 2D numpy array containing the image pixels.
+    :return: A 2D numpy array containing the approximation coefficients.
+    """
+    cA, [cH, cV, cD] = pywt.dwt2(image, "db1")
+    return cA / 2.0

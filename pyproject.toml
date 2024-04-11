@@ -25,6 +25,7 @@ dependencies = [
     "numpy",
     "pandas",
     "pybind11-rdp",
+    "pywavelets",
     "scipy"
 ]
 

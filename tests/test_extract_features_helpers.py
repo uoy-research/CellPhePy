@@ -251,3 +251,10 @@ def test_intensity_quantiles():
     )
     output = intensity_quantiles(input)
     assert output == pytest.approx(expected)
+
+
+def test_haar_approximation():
+    input = np.arange(1, 25).reshape(6, 4, order="F")
+    expected = np.array([[4.5, 16.5], [6.5, 18.5], [8.5, 20.5]])
+    output = haar_approximation(input)
+    assert output == pytest.approx(expected)
