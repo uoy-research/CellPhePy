@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 from matplotlib.path import Path
 
-from cellphe.processing import create_type_mask
+from cellphe.processing import create_type_mask, extract_subimage
+from cellphe.processing.image import SubImage
 
 
 def test_create_type_mask():
@@ -32,11 +33,11 @@ def test_create_type_mask():
         ]
     )
     output = create_type_mask(image, roi)
-    expected = np.zeros((6, 8), dtype="int64")
-    expected[[0, 0, 0, 0, 1, 2, 3, 4, 5, 5, 5], [0, 1, 3, 7, 0, 7, 7, 0, 0, 1, 7]] = -1
+    expected = np.full((10, 10), -1, dtype="int64")
+    expected[roi[:, 1], roi[:, 0]] = 0
     expected[
-        [1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
-        [2, 4, 5, 6, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 2, 3, 4, 5, 6],
+        [2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5],
+        [3, 5, 6, 7, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7],
     ] = 1
     assert (output == expected).all()
 
@@ -68,11 +69,11 @@ def test_create_type_mask_double_layer():
         ]
     )
     output = create_type_mask(image, roi)
-    expected = np.zeros((6, 8), dtype="int64")
-    expected[[0, 0, 0, 1, 2, 3, 4, 5, 5, 5], [0, 3, 7, 0, 7, 7, 0, 0, 1, 7]] = -1
+    expected = np.full((10, 10), -1, dtype="int64")
+    expected[roi[:, 1], roi[:, 0]] = 0
     expected[
-        [1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
-        [2, 4, 5, 6, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 2, 3, 4, 5, 6],
+        [2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5],
+        [3, 5, 6, 7, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7],
     ] = 1
     assert (output == expected).all()
 
@@ -109,12 +110,27 @@ def test_create_type_mask_diagonal_connections():
         ]
     )
     output = create_type_mask(image, roi)
-    expected = np.full((8, 8), -1, dtype="int64")
-    # ROI are 0 and are given in x/y rather than row/col
-    # Subtract off the 1 for reducing the boundary box
-    expected[roi[:, 1] - 1, roi[:, 0] - 1] = 0
+    expected = np.full((10, 10), -1, dtype="int64")
+    expected[roi[:, 1], roi[:, 0]] = 0
     expected[
-        [1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5],
-        [2, 4, 5, 6, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6, 1],
+        [2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6],
+        [3, 5, 6, 7, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 7, 2],
     ] = 1
     assert (output == expected).all()
+
+
+def test_subimageinfo():
+    # TODO find test image that isn't symmetric for centroid (i.e. non sequence)
+    # and isn't symmetric in sub image dimensions
+    roi = np.array([[2, 0], [3, 0], [4, 0], [4, 1], [4, 2], [3, 2], [2, 2], [1, 1]])
+    image = np.arange(1, 16).reshape(3, 5, order="F") ** 2
+    expected = SubImage(
+        sub_image=np.array([[16, 49, 100, 169], [25, 64, 121, 196], [36, 81, 144, 225]]),
+        type_mask=np.array([[-1, 0, 0, 0], [0, 1, 1, 0], [-1, 0, 0, 0]]),
+        centroid=np.array([2.875, 1]),
+    )
+    output = extract_subimage(image, roi)
+
+    assert (output.sub_image == expected.sub_image).all()
+    assert (output.type_mask == expected.type_mask).all()
+    assert output.centroid == pytest.approx(expected.centroid)

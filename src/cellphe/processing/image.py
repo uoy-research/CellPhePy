@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 from matplotlib.path import Path
 
@@ -44,14 +46,14 @@ def create_type_mask(image: np.array, roi: np.array) -> np.array:
     """
     # Initialise the mask
     image_mask = np.full(image.shape, -1)
-    # ROI = 1, NB: ROI is [x,y], i.e. [col, row] rather than [row,col]
+    # ROI = 1, NB: ROI is [x,y] coordinates rather than [row,col]
     image_mask[roi[:, 1], roi[:, 0]] = 0
 
     # Get values that are inside the ROI using the matplotlib Path class
     path = Path(roi)
-    # Get the indices of every coordinate in the image
+    # Get the indices of every coordinate in the image (row, col)
     image_indices = np.indices(image.shape).reshape(2, image.size).T
-    # Again, need to swap x and y around as Path uses [x,y]
+    # Convert into (x,y) coordinates
     image_indices = np.flip(image_indices, axis=1)
     # See if the ROI contains these values
     mask = path.contains_points(image_indices).reshape(image.shape)
@@ -60,9 +62,31 @@ def create_type_mask(image: np.array, roi: np.array) -> np.array:
     # Set these values in the output to 0
     image_mask[mask] = 1
 
-    # Subset image to path
-    # NB: gives x and y the wrong way around! 'x' refers to rows and 'y' cols
-    bbox = path.get_extents()
-    image_subset = image_mask[int(bbox.ymin) : (int(bbox.ymax) + 1), int(bbox.xmin) : (int(bbox.xmax) + 1)]
+    return image_mask
 
-    return image_subset
+
+@dataclass
+class SubImage:
+    sub_image: np.array
+    type_mask: np.array
+    centroid: float
+
+
+def extract_subimage(image: np.array, roi: np.array) -> SubImage:
+    """
+    Extracts a sub-image and relevant statistics from a given image and ROI.
+
+    :param image: The image as a 2D Numpy array.
+    :param roi: The region of interest as an Mx2 Numpy array.
+
+    :return: A SubImage instance.
+    """
+    mask = create_type_mask(image, roi)
+
+    bbox = Path(roi).get_extents()
+    mask_subset = mask[int(bbox.ymin) : (int(bbox.ymax) + 1), int(bbox.xmin) : (int(bbox.xmax) + 1)]
+    image_subset = image[int(bbox.ymin) : (int(bbox.ymax) + 1), int(bbox.xmin) : (int(bbox.xmax) + 1)]
+
+    centroid = roi.mean(axis=0)
+
+    return SubImage(sub_image=image_subset, type_mask=mask_subset, centroid=centroid)
