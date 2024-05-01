@@ -44,23 +44,25 @@ def create_type_mask(image: np.array, roi: np.array) -> np.array:
     """
     # Initialise the mask
     image_mask = np.full(image.shape, -1)
-    # ROI = 1
-    image_mask[roi[:, 0], roi[:, 1]] = 0
+    # ROI = 1, NB: ROI is [x,y], i.e. [col, row] rather than [row,col]
+    image_mask[roi[:, 1], roi[:, 0]] = 0
 
     # Get values that are inside the ROI using the matplotlib Path class
     path = Path(roi)
     # Get the indices of every coordinate in the image
     image_indices = np.indices(image.shape).reshape(2, image.size).T
-    # See if the ROi contains these values
+    # Again, need to swap x and y around as Path uses [x,y]
+    image_indices = np.flip(image_indices, axis=1)
+    # See if the ROI contains these values
     mask = path.contains_points(image_indices).reshape(image.shape)
     # Remove the ROI border itself
-    mask[roi[:, 0], roi[:, 1]] = False
+    mask[roi[:, 1], roi[:, 0]] = False
     # Set these values in the output to 0
     image_mask[mask] = 1
 
     # Subset image to path
     # NB: gives x and y the wrong way around! 'x' refers to rows and 'y' cols
     bbox = path.get_extents()
-    image_subset = image_mask[int(bbox.xmin) : (int(bbox.xmax) + 1), int(bbox.ymin) : (int(bbox.ymax) + 1)]
+    image_subset = image_mask[int(bbox.ymin) : (int(bbox.ymax) + 1), int(bbox.xmin) : (int(bbox.xmax) + 1)]
 
     return image_subset
