@@ -404,14 +404,14 @@ def extract_static_features(image: np.array, roi: np.array) -> np.array:
 
     # Texture features
     # First order
-    cell_intensities = sub_image.sub_image[sub_image.type_mask >= 0]
+    cell_mask = sub_image.type_mask >= 0
+    cell_intensities = sub_image.sub_image[cell_mask]
     feats[13] = cell_intensities.mean()
     feats[14] = cell_intensities.std(ddof=1)
     feats[15] = skewness(cell_intensities)
 
     # Cooccurrence
     n_cooccurrences = 10
-    mask = sub_image.type_mask > 0
     level1 = haar_approximation(sub_image.sub_image)
     level2 = haar_approximation(level1)
     level1 = double_image(level1)
@@ -419,16 +419,19 @@ def extract_static_features(image: np.array, roi: np.array) -> np.array:
     orig_dims = sub_image.sub_image.shape
     level1 = level1[: orig_dims[0], : orig_dims[1]]
     level2 = level2[: orig_dims[0], : orig_dims[1]]
-    cooc01 = cooccurrence_matrix(sub_image.sub_image, level1, mask, n_cooccurrences)
-    cooc02 = cooccurrence_matrix(sub_image.sub_image, level2, mask, n_cooccurrences)
-    cooc12 = cooccurrence_matrix(level1, level2, mask, n_cooccurrences)
+    # TODO Debug cooccurrence matrix and see if it gives the same values as R
+    # The indexing at the end might be wrong!
+    cooc01 = cooccurrence_matrix(sub_image.sub_image, level1, cell_mask, n_cooccurrences)
+    cooc02 = cooccurrence_matrix(sub_image.sub_image, level2, cell_mask, n_cooccurrences)
+    cooc12 = cooccurrence_matrix(level1, level2, cell_mask, n_cooccurrences)
     feats[16:30] = haralick(cooc01)
     feats[30:44] = haralick(cooc02)
     feats[44:58] = haralick(cooc12)
 
     # Intensity quantiles
-    vals = sub_image.sub_image[sub_image.type_mask == 1]
-    coords = np.asarray(np.where(mask)).T
+    interior_mask = sub_image.type_mask == 1
+    vals = sub_image.sub_image[interior_mask]
+    coords = np.asarray(np.where(interior_mask)).T
     interior_pixels = np.concatenate((coords, vals.reshape(vals.size, 1)), axis=1)
     feats[58:67] = intensity_quantiles(interior_pixels)
     feats[67:69] = sub_image.centroid
