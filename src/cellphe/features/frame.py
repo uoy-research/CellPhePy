@@ -13,7 +13,7 @@ import pywt
 from pybind11_rdp import rdp
 from scipy.spatial.distance import pdist, squareform
 
-from cellphe.processing import normalise_image
+from cellphe.processing import extract_subimage, normalise_image
 
 
 def extract_features(_df: pd.DataFrame, _roi_folder: str, _frame_folder: str, _framerate: float) -> pd.DataFrame:
@@ -49,6 +49,26 @@ def extract_features(_df: pd.DataFrame, _roi_folder: str, _frame_folder: str, _f
        * ``...``: Any other data columns that were present in ``df``
     """
     return None
+
+
+def skewness(x: np.array) -> float:
+    """
+    Calculates the skewness of a sample.
+
+    It uses the type 2method in the R e1071::skewness implementation, which is
+    the version used in SAS and SPSS according to the documentation.
+
+    :param x: Sample.
+    :return: A float representing the skewness.
+    """
+    mu = x.mean()
+    n = x.size
+    deltas = x - mu
+    m2 = np.sum(np.power(deltas, 2)) / n
+    m3 = np.sum(np.power(deltas, 3)) / n
+    g1 = m3 / np.power(m2, 3 / 2)
+    G1 = g1 * np.sqrt(n * (n - 1)) / (n - 2)
+    return G1
 
 
 def var_from_centre(boundaries: np.array) -> list[float]:
@@ -134,7 +154,8 @@ def polygon(boundaries: np.array) -> np.array:
     """
     # The original implementation had epsilon hardcoded to 2.5
     # It also didn't return the last point in the way this implementation does.
-    return rdp(boundaries, epsilon=2.5)
+    points = rdp(boundaries, epsilon=2.5)
+    return points
 
 
 def polygon_features(boundaries: np.array) -> np.array:
@@ -347,3 +368,69 @@ def double_image(image: np.array) -> np.array:
     :return: A 2D numpy array with dimensions 2m x 2n
     """
     return image.repeat(2, axis=0).repeat(2, axis=1)
+
+
+def extract_static_features(image: np.array, roi: np.array) -> np.array:
+    """
+    Extracts the 68 frame-level static (i.e. no movement based) features for a given image and roi.
+
+    :param image: The image as a 2D Numpy array.
+    :param roi: The region of interest as an Mx2 Numpy array.
+    :return: A 1D array of length 68 containing the features.
+    """
+    feats = np.zeros(69)
+
+    # Extract sub image info
+    sub_image = extract_subimage(image, roi)
+
+    # Shape features
+    # Averag radius & variance of boundary pixel distance to centre
+    feats[0:2] = var_from_centre(roi)
+    # boundary curvature
+    feats[2] = curvature(roi, 4)
+    # width and height of minimal box
+    minbox = minimum_box(roi)
+    feats[3:5] = minbox
+    # cell area
+    feats[5] = np.sum(sub_image.type_mask >= 0)
+    # area to boundary ratio
+    feats[6] = feats[5] / roi.shape[0] ** 2
+    # minimal box to area ratio
+    feats[7] = minbox.prod() / feats[5]
+    # rectangularity
+    feats[8] = minbox.max() / minbox.sum()
+    # Polygon features
+    feats[9:13] = polygon_features(roi)
+
+    # Texture features
+    # First order
+    cell_intensities = sub_image.sub_image[sub_image.type_mask >= 0]
+    feats[13] = cell_intensities.mean()
+    feats[14] = cell_intensities.std(ddof=1)
+    feats[15] = skewness(cell_intensities)
+
+    # Cooccurrence
+    n_cooccurrences = 10
+    mask = sub_image.type_mask > 0
+    level1 = haar_approximation(sub_image.sub_image)
+    level2 = haar_approximation(level1)
+    level1 = double_image(level1)
+    level2 = double_image(double_image(level2))
+    orig_dims = sub_image.sub_image.shape
+    level1 = level1[: orig_dims[0], : orig_dims[1]]
+    level2 = level2[: orig_dims[0], : orig_dims[1]]
+    cooc01 = cooccurrence_matrix(sub_image.sub_image, level1, mask, n_cooccurrences)
+    cooc02 = cooccurrence_matrix(sub_image.sub_image, level2, mask, n_cooccurrences)
+    cooc12 = cooccurrence_matrix(level1, level2, mask, n_cooccurrences)
+    feats[16:30] = haralick(cooc01)
+    feats[30:44] = haralick(cooc02)
+    feats[44:58] = haralick(cooc12)
+
+    # Intensity quantiles
+    vals = sub_image.sub_image[sub_image.type_mask == 1]
+    coords = np.asarray(np.where(mask)).T
+    interior_pixels = np.concatenate((coords, vals.reshape(vals.size, 1)), axis=1)
+    feats[58:67] = intensity_quantiles(interior_pixels)
+    feats[67:69] = sub_image.centroid
+
+    return feats

@@ -25,6 +25,7 @@ dependencies = [
     "matplotlib",
     "numpy",
     "pandas",
+    "pillow",
     "pybind11-rdp",
     "pywavelets",
     "read-roi",

@@ -265,3 +265,9 @@ def test_double_image():
     expected = np.array([[1, 1, 3, 3], [1, 1, 3, 3], [2, 2, 4, 4], [2, 2, 4, 4]])
     output = double_image(input)
     assert (output == expected).all()
+
+
+def test_skewness():
+    input = np.array([5, 6, 7, 8, 8, 8, 9, 10, 11, 12, 13, 17])
+    output = skewness(input)
+    assert output == pytest.approx(0.9452897)

@@ -120,8 +120,6 @@ def test_create_type_mask_diagonal_connections():
 
 
 def test_subimageinfo():
-    # TODO find test image that isn't symmetric for centroid (i.e. non sequence)
-    # and isn't symmetric in sub image dimensions
     roi = np.array([[2, 0], [3, 0], [4, 0], [4, 1], [4, 2], [3, 2], [2, 2], [1, 1]])
     image = np.arange(1, 16).reshape(3, 5, order="F") ** 2
     expected = SubImage(
