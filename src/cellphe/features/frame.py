@@ -152,10 +152,19 @@ def polygon(boundaries: np.array) -> np.array:
     :return: A 2D array comprising the minimal set of points.
 
     """
-    # The original implementation had epsilon hardcoded to 2.5
-    # It also didn't return the last point in the way this implementation does.
-    points = rdp(boundaries, epsilon=2.5)
-    return points
+    # RDP works on lines. Force the line to end at the start as we have a
+    # closed polygon.
+    first = boundaries[0, :].copy()
+    boundaries = np.concatenate((boundaries, np.array([first])))
+
+    # Same value epsilon as original code
+    poly = rdp(boundaries, epsilon=2.5)
+    # Remove last point if same as first, again because we have a polygon not a
+    # line
+    if (poly[0, :] == poly[-1, :]).all():
+        poly = poly[: (poly.shape[0] - 1)]
+
+    return poly
 
 
 def polygon_features(boundaries: np.array) -> np.array:
@@ -416,8 +425,6 @@ def extract_static_features(image: np.array, roi: np.array) -> np.array:
     orig_dims = sub_image.sub_image.shape
     level1 = level1[: orig_dims[0], : orig_dims[1]]
     level2 = level2[: orig_dims[0], : orig_dims[1]]
-    # TODO Debug cooccurrence matrix and see if it gives the same values as R
-    # The indexing at the end might be wrong!
     cooc01 = cooccurrence_matrix(sub_image.sub_image, level1, cell_mask, n_cooccurrences)
     cooc02 = cooccurrence_matrix(sub_image.sub_image, level2, cell_mask, n_cooccurrences)
     cooc12 = cooccurrence_matrix(level1, level2, cell_mask, n_cooccurrences)

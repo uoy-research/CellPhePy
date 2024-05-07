@@ -176,9 +176,16 @@ def test_polygon_real_example():
         1,
         1,
     ]
-    boundaries = [[x, y] for x, y in zip(xs, ys)]
-    expected = [[1, 10], [6, 3], [16, 1], [23, 9], [23, 16], [16, 24], [8, 25], [3, 22], [1, 11]]
+    boundaries = np.array([[x, y] for x, y in zip(xs, ys)])
+    expected = [[1, 10], [6, 3], [16, 1], [23, 9], [23, 16], [16, 24], [8, 25], [3, 22]]
     output = polygon(boundaries)
+    assert (output == expected).all()
+
+
+def test_polygon_real_roi():
+    roi = read_roi("tests/resources/roi.roi")
+    output = polygon(roi)
+    expected = np.array([[315, 456], [322, 448], [334, 449], [333, 467], [320, 469]])
     assert (output == expected).all()
 
 
