@@ -232,14 +232,13 @@ def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, leve
     # Rescale both images to levels using the normalise_image function
     image1_rescaled = np.floor(normalise_image(image1, 0, levels)[mask])
     image2_rescaled = np.floor(normalise_image(image2, 0, levels)[mask])
+    # Restrict to positive values
+    to_keep = (image1_rescaled > 0) & (image2_rescaled > 0)
 
     # do the coccurrence calculation. This is using some indexing witchcraft
     # from Julie's code
-    values, counts = np.unique(image1_rescaled + levels * (image2_rescaled - 1), return_counts=True)
-    # Restrict to positive indices
-    to_keep = values > 0
-    values = values[to_keep].astype("int")
-    counts = counts[to_keep]
+    values, counts = np.unique(image1_rescaled[to_keep] + levels * (image2_rescaled[to_keep] - 1), return_counts=True)
+    values = values.astype("int")
 
     # Format counts into pairwise matrix
     cooc = np.zeros((levels, levels))
@@ -425,8 +424,8 @@ def extract_static_features(image: np.array, roi: np.array) -> np.array:
     cooc02 = cooccurrence_matrix(sub_image.sub_image, level2, cell_mask, n_cooccurrences)
     cooc12 = cooccurrence_matrix(level1, level2, cell_mask, n_cooccurrences)
     feats[16:30] = haralick(cooc01)
-    feats[30:44] = haralick(cooc02)
-    feats[44:58] = haralick(cooc12)
+    feats[30:44] = haralick(cooc12)
+    feats[44:58] = haralick(cooc02)
 
     # Intensity quantiles
     interior_mask = sub_image.type_mask == 1
