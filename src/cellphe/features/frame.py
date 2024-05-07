@@ -335,10 +335,8 @@ def intensity_quantiles(pixels: np.array) -> np.array:
     variation between pixel distances at different quantile thresholds
     (0.1-0.9).
     """
-    # int conversion is needed as otherwise can have some points not included
-    # due to floating point imprecision (i.e. a quantile is 10.000001 so any
-    # pixels with an intensity of 10 aren't included when they ought to be
-    quantiles = np.quantile(pixels[:, 2], np.arange(0.1, 1.0, 0.1)).astype("int")
+    quantiles = np.quantile(pixels[:, 2], np.arange(0.1, 1.0, 0.1))
+
     vals = np.zeros(9)
     for i, thresh in enumerate(quantiles):
         pixels_greater_thresh = pixels[:, 2] >= thresh
