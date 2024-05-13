@@ -7,48 +7,183 @@
 
 from __future__ import annotations
 
+import glob
+import os
+import sys
+
 import numpy as np
 import pandas as pd
 import pywt
 from pybind11_rdp import rdp
 from scipy.spatial.distance import pdist, squareform
 
+from cellphe.input import read_roi, read_tif
 from cellphe.processing import extract_subimage, normalise_image
 
+STATIC_FEATURE_NAMES = [
+    "Rad",
+    "VfC",
+    "Curv",
+    "Len",
+    "Wid",
+    "Area",
+    "A2B",
+    "Box",
+    "Rect",
+    "poly1",
+    "poly2",
+    "poly3",
+    "poly4",
+    "FOmean",
+    "FOsd",
+    "FOskew",
+    "Cooc01ASM",
+    "Cooc01Con",
+    "Cooc01IDM",
+    "Cooc01Ent",
+    "Cooc01Cor",
+    "Cooc01Var",
+    "Cooc01Sav",
+    "Cooc01Sen",
+    "Cooc01Den",
+    "Cooc01Dva",
+    "Cooc01Sva",
+    "Cooc01f13",
+    "Cooc01Sha",
+    "Cooc01Pro",
+    "Cooc12ASM",
+    "Cooc12Con",
+    "Cooc12IDM",
+    "Cooc12Ent",
+    "Cooc12Cor",
+    "Cooc12Var",
+    "Cooc12Sav",
+    "Cooc12Sen",
+    "Cooc12Den",
+    "Cooc12Dva",
+    "Cooc12Sva",
+    "Cooc12f13",
+    "Cooc12Sha",
+    "Cooc12Pro",
+    "Cooc02ASM",
+    "Cooc02Con",
+    "Cooc02IDM",
+    "Cooc02Ent",
+    "Cooc02Cor",
+    "Cooc02Var",
+    "Cooc02Sav",
+    "Cooc02Sen",
+    "Cooc02Den",
+    "Cooc02Dva",
+    "Cooc02Sva",
+    "Cooc02f13",
+    "Cooc02Sha",
+    "Cooc02Pro",
+    "IQ1",
+    "IQ2",
+    "IQ3",
+    "IQ4",
+    "IQ5",
+    "IQ6",
+    "IQ7",
+    "IQ8",
+    "IQ9",
+]
 
-def extract_features(_df: pd.DataFrame, _roi_folder: str, _frame_folder: str, _framerate: float) -> pd.DataFrame:
+
+def extract_features(
+    df: pd.DataFrame, roi_folder: str, frame_folder: str, _framerate: float, minimum_cell_size: int = 8
+) -> pd.DataFrame:
     r"""
-     Calculates cell features from timelapse videos
+    Calculates cell features from timelapse videos
 
-     Calculates 74 features related to size, shape, texture and movement for each cell on every non-missing frame,
-     as well as the cell density around each cell on each frame.
-     NB: while the ROI filenames are expected to be provided in ``df`` and found
-     in ``roi_folder``,
-     the frame filenames are just expected to follow the naming convention
-     ``<some text>-<FrameID>.tiff``,
-     where FrameID is a 4 digit leading zero-padded number, corresponding to the
-     ``FrameID`` column in ``df``.
+    Calculates 74 features related to size, shape, texture and movement for each cell on every non-missing frame,
+    as well as the cell density around each cell on each frame.
+    NB: while the ROI filenames are expected to be provided in ``df`` and found
+    in ``roi_folder``,
+    the frame filenames are just expected to follow the naming convention
+    ``<some text>-<FrameID>.tiff``,
+    where FrameID is a 4 digit leading zero-padded number, corresponding to the
+    ``FrameID`` column in ``df``.
 
-     :param df: DataFrame where every row corresponds to a combination of a cell
-     tracked in a frame. It must have at least columns ``CellID``, ``FrameID`` and
-     ``ROI_filename`` along with any additional features.
-     :param roi_folder: A path to a directory containing multiple Report Object Instance
-     (ROI) files named in the format ``cellid``-``frameid``.roi
-     :param frame_folder: A path to a directory containing multiple frames in TIFF format.
-     It is assumed these are named under the pattern ``<experiment
-     name>-<frameid>.tif``, where
-     ``<frameid>`` is a 4 digit zero-padded integer.
-     :param framerate: The frame-rate, used to provide a meaningful measurement unit for velocity,
-        otherwise a scaleless unit is implied with ``framerate=1``.
+    :param df: DataFrame where every row corresponds to a combination of a cell
+    tracked in a frame. It must have at least columns ``CellID``, ``FrameID`` and
+    ``ROI_filename`` along with any additional features.
+    :param roi_folder: A path to a directory containing multiple Report Object Instance
+    (ROI) files named in the format ``cellid``-``frameid``.roi
+    :param frame_folder: A path to a directory containing multiple frames in TIFF format.
+    It is assumed these are named under the pattern ``<experiment
+    name>-<frameid>.tif``, where
+    ``<frameid>`` is a 4 digit zero-padded integer.
+    :param framerate: The frame-rate, used to provide a meaningful measurement unit for velocity,
+       otherwise a scaleless unit is implied with ``framerate=1``.
+    :param minimum_cell_size: Minimum height and width of the cell in pixels.
     :return: A dataframe with 77+N columns (where N is the number of imported features)
      and 1 row per cell per frame it's present in:
-       * ``FrameID``: the numeric frameID
-       * ``CellID``: the numeric cellID
-       * ``ROI_filename``: the ROI filename
-       * ``...``: 74 frame specific features
-       * ``...``: Any other data columns that were present in ``df``
+      * ``FrameID``: the numeric frameID
+      * ``CellID``: the numeric cellID
+      * ``ROI_filename``: the ROI filename
+      * ``...``: 74 frame specific features
+      * ``...``: Any other data columns that were present in ``df``
     """
-    return None
+    records = []  # Container that will populate data frame
+    # Iterate through frames, only want to read one into memory at a time
+    frame_ids = df["FrameID"].unique()
+    for frame_id in frame_ids:
+
+        # Load frame
+        image_fn_search = glob.glob(os.path.join(frame_folder, f"*-{frame_id:04}.tif"))
+        if len(image_fn_search) != 1:
+            raise FileNotFoundError(f"Unable to find frame ID {frame_id} in {frame_folder}")
+        image_fn = image_fn_search[0]
+        image = read_tif(image_fn)
+        image = normalise_image(image, 0, 255)
+
+        # Find all cells in this frame
+        cell_ids = df.loc[df["FrameID"] == frame_id]["CellID"].unique()
+        for cell_id in cell_ids:
+            roi_fn = df.loc[(df["FrameID"] == frame_id) & (df["CellID"] == cell_id)]["ROI_filename"].values[0]
+            roi_path = os.path.join(roi_folder, f"{roi_fn}.roi")
+            # TODO error handle missing file
+            roi = read_roi(roi_path)
+            # No negative coordinates
+            roi = np.maximum(roi, 0)
+            # Ensure cell is minimum size
+            max_dims = roi.max(axis=0)
+            min_dims = roi.min(axis=0)
+            range_dims = max_dims - min_dims + 1
+            if np.any(range_dims < minimum_cell_size):
+                continue
+
+            # Calculate static features of the frame/cell pair
+            static_features = extract_static_features(image, roi)
+
+            # Collate into a dict that will later populate a data frame
+            record = dict(zip(STATIC_FEATURE_NAMES, static_features))
+            record["FrameID"] = frame_id
+            record["CellID"] = cell_id
+            record["ROI_filename"] = roi_fn
+            records.append(record)
+
+    feature_df = pd.DataFrame.from_records(records)
+    # Reorder both in rows and columns
+    feature_df.sort_values(["CellID", "FrameID"], inplace=True)
+    col_order = ["FrameID", "CellID"] + STATIC_FEATURE_NAMES
+    feature_df = feature_df[col_order]
+    print(f"{feature_df=}")
+    # TODO add movement features (L252 in R code)
+    # add startx
+    # add starty
+    # Dis as the distance from current point to start
+    # Add distance between consecutive frames
+    # Add Trac as the cumulative distance
+    # Add D2T and Dis / Trac
+    # If D2T is infinite or nan, set as 0 (guess when denominator is 0)
+    # Vel is (framerate * distance between last frame) / number of frames since
+    # last frame
+
+    # TODO add density
+    return feature_df
 
 
 def skewness(x: np.array) -> float:

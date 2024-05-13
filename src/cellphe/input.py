@@ -12,6 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from PIL import Image
 from read_roi import read_roi_file
 
 
@@ -94,3 +95,15 @@ def read_roi(filename: str) -> np.array:
     x = roi[fn_stripped]["x"]
     y = roi[fn_stripped]["y"]
     return np.column_stack((x, y))
+
+
+def read_tif(filename: str) -> np.array:
+    """
+    Reads a TIF image into a Numpy array.
+
+    :param filename: TIF filename.
+    :return: A 2D Numpy array.
+    """
+    image = Image.open(filename)
+    image = np.array(image)
+    return image

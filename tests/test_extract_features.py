@@ -1,12 +1,25 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 import pytest
 from PIL import Image
 
 from cellphe.features.frame import *
-from cellphe.input import read_roi
+from cellphe.input import copy_features, read_roi
 from cellphe.processing import normalise_image
+
+# TODO Put in integration tests folder
+
+
+def test_extract_features():
+    # Read features from the full dataset and compare to the output from the R
+    # package, saved as CSV
+    expected = pd.read_csv("tests/resources/benchmark_features.csv")
+    phase_features = copy_features("data/05062019_B3_3_Phase-FullFeatureTable.csv", 50, source="Phase")
+
+    output = extract_features(phase_features, "data/05062019_B3_3_Phase", "data/05062019_B3_3_imagedata", 0.0028)
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), output.reset_index(drop=True))
 
 
 def test_extract_static_features():
