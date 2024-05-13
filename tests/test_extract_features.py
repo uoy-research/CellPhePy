@@ -6,7 +6,7 @@ import pytest
 from PIL import Image
 
 from cellphe.features.frame import *
-from cellphe.input import copy_features, read_roi
+from cellphe.input import copy_features, read_roi, read_tiff
 from cellphe.processing import normalise_image
 
 # TODO Put in integration tests folder
@@ -19,15 +19,15 @@ def test_extract_features():
     phase_features = copy_features("data/05062019_B3_3_Phase-FullFeatureTable.csv", 50, source="Phase")
 
     output = extract_features(phase_features, "data/05062019_B3_3_Phase", "data/05062019_B3_3_imagedata", 0.0028)
+    print(f"{expected.columns.values=}")
+    print(f"{output.columns.values=}")
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), output.reset_index(drop=True))
 
 
 def test_extract_static_features():
     # Want to read in a random image and ROI and get the same features as
     # CellPhe R
-    # TODO replace with own reading TIF code when add it
-    image = Image.open("tests/resources/frame.tif")
-    image = np.array(image)
+    image = read_tiff("tests/resources/frame.tif")
     image = normalise_image(image, 0, 255)
     roi = read_roi("tests/resources/roi.roi")
     expected = [

@@ -17,7 +17,7 @@ import pywt
 from pybind11_rdp import rdp
 from scipy.spatial.distance import pdist, squareform
 
-from cellphe.input import read_roi, read_tif
+from cellphe.input import read_roi, read_tiff
 from cellphe.processing import extract_subimage, normalise_image
 
 STATIC_FEATURE_NAMES = [
@@ -88,11 +88,13 @@ STATIC_FEATURE_NAMES = [
     "IQ7",
     "IQ8",
     "IQ9",
+    "x",
+    "y",
 ]
 
 
 def extract_features(
-    df: pd.DataFrame, roi_folder: str, frame_folder: str, _framerate: float, minimum_cell_size: int = 8
+    df: pd.DataFrame, roi_folder: str, frame_folder: str, framerate: float, minimum_cell_size: int = 8
 ) -> pd.DataFrame:
     r"""
     Calculates cell features from timelapse videos
@@ -136,7 +138,7 @@ def extract_features(
         if len(image_fn_search) != 1:
             raise FileNotFoundError(f"Unable to find frame ID {frame_id} in {frame_folder}")
         image_fn = image_fn_search[0]
-        image = read_tif(image_fn)
+        image = read_tiff(image_fn)
         image = normalise_image(image, 0, 255)
 
         # Find all cells in this frame
@@ -168,19 +170,41 @@ def extract_features(
     feature_df = pd.DataFrame.from_records(records)
     # Reorder both in rows and columns
     feature_df.sort_values(["CellID", "FrameID"], inplace=True)
-    col_order = ["FrameID", "CellID"] + STATIC_FEATURE_NAMES
+    col_order = ["FrameID", "CellID", "ROI_filename"] + STATIC_FEATURE_NAMES
     feature_df = feature_df[col_order]
-    print(f"{feature_df=}")
-    # TODO add movement features (L252 in R code)
-    # add startx
-    # add starty
-    # Dis as the distance from current point to start
-    # Add distance between consecutive frames
-    # Add Trac as the cumulative distance
-    # Add D2T and Dis / Trac
-    # If D2T is infinite or nan, set as 0 (guess when denominator is 0)
-    # Vel is (framerate * distance between last frame) / number of frames since
-    # last frame
+
+    # Movement features
+    # Overall distance since starting point
+    start_vals = feature_df.loc[feature_df.groupby("CellID")["FrameID"].idxmin(), ["CellID", "x", "y"]]
+    start_vals.rename(columns={"x": "x_start", "y": "y_start"}, inplace=True)
+    feature_df = feature_df.merge(start_vals, on="CellID")
+    feature_df["Dis"] = np.sqrt(
+        (feature_df["x"] - feature_df["x_start"]) ** 2 + (feature_df["y"] - feature_df["y_start"]) ** 2
+    )
+
+    # Frame by frame distance and speed
+    feature_df["x_prev"] = feature_df.groupby("CellID")["x"].transform("diff")
+    feature_df["y_prev"] = feature_df.groupby("CellID")["y"].transform("diff")
+    feature_df["frame_dist"] = np.sqrt(
+        (feature_df["x"] - feature_df["x_prev"]) ** 2 + (feature_df["y"] - feature_df["y_prev"]) ** 2
+    )
+    feature_df.loc[pd.isna(feature_df["frame_dist"]), "frame_dist"] = 0
+
+    # Cumulative distance moved and ratio to distance from start
+    feature_df["Trac"] = feature_df.groupby("CellID")["frame_dist"].transform("cumsum")
+    feature_df["D2T"] = feature_df["Dis"] / feature_df["Trac"]
+    feature_df.loc[pd.isna(feature_df["D2T"]), "D2T"] = 0
+
+    # Velocity
+    feature_df["FrameID_prev"] = feature_df.groupby("CellID")["FrameID"].transform("diff")
+    feature_df.loc[pd.isna(feature_df["FrameID_prev"]), "FrameID_prev"] = 0
+    feature_df["Vel"] = (framerate * feature_df["frame_dist"]) / (feature_df["FrameID"] - feature_df["FrameID_prev"])
+
+    # Drop intermediate columns
+    feature_df.drop(columns=["x_start", "y_start", "x_prev", "y_prev", "frame_dist", "FrameID_prev"], inplace=True)
+
+    # Add on the original columns
+    feature_df = feature_df.merge(df, on=["CellID", "FrameID", "ROI_filename"])
 
     # TODO add density
     return feature_df

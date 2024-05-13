@@ -97,7 +97,7 @@ def read_roi(filename: str) -> np.array:
     return np.column_stack((x, y))
 
 
-def read_tif(filename: str) -> np.array:
+def read_tiff(filename: str) -> np.array:
     """
     Reads a TIF image into a Numpy array.
 
