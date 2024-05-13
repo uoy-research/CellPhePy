@@ -168,26 +168,22 @@ def extract_features(
             records.append(record)
 
     feature_df = pd.DataFrame.from_records(records)
-    # Reorder both in rows and columns
-    feature_df.sort_values(["CellID", "FrameID"], inplace=True)
-    col_order = ["FrameID", "CellID", "ROI_filename"] + STATIC_FEATURE_NAMES
-    feature_df = feature_df[col_order]
 
     # Movement features
     # Overall distance since starting point
     start_vals = feature_df.loc[feature_df.groupby("CellID")["FrameID"].idxmin(), ["CellID", "x", "y"]]
     start_vals.rename(columns={"x": "x_start", "y": "y_start"}, inplace=True)
     feature_df = feature_df.merge(start_vals, on="CellID")
+    # Order in time so movement features are accurate
+    feature_df.sort_values(["CellID", "FrameID"], inplace=True)
     feature_df["Dis"] = np.sqrt(
         (feature_df["x"] - feature_df["x_start"]) ** 2 + (feature_df["y"] - feature_df["y_start"]) ** 2
     )
 
     # Frame by frame distance and speed
-    feature_df["x_prev"] = feature_df.groupby("CellID")["x"].transform("diff")
-    feature_df["y_prev"] = feature_df.groupby("CellID")["y"].transform("diff")
-    feature_df["frame_dist"] = np.sqrt(
-        (feature_df["x"] - feature_df["x_prev"]) ** 2 + (feature_df["y"] - feature_df["y_prev"]) ** 2
-    )
+    feature_df["x_diff"] = feature_df.groupby("CellID")["x"].transform("diff")
+    feature_df["y_diff"] = feature_df.groupby("CellID")["y"].transform("diff")
+    feature_df["frame_dist"] = np.sqrt(feature_df["x_diff"] ** 2 + feature_df["y_diff"] ** 2)
     feature_df.loc[pd.isna(feature_df["frame_dist"]), "frame_dist"] = 0
 
     # Cumulative distance moved and ratio to distance from start
@@ -196,17 +192,27 @@ def extract_features(
     feature_df.loc[pd.isna(feature_df["D2T"]), "D2T"] = 0
 
     # Velocity
-    feature_df["FrameID_prev"] = feature_df.groupby("CellID")["FrameID"].transform("diff")
-    feature_df.loc[pd.isna(feature_df["FrameID_prev"]), "FrameID_prev"] = 0
-    feature_df["Vel"] = (framerate * feature_df["frame_dist"]) / (feature_df["FrameID"] - feature_df["FrameID_prev"])
+    feature_df["FrameID_diff"] = feature_df.groupby("CellID")["FrameID"].transform("diff")
+    # Doesn't matter what this is set to as it's only used for the first
+    # appearance of a cell, in which case the numerator will be 0. Just need it
+    # to be non-NA and non-0 (as that causes Infs)
+    feature_df.loc[pd.isna(feature_df["FrameID_diff"]), "FrameID_diff"] = 1
+    feature_df["Vel"] = (framerate * feature_df["frame_dist"]) / feature_df["FrameID_diff"]
 
     # Drop intermediate columns
-    feature_df.drop(columns=["x_start", "y_start", "x_prev", "y_prev", "frame_dist", "FrameID_prev"], inplace=True)
+    feature_df.drop(columns=["x_start", "y_start", "x_diff", "y_diff", "frame_dist", "FrameID_diff"], inplace=True)
 
     # Add on the original columns
     feature_df = feature_df.merge(df, on=["CellID", "FrameID", "ROI_filename"])
 
-    # TODO add density
+    # Add density
+    dens = calculate_density(feature_df)
+    feature_df = feature_df.merge(dens, how="left", on=["FrameID", "CellID"])
+    feature_df.loc[pd.isna(feature_df["dens"]), "dens"] = 0
+
+    # Reorder columns
+    col_order = df.columns.values.tolist() + ["Dis", "Trac", "D2T", "Vel"] + STATIC_FEATURE_NAMES + ["dens"]
+    feature_df = feature_df[col_order]
     return feature_df
 
 
@@ -533,6 +539,53 @@ def double_image(image: np.array) -> np.array:
     :return: A 2D numpy array with dimensions 2m x 2n
     """
     return image.repeat(2, axis=0).repeat(2, axis=1)
+
+
+def calculate_density(df: pd.DataFrame, radius_threshold: float = 6) -> np.array:
+    """
+    Calculates cellular density at each frame.
+
+    In particular, this is the total inverse distance from a cell in a frame
+    to every other cell.
+
+    :param df: DataFrame with columns:
+        - CellID
+        - FrameID
+        - xpos
+        - ypos
+        - Rad
+    :return: A DataFrame with 3 columns:
+        - CellID
+        - FrameID
+        - dens (the calculated density)
+    """
+    # Calculate distance matrices between each cell for each Frame
+    results = []
+    for frame_id in df["FrameID"].unique():
+        sub_df = df.loc[df["FrameID"] == frame_id]
+        cell_ids = sub_df["CellID"].values
+        dist_df = pd.DataFrame(squareform(pdist(sub_df[["x", "y"]])))
+        dist_df.columns = cell_ids
+        dist_df["CellID"] = cell_ids
+        dist_long = dist_df.melt(id_vars="CellID", var_name="Cell2", value_name="dist")
+        dist_long["FrameID"] = frame_id
+        dist_long = dist_long.loc[dist_long["CellID"] != dist_long["Cell2"]]
+        results.append(dist_long)
+    results_all = pd.concat(results)
+
+    # Combine with the original dataset to get the Radius column and restrict to
+    # cells within a threshold
+    results_2 = results_all.merge(df, on=["CellID", "FrameID"])
+    results_2 = results_2.loc[results_2["dist"] < radius_threshold * results_2["Rad"]]
+
+    # Calculate density as the sum of inverse distance to each other cell
+    results_2["dist_inverse"] = 1 / results_2["dist"]
+    dens = results_2.groupby(["FrameID", "CellID"], as_index=False)["dist_inverse"].sum()
+
+    # Tidy up for return
+    dens = dens[["FrameID", "CellID", "dist_inverse"]]
+    dens.rename(columns={"dist_inverse": "dens"}, inplace=True)
+    return dens
 
 
 def extract_static_features(image: np.array, roi: np.array) -> np.array:

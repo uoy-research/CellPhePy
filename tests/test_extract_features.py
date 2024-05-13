@@ -16,11 +16,11 @@ def test_extract_features():
     # Read features from the full dataset and compare to the output from the R
     # package, saved as CSV
     expected = pd.read_csv("tests/resources/benchmark_features.csv")
-    phase_features = copy_features("data/05062019_B3_3_Phase-FullFeatureTable.csv", 50, source="Phase")
+    phase_features = copy_features("data/05062019_B3_3_Phase-FullFeatureTable.csv", 200, source="Phase")
 
     output = extract_features(phase_features, "data/05062019_B3_3_Phase", "data/05062019_B3_3_imagedata", 0.0028)
-    print(f"{expected.columns.values=}")
-    print(f"{output.columns.values=}")
+    # Rename x and y to match how it was in the R version
+    output.rename(columns={"x": "xpos", "y": "ypos"}, inplace=True)
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), output.reset_index(drop=True))
 
 
