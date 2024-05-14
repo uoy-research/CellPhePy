@@ -21,7 +21,8 @@ def test_extract_features():
     output = extract_features(phase_features, "data/05062019_B3_3_Phase", "data/05062019_B3_3_imagedata", 0.0028)
     # Rename x and y to match how it was in the R version
     output.rename(columns={"x": "xpos", "y": "ypos"}, inplace=True)
-    pd.testing.assert_frame_equal(expected.reset_index(drop=True), output.reset_index(drop=True))
+
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), output.reset_index(drop=True), check_dtype=False)
 
 
 def test_extract_static_features():

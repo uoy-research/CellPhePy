@@ -57,6 +57,7 @@ def create_type_mask(image: np.array, roi: np.array) -> np.array:
     image_indices = np.flip(image_indices, axis=1)
     # See if the ROI contains these values
     mask = path.contains_points(image_indices).reshape(image.shape)
+
     # Remove the ROI border itself
     mask[roi[:, 1], roi[:, 0]] = False
     # Set these values in the output to 0

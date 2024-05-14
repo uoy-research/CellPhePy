@@ -213,6 +213,9 @@ def extract_features(
     # Reorder columns
     col_order = df.columns.values.tolist() + ["Dis", "Trac", "D2T", "Vel"] + STATIC_FEATURE_NAMES + ["dens"]
     feature_df = feature_df[col_order]
+
+    # Set data types for anything that isn't float
+    feature_df["Area"] = feature_df["Area"].astype("int")
     return feature_df
 
 
@@ -297,7 +300,7 @@ def minimum_box(boundaries: np.array) -> np.array:
     keepy2 = boundaries[col, 1]
     keepx2 = boundaries[col, 0]
 
-    alpha = np.arctan((keepy1 - keepy2) / (keepx1 - keepx2))
+    alpha = np.arctan2(keepy1 - keepy2, keepx1 - keepx2)
     # rotating points by -alpha makes keepx1-keepx2 lie along x-axis
     roty = keepy1 - np.sin(alpha) * (boundaries[:, 0] - keepx1) + np.cos(alpha) * (boundaries[:, 1] - keepy1)
     rotx = keepx1 + np.cos(alpha) * (boundaries[:, 0] - keepx1) + np.sin(alpha) * (boundaries[:, 1] - keepy1)
