@@ -5,7 +5,6 @@ import pytest
 from matplotlib.path import Path
 
 from cellphe.input import read_roi
-from cellphe.processing import create_type_mask, extract_subimage
 from cellphe.processing.roi import boundary_vertices, roi_corners
 
 
@@ -57,8 +56,6 @@ def test_roi_corners_diamond():
 
 
 # TODO Put in integration test!
-# TODO currently failing because the boundary_vertices function
-# doesn't adequately remove extraneous vertices - fix!
 def test_roi_corners_real_roi():
     roi = read_roi("tests/resources/roi.roi")
     roi = roi - roi.min(axis=0)
@@ -99,5 +96,6 @@ def test_roi_corners_real_roi():
             [1, 18],
         ]
     )
+    expected = np.flip(expected, axis=1)
 
     assert (np.sort(expected, axis=0) == np.sort(output, axis=0)).all()

@@ -603,6 +603,7 @@ def extract_static_features(image: np.array, roi: np.array) -> np.array:
 
     # Extract sub image info
     sub_image = extract_subimage(image, roi)
+    roi = roi - roi.min(axis=0)
 
     # Shape features
     # Averag radius & variance of boundary pixel distance to centre

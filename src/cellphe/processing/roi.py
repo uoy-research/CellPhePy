@@ -100,8 +100,9 @@ def roi_corners(roi: np.array) -> np.array:
     :param roi: 2D array of x,y coordinates.
     :return: A 2D array of x,y coordinates.
     """
-    # Remove extraneous vertices
-    roi = boundary_vertices(roi)
+    # Remove extraneous vertices - NB: this isn't actually needed with the
+    # fill_polygon method as it picks out the interior pixels regardless
+    # roi = boundary_vertices(roi)
 
     # Form grid
     xrange, yrange = roi.max(axis=0) - roi.min(axis=0) + 1
@@ -138,4 +139,12 @@ def roi_corners(roi: np.array) -> np.array:
     # Combine and get unique set
     all_corners = np.vstack((row_corners, col_corners, fdiag_corners, bdiag_corners))
     all_corners = np.unique(all_corners, axis=0)
-    return all_corners
+
+    # Flip back to x,y
+    all_corners = np.flip(all_corners, axis=1)
+
+    # Return in the order of the original ROI path
+    roi_order = np.array([np.where((roi == x).all(axis=1))[0][0] for x in all_corners]).argsort()
+    corner_order = np.arange(all_corners.shape[0])[roi_order]
+
+    return all_corners[corner_order]
