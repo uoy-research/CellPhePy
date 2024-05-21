@@ -11,7 +11,8 @@ from dataclasses import dataclass
 
 import numpy as np
 from matplotlib.path import Path
-from skimage.segmentation import flood_fill
+from skimage.measure import grid_points_in_poly
+from skimage.segmentation import flood
 
 from cellphe.processing.roi import roi_corners
 
@@ -37,6 +38,75 @@ class SubImage:
     sub_image: np.array
     type_mask: np.array
     centroid: float
+
+
+def create_type_mask_skimage(roi: np.array) -> np.array:
+    """
+    Creates a type mask for a given ROI in an image.
+
+    This returns a 2D integer array representing the sub-image of the cell
+    that the ROI covers, where:
+
+        - Pixels outside the cell are given a value of -1
+        - Pixels on the ROI border are assigned 0
+        - Pixels inside the ROI border are assigned 1
+
+    This method uses skimage's grid_points_in_poly, a point in polygon algorithm
+    similar to Matplotlib's.
+
+    :param image: 2D array of the image pixels.
+    :param roi: 2D array of x,y coordinates.
+    :return: Returns a 2D array representing the image where the values
+    are either -1, 0, or 1.
+    """
+    maxcol, maxrow = roi.max(axis=0) + 1
+    mask = np.full((maxrow, maxcol), -1)
+    grid_mask = grid_points_in_poly((maxrow, maxcol), np.flip(roi, axis=1))
+    mask[grid_mask] = 1
+    # Set ROI boundaries as 0
+    mask[roi[:, 1], roi[:, 0]] = 0
+    return mask
+
+
+def create_type_mask_ray_cast_4(roi: np.array) -> np.array:
+    """
+    Creates a type mask for a given ROI in an image.
+
+    This returns a 2D integer array representing the sub-image of the cell
+    that the ROI covers, where:
+
+        - Pixels outside the cell are given a value of -1
+        - Pixels on the ROI border are assigned 0
+        - Pixels inside the ROI border are assigned 1
+
+    This is a modified Ray Casting algorithm that rather than defining
+    interior pixels as those that lie within an odd number of boundary crossings
+    in 1 direction, it identifies them as lying within a relaxed boundary on
+    all 4 sides. The relaxed boundary includes any points after the first
+    boundary crossing. This is because there are known limitations with
+    the odd-numbered approach with this dataset, which using all 4
+    directions is attempting to resolve.
+
+    :param image: 2D array of the image pixels.
+    :param roi: 2D array of x,y coordinates.
+    :return: Returns a 2D array representing the image where the values
+    are either -1, 0, or 1.
+    """
+    maxcol, maxrow = roi.max(axis=0) + 1
+    mask = np.full((maxrow, maxcol), -1)
+    interior_mask = np.zeros((maxrow, maxcol))
+    # Set ROI boundaries as 0
+    interior_mask[roi[:, 1], roi[:, 0]] = 1
+
+    # Get the number of crossings in 4 directions
+    lr = interior_mask.cumsum(axis=1) > 0
+    tb = interior_mask.cumsum(axis=0) > 0
+    bt = np.cumsum(interior_mask[::-1, :], axis=0)[::-1, :] > 0
+    rl = np.cumsum(interior_mask[:, ::-1], axis=1)[:, ::-1] > 0
+    grid_mask = lr & tb & bt & rl
+    mask[grid_mask] = 1
+    mask[roi[:, 1], roi[:, 0]] = 0
+    return mask
 
 
 def create_type_mask_matplotlib(roi: np.array) -> np.array:
@@ -170,11 +240,47 @@ def create_type_mask_flood_fill(roi: np.array) -> np.array:
     # Not great, but given that the ROIs must all be 8x8 then should be
     # sufficient. Else can use Shapely's representative_point
     start_col, start_row = tuple(np.median(roi, axis=0).astype(int))
-    mask = flood_fill(mask, (start_row, start_col), 1, connectivity=1)
+    interior_mask = flood(mask, (start_row, start_col), connectivity=1)
+    mask[interior_mask] = 1
     return mask
 
 
-def extract_subimage(image: np.array, roi: np.array, method="fill_polygon") -> SubImage:
+def create_type_mask_flood_fill_negative(roi: np.array) -> np.array:
+    """
+    Creates a type mask for a given ROI in an image.
+
+    This returns a 2D integer array representing the sub-image of the cell
+    that the ROI covers, where:
+
+        - Pixels outside the cell are given a value of -1
+        - Pixels on the ROI border are assigned 0
+        - Pixels inside the ROI border are assigned 1
+
+    This method uses a floodfill algorithm, implemented in skimage.
+
+    :param image: 2D array of the image pixels.
+    :param roi: 2D array of x,y coordinates.
+    :return: Returns a 2D array representing the image where the values
+    are either -1, 0, or 1.
+    """
+    # Initialise the mask with extra 1 buffer around the outside so can
+    # guarantee that 0,0 is outside
+    maxcol, maxrow = roi.max(axis=0) + 3
+    mask = np.full((maxrow, maxcol), 1)
+    mask[roi[:, 1] + 1, roi[:, 0] + 1] = 0
+
+    # Fill values inside the ROI to 1 using floodfill
+    # Using the median as a guaranteed point inside the ROI.
+    # Not great, but given that the ROIs must all be 8x8 then should be
+    # sufficient. Else can use Shapely's representative_point
+    exterior_mask = flood(mask, (0, 0), connectivity=1)
+    mask[exterior_mask] = -1
+
+    # Remove the buffer
+    return mask[1:-1, 1:-1]
+
+
+def extract_subimage(image: np.array, roi: np.array, method: str = "flood_fill") -> SubImage:
     """
     Extracts a sub-image and relevant statistics from a given image and ROI.
 
@@ -190,12 +296,17 @@ def extract_subimage(image: np.array, roi: np.array, method="fill_polygon") -> S
     # Subset image to ROI
     xmin, ymin = roi.min(axis=0)
     xmax, ymax = roi.max(axis=0)
+
     image_subset = image[int(ymin) : (int(ymax) + 1), int(xmin) : (int(xmax) + 1)]
     roi = roi - roi.min(axis=0)
+
     algs = {
         "fill_polygon": create_type_mask_fill_polygon,
         "matplotlib": create_type_mask_matplotlib,
         "flood_fill": create_type_mask_flood_fill,
+        "flood_fill_negative": create_type_mask_flood_fill_negative,
+        "skimage": create_type_mask_skimage,
+        "ray_cast_4": create_type_mask_ray_cast_4,
     }
     alg = algs[method]
     mask_subset = alg(roi)
