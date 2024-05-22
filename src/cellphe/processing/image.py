@@ -27,10 +27,7 @@ def normalise_image(image: np.array, lower: int, upper: int) -> np.array:
 
     :return: The normalised image as a 2D numpy array.
     """
-    scale = (upper - lower) / (np.max(image) - np.min(image))
-    offset = upper - (scale * np.max(image))
-
-    return scale * image + offset
+    return (image - image.min()) / (image.max() - image.min()) * (upper - lower) + lower
 
 
 @dataclass
@@ -280,7 +277,7 @@ def create_type_mask_flood_fill_negative(roi: np.array) -> np.array:
     return mask[1:-1, 1:-1]
 
 
-def extract_subimage(image: np.array, roi: np.array, method: str = "flood_fill") -> SubImage:
+def extract_subimage(image: np.array, roi: np.array, method: str = "flood_fill_negative") -> SubImage:
     """
     Extracts a sub-image and relevant statistics from a given image and ROI.
 
