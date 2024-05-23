@@ -327,6 +327,7 @@ def polygon(boundaries: np.array) -> np.array:
 
     # Same value epsilon as original code
     poly = rdp(boundaries, epsilon=2.5)
+
     # Remove last point if same as first, again because we have a polygon not a
     # line
     if (poly[0, :] == poly[-1, :]).all():
@@ -407,8 +408,8 @@ def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, leve
     between the 2 images.
     """
     # Rescale both images to levels using the normalise_image function
-    image1_rescaled = np.floor(normalise_image(image1, 0, levels)[mask])
-    image2_rescaled = np.floor(normalise_image(image2, 0, levels)[mask])
+    image1_rescaled = np.floor(normalise_image(image1, 0, levels)[mask] + 1e-6)
+    image2_rescaled = np.floor(normalise_image(image2, 0, levels)[mask] + 1e-6)
     # Restrict to positive values
     to_keep = (image1_rescaled > 0) & (image2_rescaled > 0)
 
