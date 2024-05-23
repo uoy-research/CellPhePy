@@ -490,7 +490,11 @@ def haralick(cooc: np.array) -> np.array:
     sen[sen == 0] = np.nan
     den_2[0] = pglcm[nx - 1, 0]
     o_hara[7] = -np.nansum(sen * np.log10(sen))
+    # Might have NaN in either side, which want to sum as 0 not NaN
+    den_1[np.isnan(den_1)] = 0
+    den_2[np.isnan(den_2)] = 0
     den = den_1 + den_2
+    # Then convert back to NaN to remove the warnings
     den[den == 0] = np.nan
     o_hara[8] = -np.nansum(den * np.log10(den))
     o_hara[9] = np.nansum(((dpq - o_hara[8]) ** 2) * pglcm)
