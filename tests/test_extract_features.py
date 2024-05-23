@@ -13,25 +13,19 @@ from cellphe.processing import normalise_image
 
 
 def assert_frame_equal_extended_diff(df1, df2):
-    try:
-        pd.testing.assert_frame_equal(df1, df2)
-
-    except AssertionError as e:
-        # if this was a shape or index/col error, then re-raise
+    cols = df1.columns.values
+    incorrect_cols = []
+    for col in cols:
         try:
-            pd.testing.assert_index_equal(df1.index, df2.index)
-            pd.testing.assert_index_equal(df1.columns, df2.columns)
-        except AssertionError:
-            raise e
+            pd.testing.assert_frame_equal(df1.loc[:, [col]], df2.loc[:, [col]])
+        except AssertionError as e:
+            print(e, "\n")
+            incorrect_cols.append(col)
 
-        # if not, we have a value error
-        diff = df1 != df2
-        diffcols = diff.any(axis=0)
-        diffcols_vals = diffcols.loc[diffcols == True].index.values
-
+    if len(incorrect_cols) > 0:
         raise AssertionError(
-            e.args[0] + f"\n\nDifferences in {len(diffcols_vals)} columns:\n{", ".join(diffcols_vals)}"
-        ) from None
+            f"Following columns had errors: {', '.join(incorrect_cols)}\n{len(incorrect_cols)}/{len(cols)} ({len(incorrect_cols)/len(cols)*100:.2f}%)"
+        )
 
 
 def test_extract_features():
@@ -44,21 +38,8 @@ def test_extract_features():
     # Rename x and y to match how it was in the R version
     output.rename(columns={"x": "xpos", "y": "ypos"}, inplace=True)
 
-    ############### TODO DEBUGGING################
-    print("ROWS WITH DIFFERENT AREAS")
-    areas_diff = output.loc[output["Area"] != expected["Area"], ["FrameID", "CellID", "ROI_filename"]]
-    print(areas_diff)
-    print(
-        f"{areas_diff.shape[0]} / {output.shape[0]} ({areas_diff.shape[0]/output.shape[0]*100:.2f}%) frames have different areas"
-    )
-    diff_cells = areas_diff["CellID"].unique()
-    print(
-        f"{diff_cells.size}/{output['CellID'].unique().size} ({diff_cells.size / output['CellID'].unique().size * 100:.2f}%) cells have different areas"
-    )
-    print(areas_diff["CellID"].unique())
-    #############################################
-
-    # pd.testing.assert_frame_equal(expected.reset_index(drop=True), output.reset_index(drop=True), check_dtype=False)
+    pd.set_option("display.max_rows", None)
+    pd.set_option("display.expand_frame_repr", False)
     assert_frame_equal_extended_diff(expected.reset_index(drop=True), output.reset_index(drop=True))
 
 
