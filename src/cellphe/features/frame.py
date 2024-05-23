@@ -521,7 +521,7 @@ def intensity_quantiles(pixels: np.array) -> np.array:
 
     vals = np.zeros(9)
     for i, thresh in enumerate(quantiles):
-        pixels_greater_thresh = pixels[:, 2] >= thresh
+        pixels_greater_thresh = (pixels[:, 2] + 1e-6) >= thresh
         dist_pixels_thresh = pdist(pixels[pixels_greater_thresh, 0:2])
         vals[i] = np.var(dist_pixels_thresh, ddof=1) / np.mean(dist_pixels_thresh)
     return vals
