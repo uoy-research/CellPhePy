@@ -14,8 +14,8 @@ import sys
 import numpy as np
 import pandas as pd
 import pywt
-from pybind11_rdp import rdp
 from scipy.spatial.distance import pdist, squareform
+from shapely import Polygon, simplify
 
 from cellphe.input import read_roi, read_tiff
 from cellphe.processing import extract_subimage, normalise_image
@@ -312,21 +312,17 @@ def polygon(boundaries: np.array) -> np.array:
     """
     Calculates the minimal polygon around a set of points using the
     Ramer-Douglas-Peucker method.
-    Uses the pybind11_rdp implementation.
-    https://github.com/cubao/pybind11-rdp
+    Uses the shapely implementation.
 
     :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
 
     :return: A 2D array comprising the minimal set of points.
 
     """
-    # RDP works on lines. Force the line to end at the start as we have a
-    # closed polygon.
-    first = boundaries[0, :].copy()
-    boundaries = np.concatenate((boundaries, np.array([first])))
-
-    # Same value epsilon as original code
-    poly = rdp(boundaries, epsilon=2.5)
+    # Turn ROI into polygon and reduce using Douglas-Peucker
+    poly = Polygon(boundaries)
+    poly_reduced = simplify(poly, tolerance=2.5)
+    poly = np.asarray(poly_reduced.exterior.coords).astype(int)
 
     # Remove last point if same as first, again because we have a polygon not a
     # line

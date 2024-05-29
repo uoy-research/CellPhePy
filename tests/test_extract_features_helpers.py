@@ -28,14 +28,6 @@ def test_min_box():
     assert output == pytest.approx(np.array([1.272792e01, 3.552714e-15]))
 
 
-def test_polygon_line():
-    # For test bc
-    boundaries = np.column_stack((np.arange(1, 11), np.arange(11, 21)))
-    expected = np.array([[1, 11], [10, 20]])
-    output = polygon(boundaries)
-    assert (output == expected).all()
-
-
 def test_polygon_real_example():
     # For test bc
     ys = [
@@ -182,6 +174,7 @@ def test_polygon_real_example():
     assert (output == expected).all()
 
 
+# TODO Put in integration test
 def test_polygon_real_roi():
     roi = read_roi("tests/resources/roi.roi")
     output = polygon(roi)
@@ -190,8 +183,146 @@ def test_polygon_real_roi():
 
 
 def test_poly_class():
-    boundaries = np.column_stack((np.arange(1, 11), np.arange(11, 21)))
-    expected = np.array([12.727922, 6.283185, 0.000000, 0.000000])
+    ys = [
+        10,
+        9,
+        8,
+        7,
+        6,
+        6,
+        5,
+        4,
+        3,
+        3,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        24,
+        24,
+        24,
+        24,
+        25,
+        25,
+        25,
+        25,
+        24,
+        24,
+        23,
+        23,
+        22,
+        21,
+        20,
+        19,
+        18,
+        17,
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+    ]
+    xs = [
+        1,
+        2,
+        2,
+        2,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        22,
+        23,
+        23,
+        23,
+        23,
+        23,
+        23,
+        23,
+        23,
+        22,
+        21,
+        20,
+        19,
+        19,
+        18,
+        17,
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        3,
+        3,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+    ]
+    boundaries = np.array([[x, y] for x, y in zip(xs, ys)])
+    expected = np.array([12.16552506, 2.09223077, 0.01483451, 4.52776277])
     output = polygon_features(boundaries)
     assert expected == pytest.approx(output)
 

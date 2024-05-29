@@ -26,10 +26,10 @@ dependencies = [
     "numpy",
     "pandas",
     "pillow",
-    "pybind11-rdp",
     "pywavelets",
     "read-roi",
-    "scipy"
+    "scipy",
+    "shapely"
 ]
 
 [project.optional-dependencies]

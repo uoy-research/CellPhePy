@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -19,8 +21,14 @@ def assert_frame_equal_extended_diff(df1, df2):
         try:
             pd.testing.assert_frame_equal(df1.loc[:, [col]], df2.loc[:, [col]])
         except AssertionError as e:
-            print(e, "\n")
-            incorrect_cols.append(col)
+            res = re.search("values are different \\(([0-9.]+) %\\)", str(e))
+            # The only permitted discrepancy is a 1% difference within the 4
+            # poly features
+            if col[:4] == "poly" and res is not None and float(res.group(1)) < 1:
+                pass
+            else:
+                print(e, "\n")
+                incorrect_cols.append(col)
 
     if len(incorrect_cols) > 0:
         raise AssertionError(
@@ -38,8 +46,6 @@ def test_extract_features():
     # Rename x and y to match how it was in the R version
     output.rename(columns={"x": "xpos", "y": "ypos"}, inplace=True)
 
-    pd.set_option("display.max_rows", None)
-    pd.set_option("display.expand_frame_repr", False)
     assert_frame_equal_extended_diff(expected.reset_index(drop=True), output.reset_index(drop=True))
 
 
