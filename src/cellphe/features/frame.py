@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import glob
 import os
-import sys
 
 import numpy as np
 import pandas as pd
@@ -432,7 +431,6 @@ def haralick(cooc: np.array) -> np.array:
     """
     o_hara = np.zeros(14)
     pglcm = cooc / cooc.sum()
-    pglcm_raw = pglcm.copy()
     pglcm[pglcm == 0] = np.nan  # Silence numpy warnings
     nx = pglcm.shape[0]
     px = np.nansum(pglcm, axis=0)
@@ -440,14 +438,11 @@ def haralick(cooc: np.array) -> np.array:
 
     pxpy = np.repeat(px, nx).reshape(nx, nx) * np.repeat(py, nx).reshape(nx, nx, order="F")
     pxpy[pxpy == 0] = np.nan  # Removing numpy warnings
-    px_y = np.zeros(2 * nx)
-    pxmy = np.zeros(nx)
     vx = np.arange(1, nx + 1)
     mx = np.sum(px * vx)
     my = np.sum(py * vx)
     stdevx = np.sum(px * (vx - mx) ** 2)
     stdevy = np.sum(py * (vx - my) ** 2)
-    hxy1_0 = pglcm * np.log10(pxpy)
     hxy2_0 = pxpy * np.log10(pxpy)
     hxy2 = -np.nansum(hxy2_0)
     op = np.arange(1, nx + 1).repeat(nx).reshape(nx, nx)
@@ -529,8 +524,8 @@ def haar_approximation(image: np.array) -> np.array:
     :param image: 2D numpy array containing the image pixels.
     :return: A 2D numpy array containing the approximation coefficients.
     """
-    cA, [cH, cV, cD] = pywt.dwt2(image, "db1")
-    return cA / 2.0
+    approximation, _ = pywt.dwt2(image, "db1")
+    return approximation / 2.0
 
 
 def double_image(image: np.array) -> np.array:

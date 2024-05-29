@@ -32,9 +32,23 @@ def normalise_image(image: np.array, lower: int, upper: int) -> np.array:
 
 @dataclass
 class SubImage:
+    """
+    Represents a sub-image, that is a portion of an image corresponding to a
+    specific region-of-interest (ROI).
+
+    Properties:
+        - sub_image: A 2D array representing the image truncated to the bounds
+        of the ROI.
+        - type_mask: A 2D array the same size as the sub-image detailing which
+        pixels are either inside the ROI (1), outside (-1), or on the ROI border
+        (0).
+        - centroid: A 1D array of length 2 containing the (x,y) points at the
+        centre of the ROI.
+    """
+
     sub_image: np.array
     type_mask: np.array
-    centroid: float
+    centroid: np.array
 
 
 def create_type_mask_skimage(roi: np.array) -> np.array:
@@ -170,29 +184,29 @@ def create_type_mask_fill_polygon(roi):
 
     # Setup
     height = roi[:, 1].max()
-    cornerY = corners[:, 1]
-    cornerX = corners[:, 0]
+    corner_y = corners[:, 1]
+    corner_x = corners[:, 0]
     # The algorithm iterates through the corners in path order in pairs, so
     # keep a rotated copy to use as the 'previous' corner
-    prevCornerY = np.roll(cornerY, 1)
-    prevCornerX = np.roll(cornerX, 1)
+    prev_corner_y = np.roll(corner_y, 1)
+    prev_corner_x = np.roll(corner_x, 1)
 
     # The original algorithm iterates row-by-row. We want to vectorise this so
     # will create data structures to hold all the corners for each row
-    prevCornerX = np.tile(prevCornerX, height)
-    prevCornerY = np.tile(prevCornerY, height)
-    cornerX = np.tile(cornerX, height)
-    cornerY = np.tile(cornerY, height)
-    pixelY = np.repeat(np.arange(height), corners.shape[0])
+    prev_corner_x = np.tile(prev_corner_x, height)
+    prev_corner_y = np.tile(prev_corner_y, height)
+    corner_x = np.tile(corner_x, height)
+    corner_y = np.tile(corner_y, height)
+    pixel_y = np.repeat(np.arange(height), corners.shape[0])
 
     # The crux of the algorithm. Find nodes, i.e. crossing points
-    has_node = ((cornerY < pixelY) & (prevCornerY >= pixelY)) | ((prevCornerY < pixelY) & (cornerY >= pixelY))
+    has_node = ((corner_y < pixel_y) & (prev_corner_y >= pixel_y)) | ((prev_corner_y < pixel_y) & (corner_y >= pixel_y))
     # Calculate the x-values at each node
-    polyx = cornerX[has_node]
-    polyy = cornerY[has_node]
-    prevy = prevCornerY[has_node]
-    prevx = prevCornerX[has_node]
-    new_y = pixelY[has_node]
+    polyx = corner_x[has_node]
+    polyy = corner_y[has_node]
+    prevy = prev_corner_y[has_node]
+    prevx = prev_corner_x[has_node]
+    new_y = pixel_y[has_node]
     new_x = (polyx + (new_y - polyy) / (prevy - polyy) * (prevx - polyx)).astype(int)
 
     # Save the number of crossings at each node
