@@ -22,7 +22,14 @@ classifiers = [
 ]
 requires-python = ">=3.8.1"
 dependencies = [
-    "pandas"
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "pillow",
+    "pywavelets",
+    "read-roi",
+    "scipy",
+    "shapely"
 ]
 
 [project.optional-dependencies]
