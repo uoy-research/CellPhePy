@@ -7,6 +7,8 @@ from cellphe.features.frame import polygon
 from cellphe.input import read_roi
 from cellphe.processing.roi import roi_corners
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.fixture()
 def roi():

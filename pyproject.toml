@@ -29,6 +29,7 @@ dependencies = [
     "pywavelets",
     "read-roi",
     "scipy",
+    "scikit-image",
     "shapely"
 ]
 

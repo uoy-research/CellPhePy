@@ -11,6 +11,8 @@ from cellphe.features.frame import *
 from cellphe.input import copy_features, read_roi, read_tiff
 from cellphe.processing import normalise_image
 
+pytestmark = pytest.mark.integration
+
 
 def assert_frame_equal_extended_diff(df1, df2):
     cols = df1.columns.values

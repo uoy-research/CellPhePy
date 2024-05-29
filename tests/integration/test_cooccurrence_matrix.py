@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 from PIL import Image
 
 from cellphe.features.frame import *
 from cellphe.input import read_roi
+
+pytestmark = pytest.mark.integration
 
 
 def test_cooccurrence_matrix_real_image():

@@ -6,6 +6,8 @@ from PIL import Image
 
 from cellphe.features.frame import haar_approximation
 
+pytestmark = pytest.mark.integration
+
 
 def test_haar_real_image():
     # Test Haar wavelet approximation using Pywavelets as used in this
