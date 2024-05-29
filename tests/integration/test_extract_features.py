@@ -11,8 +11,6 @@ from cellphe.features.frame import *
 from cellphe.input import copy_features, read_roi, read_tiff
 from cellphe.processing import normalise_image
 
-# TODO Put in integration tests folder
-
 
 def assert_frame_equal_extended_diff(df1, df2):
     cols = df1.columns.values
@@ -50,8 +48,7 @@ def test_extract_features():
 
 
 def test_extract_static_features():
-    # Want to read in a random image and ROI and get the same features as
-    # CellPhe R
+    # Compare features for a single ROI from a single frame
     image = read_tiff("tests/resources/frame.tif")
     image = normalise_image(image, 0, 255)
     roi = read_roi("tests/resources/roi.roi")

@@ -2,11 +2,8 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from PIL import Image
 
 from cellphe.features.frame import *
-from cellphe.input import read_roi
-from cellphe.processing.image import SubImage
 
 
 def test_var_from_centre():
@@ -174,14 +171,6 @@ def test_polygon_real_example():
     assert (output == expected).all()
 
 
-# TODO Put in integration test
-def test_polygon_real_roi():
-    roi = read_roi("tests/resources/roi.roi")
-    output = polygon(roi)
-    expected = np.array([[315, 456], [322, 448], [334, 449], [333, 467], [320, 469]])
-    assert (output == expected).all()
-
-
 def test_poly_class():
     ys = [
         10,
@@ -345,65 +334,6 @@ def test_cooccurence_matrix():
     assert (output == expected).all()
 
 
-# TODO Put in integration tests with anything else that combines multiple
-# functions
-def test_cooccurrence_matrix_real_image():
-    # Read in raw image
-    image = Image.open("tests/resources/frame.tif")
-    image = np.array(image)
-    roi = read_roi("tests/resources/roi.roi")
-
-    # Extract subimage info
-    subimage = extract_subimage(image, roi)
-
-    # Calculate cooccurrence matrix of subimage and its wavelet approx
-    image_approx = double_image(haar_approximation(subimage.sub_image))
-    image_approx = image_approx[: subimage.sub_image.shape[0], : subimage.sub_image.shape[1]]
-    mask = subimage.type_mask >= 0
-    output = cooccurrence_matrix(subimage.sub_image, image_approx, mask, 10)
-
-    # Calculated from original code
-    expected = np.zeros(100).reshape(10, 10)
-    expected[0, 0] = 12
-    expected[0, 1] = 8
-    expected[0, 2] = 1
-    expected[1, 0] = 5
-    expected[1, 1] = 6
-    expected[1, 2] = 8
-    expected[1, 3] = 2
-    expected[2, 0] = 4
-    expected[2, 1] = 6
-    expected[2, 2] = 7
-    expected[2, 3] = 6
-    expected[2, 4] = 1
-    expected[3, 1] = 1
-    expected[3, 2] = 7
-    expected[3, 3] = 4
-    expected[3, 4] = 10
-    expected[4, 1] = 1
-    expected[4, 2] = 5
-    expected[4, 3] = 7
-    expected[4, 4] = 16
-    expected[4, 5] = 12
-    expected[5, 3] = 1
-    expected[5, 4] = 9
-    expected[5, 5] = 26
-    expected[5, 6] = 11
-    expected[6, 5] = 10
-    expected[6, 6] = 27
-    expected[6, 7] = 9
-    expected[7, 6] = 6
-    expected[7, 7] = 33
-    expected[7, 8] = 3
-    expected[8, 7] = 2
-    expected[8, 8] = 28
-    expected[8, 9] = 3
-    expected[9, 8] = 1
-    expected[9, 9] = 1
-
-    assert (output == expected).all()
-
-
 def test_haralick():
     input = np.zeros((10, 10))
     input[(0, 3, 3, 4, 4, 7, 7, 8, 9), (0, 1, 2, 5, 6, 7, 8, 8, 9)] = 1
@@ -458,16 +388,6 @@ def test_haar_approximation():
     input = np.arange(1, 25).reshape(6, 4, order="F")
     expected = np.array([[4.5, 16.5], [6.5, 18.5], [8.5, 20.5]])
     output = haar_approximation(input)
-    assert output == pytest.approx(expected)
-
-
-def test_haar_real_image():
-    # Test Haar wavelet approximation using Pywavelets as used in this
-    # package against the hand-rolled version in the original CellPhe
-    image = Image.open("tests/resources/frame.tif")
-    image = np.array(image)
-    output = haar_approximation(image)
-    expected = np.genfromtxt("tests/resources/haar_output.csv", delimiter=",")
     assert output == pytest.approx(expected)
 
 

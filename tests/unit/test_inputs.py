@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from cellphe.input import read_roi
 
 
 def test_read_roi():
-    input = "tests/test_roi.roi"
+    input = "tests/resources/roi2.roi"
     output = read_roi(input)
     expected = np.array(
         [
