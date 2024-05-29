@@ -141,14 +141,12 @@ def create_type_mask_matplotlib(roi: np.array) -> np.array:
     """
     maxcol, maxrow = roi.max(axis=0) + 1
     mask = np.full((maxrow, maxcol), -1)
-    # Get values that are inside the ROI using the matplotlib Path class
-    path = Path(roi)
     # Get the indices of every coordinate in the image (row, col)
     image_indices = np.indices(mask.shape).reshape(2, mask.size).T
     # Convert into (x,y) coordinates
     image_indices = np.flip(image_indices, axis=1)
     # See if the ROI contains these values
-    poly_mask = path.contains_points(image_indices).reshape(mask.shape)
+    poly_mask = Path(roi).contains_points(image_indices).reshape(mask.shape)
     # Set these values in the output to 0
     mask[poly_mask] = 1
     # Set ROI boundaries as 0
@@ -156,34 +154,22 @@ def create_type_mask_matplotlib(roi: np.array) -> np.array:
     return mask
 
 
-def create_type_mask_fill_polygon(roi):
+def find_crossing_points(corners: np.array, shape: np.array) -> np.array:
     """
-    Creates a type mask for a given ROI in an image.
-
-    This returns a 2D integer array representing the sub-image of the cell
-    that the ROI covers, where:
-
-        - Pixels outside the cell are given a value of -1
-        - Pixels on the ROI border are assigned 0
-        - Pixels inside the ROI border are assigned 1
+    Finds the crossing points for a ray entering a given polygon.
 
     This implementation is based the following algorithm:
     https://www.alienryderflex.com/polygon_fill/
 
-    :param image: 2D array of the image pixels.
-    :param roi: 2D array of x,y coordinates.
-    :return: Returns a 2D array representing the image where the values
-    are either -1, 0, or 1.
+    :param corners: The corners that define the polygon. Must be ordered either
+    clockwise or anti-clockwise.
+    :param shape: The maximum shape of the polygon in (height, width).
+    :return: A 2D array of shape (height, width) of type integer, where each
+    value corresponds to the number of boundary crossings at this pixel.
     """
-    maxcol, maxrow = roi.max(axis=0) + 1
-    node_mask = np.zeros((maxrow, maxcol)).astype(int)
-    mask_vec = np.zeros((maxrow, maxcol)).astype(int)
-
-    # get corners of the polygon, needed for the following algorithm.
-    corners = roi_corners(roi)
-
     # Setup
-    height = roi[:, 1].max()
+    height = shape[1] - 1
+    crossings = np.zeros((shape[1], shape[0])).astype(int)
     corner_y = corners[:, 1]
     corner_x = corners[:, 0]
     # The algorithm iterates through the corners in path order in pairs, so
@@ -211,10 +197,41 @@ def create_type_mask_fill_polygon(roi):
 
     # Save the number of crossings at each node
     for x, y in zip(new_x, new_y):
-        node_mask[y, x] += 1
+        crossings[y, x] += 1
+
+    return crossings
+
+
+def create_type_mask_fill_polygon(roi):
+    """
+    Creates a type mask for a given ROI in an image.
+
+    This returns a 2D integer array representing the sub-image of the cell
+    that the ROI covers, where:
+
+        - Pixels outside the cell are given a value of -1
+        - Pixels on the ROI border are assigned 0
+        - Pixels inside the ROI border are assigned 1
+
+    This implementation is based the following algorithm:
+    https://www.alienryderflex.com/polygon_fill/
+
+    :param image: 2D array of the image pixels.
+    :param roi: 2D array of x,y coordinates.
+    :return: Returns a 2D array representing the image where the values
+    are either -1, 0, or 1.
+    """
+    maxcol, maxrow = roi.max(axis=0) + 1
+
+    # get corners of the polygon, needed for the following algorithm.
+    corners = roi_corners(roi)
+
+    # Find the boundary crossings
+    crossing_points = find_crossing_points(corners, roi.max(axis=0) + 1)
 
     # Interior locations are those with an odd number of boundary crossings
-    mask_rows = node_mask.cumsum(axis=1)
+    mask_vec = np.zeros((maxrow, maxcol)).astype(int)
+    mask_rows = crossing_points.cumsum(axis=1)
     mask_vec[mask_rows % 2 == 1] = 1
     # Set anything else as outside the cell
     mask_vec[mask_vec == 0] = -1

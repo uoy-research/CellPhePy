@@ -233,8 +233,7 @@ def skewness(x: np.array) -> float:
     m2 = np.sum(np.power(deltas, 2)) / n
     m3 = np.sum(np.power(deltas, 3)) / n
     g1 = m3 / np.power(m2, 3 / 2)
-    G1 = g1 * np.sqrt(n * (n - 1)) / (n - 2)
-    return G1
+    return g1 * np.sqrt(n * (n - 1)) / (n - 2)
 
 
 def var_from_centre(boundaries: np.array) -> list[float]:

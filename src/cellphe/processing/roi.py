@@ -100,10 +100,6 @@ def roi_corners(roi: np.array) -> np.array:
     :param roi: 2D array of x,y coordinates.
     :return: A 2D array of x,y coordinates.
     """
-    # Remove extraneous vertices - NB: this isn't actually needed with the
-    # fill_polygon method as it picks out the interior pixels regardless
-    # roi = boundary_vertices(roi)
-
     # Form grid
     xrange, yrange = roi.max(axis=0) - roi.min(axis=0) + 1
     grid = np.zeros((yrange, xrange))
