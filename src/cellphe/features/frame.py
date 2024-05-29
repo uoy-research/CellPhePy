@@ -132,7 +132,6 @@ def extract_features(
     # Iterate through frames, only want to read one into memory at a time
     frame_ids = df["FrameID"].unique()
     for frame_id in frame_ids:
-
         # Load frame
         image_fn_search = glob.glob(os.path.join(frame_folder, f"*-{frame_id:04}.tif"))
         if len(image_fn_search) != 1:
