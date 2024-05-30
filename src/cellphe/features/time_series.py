@@ -175,15 +175,14 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     ele_vars.rename(columns={"ascent": "asc", "descent": "des"}, inplace=True)
 
     # Calculate variables from wavelet details
-    # For each wavelet level, calculate the 3 elevation vars
-    # This is a nested loop: the groupby apply here sends a DataFrame for each
+    # This is a nested loop: the groupby apply sends a DataFrame for each
     # cell to an anonymous function that then applies the 'wavelet_features'
-    # function to every column. I can't see a one-liner way of doing this in
-    # Pandas, as all the agg/aggregate functions expect a function that only
-    # returns a single scalar, rather than the 9 returned here (3 wavelet levels
-    # * 3 elevation features). We want to calculate all 9 in 1 function to save
-    # repeatedly calculating the Wavelet decomposition
-    # TODO See if this works to save this apply+agg approach: https://stackoverflow.com/questions/61463129/optimizing-a-groupby-agg-function-to-return-multiple-result-columns
+    # function to every column, which returns 9 columns (3 wavelet levels x 3
+    # elevation variables).
+    # I can't see a one-liner way of doing this, as the aggregate functions
+    # accept functions that only return a single scalar, not the 9 columns here.
+    # The alternative is to have 9 separate functions in a single .agg call, but
+    # that means running the Wavelet decomposition 9 times rather than once.
     wave_vars = interpolated.groupby(["CellID"], as_index=True)[feature_cols].apply(lambda x: x.agg([wavelet_features]))
 
     # Calculate trajectory area for each cell
