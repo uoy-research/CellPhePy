@@ -117,7 +117,7 @@ def wavelet_features(x: pd.Series) -> pd.DataFrame:
 
     # For each set of wavelet coefficients calculate the elevation metrics
     wave_coefs_dict = {f"l{i+1}": x for i, x in enumerate(wave_coefs)}
-    metrics = {"ascent": ascent, "descent": descent, "max": np.max}
+    metrics = {"asc": ascent, "des": descent, "max": np.max}
     res_dict = {f"{kw}_{km}": vm(vw) for kw, vw in wave_coefs_dict.items() for km, vm in metrics.items()}
 
     # Convert into DataFrame for output
@@ -146,10 +146,11 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     # Remove columns that aren't used, as they aren't either unique identifiers
     # or feature columns
     df.drop(columns=["ROI_filename"], inplace=True)
-    feature_cols = np.setdiff1d(df.columns.values, ["CellID", "FrameID"])
+    feature_cols = np.setdiff1d(df.columns.values, ["CellID", "FrameID", "xpos", "ypos"])
 
     # Calculate summary statistics
-    summary_stats = df.groupby("CellID", as_index=False)[feature_cols].agg(["mean", "std", "max", skewness_positive])
+    summary_vars = df.groupby("CellID", as_index=False)[feature_cols].agg(["mean", "std", skewness_positive])
+    summary_vars.rename(columns={"skewness_positive": "skew"}, inplace=True)
 
     # Interpolate any missing frames
     interpolated = interpolate(df)
@@ -157,6 +158,7 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     # Calculate elevation metrics
     grouped = interpolated.groupby(["CellID"], as_index=False)
     ele_vars = grouped[feature_cols].agg([ascent, descent, "max"])
+    ele_vars.rename(columns={"ascent": "asc", "descent": "des"}, inplace=True)
 
     # Calculate variables from wavelet details
     # For each wavelet level, calculate the 3 elevation vars
@@ -168,11 +170,27 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     # * 3 elevation features). We want to calculate all 9 in 1 function to save
     # repeatedly calculating the Wavelet decomposition
     # TODO See if this works to save this apply+agg approach: https://stackoverflow.com/questions/61463129/optimizing-a-groupby-agg-function-to-return-multiple-result-columns
-    wave_vars = grouped[feature_cols].apply(lambda x: x.agg([wavelet_features]))
+    wave_vars = interpolated.groupby(["CellID"], as_index=True)[feature_cols].apply(lambda x: x.agg([wavelet_features]))
 
     # Calculate trajectory area for each cell
     traj_vars = grouped.apply(calculate_trajectory_area)
 
-    # Combine
+    # Prepare for combination
+    # Set CellID as index for easy joining, and merge hierarchical column names
+    summary_vars.set_index("CellID", inplace=True)
+    summary_vars.columns = summary_vars.columns.map("_".join).str.strip("|")
+    ele_vars.set_index("CellID", inplace=True)
+    ele_vars.columns = ele_vars.columns.map("_".join).str.strip("|")
+    # Remove unused middle level from both columns and indices, which arose from
+    # the double loop
+    wave_vars.columns = wave_vars.columns.droplevel(1)
+    wave_vars.index = wave_vars.index.droplevel(1)
+    wave_vars.columns = wave_vars.columns.map("_".join).str.strip("|")
+    traj_vars.set_index("CellID", inplace=True)
+    traj_vars.columns.values[0] = "trajArea"
 
-    return summary_stats
+    # Combine!
+    comb = summary_vars.join([ele_vars, wave_vars, traj_vars])
+    comb.reset_index(inplace=True)
+
+    return comb
