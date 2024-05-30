@@ -124,6 +124,17 @@ def wavelet_features(x: pd.Series) -> pd.DataFrame:
     return pd.DataFrame(res_dict, index=[0])
 
 
+def calculate_trajectory_area(df) -> float:
+    """
+    Calculates the trajectory area of a cell.
+
+    :param xs: An array of x-coordinates.
+    :param ys: An array of y-coordinates.
+    :return: The trajectory area as a float.
+    """
+    return ((df["xpos"].max() - df["xpos"].min()) * (df["ypos"].max() - df["ypos"].min())) / df.shape[0]
+
+
 def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates 15 time-series based features for each frame-level feature.
@@ -134,7 +145,7 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     # Remove columns that aren't used, as they aren't either unique identifiers
     # or feature columns
-    df.drop(columns=["ROI_filename", "xpos", "ypos"], inplace=True)
+    df.drop(columns=["ROI_filename"], inplace=True)
     feature_cols = np.setdiff1d(df.columns.values, ["CellID", "FrameID"])
 
     # Calculate summary statistics
@@ -144,7 +155,8 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     interpolated = interpolate(df)
 
     # Calculate elevation metrics
-    ele_vars = interpolated.groupby(["CellID"], as_index=False)[feature_cols].agg([ascent, descent, "max"])
+    grouped = interpolated.groupby(["CellID"], as_index=False)
+    ele_vars = grouped[feature_cols].agg([ascent, descent, "max"])
 
     # Calculate variables from wavelet details
     # For each wavelet level, calculate the 3 elevation vars
@@ -155,9 +167,11 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     # returns a single scalar, rather than the 9 returned here (3 wavelet levels
     # * 3 elevation features). We want to calculate all 9 in 1 function to save
     # repeatedly calculating the Wavelet decomposition
-    wave_vars = interpolated.groupby(["CellID"], as_index=True)[feature_cols].apply(lambda x: x.agg([wavelet_features]))
+    # TODO See if this works to save this apply+agg approach: https://stackoverflow.com/questions/61463129/optimizing-a-groupby-agg-function-to-return-multiple-result-columns
+    wave_vars = grouped[feature_cols].apply(lambda x: x.agg([wavelet_features]))
 
-    # Calculate trajectory area
+    # Calculate trajectory area for each cell
+    traj_vars = grouped.apply(calculate_trajectory_area)
 
     # Combine
 

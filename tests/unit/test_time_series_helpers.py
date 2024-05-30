@@ -59,3 +59,12 @@ def test_haar_approximation_1d():
     assert output[0] == pytest.approx(np.repeat(-1 / np.sqrt(2), 10))
     assert output[1] == pytest.approx(np.repeat(-np.sqrt(2), 5))
     assert output[2] == pytest.approx(np.repeat(-2 * np.sqrt(2), 2))
+
+
+def test_calculate_trajectory_area():
+    xs = pd.Series([5, 8, 12, 4, 3, 20])
+    ys = pd.Series([9, 2, 1, 20, 30, 5])
+    df = pd.DataFrame({"xpos": xs, "ypos": ys})
+    output = calculate_trajectory_area(df)
+    expected = 82.16667
+    assert output == pytest.approx(expected)
