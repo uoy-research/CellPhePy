@@ -191,7 +191,7 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     # frames before interpolation as the denominator, whereas this code uses the
     # full range of frames (i.e. max - min frame number) that cell was observed
     # in, which I think is more correct.
-    traj_vars = grouped.apply(calculate_trajectory_area)
+    traj_vars = grouped.apply(calculate_trajectory_area, include_groups=False)
 
     # Prepare for combination
     # Set CellID as index for easy joining, and merge hierarchical column names
