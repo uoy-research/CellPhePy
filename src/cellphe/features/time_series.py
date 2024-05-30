@@ -53,7 +53,6 @@ def interpolate(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# TODO implement on wide dataframe?
 def ascent(x: np.array) -> float:
     """
     Calculates the ascent of a signal.
@@ -64,7 +63,7 @@ def ascent(x: np.array) -> float:
     :param x: Input array.
     :return: A float representing the ascent.
     """
-    x_diff = x.diff()
+    x_diff = np.diff(x)
     return np.sum(x_diff[x_diff > 0]) / x.size
 
 
@@ -78,7 +77,7 @@ def descent(x: np.array) -> float:
     :param x: Input array.
     :return: A float representing the descent.
     """
-    x_diff = x.diff()
+    x_diff = np.diff(x)
     return np.sum(x_diff[x_diff < 0]) / x.size
 
 
@@ -105,6 +104,26 @@ def haar_approximation_1d(x: pd.Series) -> list(np.array):
     return output
 
 
+def wavelet_features(x: pd.Series) -> pd.DataFrame:
+    """
+    Calculates the elevation metrics for the detail coefficients from 3 levels
+    of a Haar wavelet approximation.
+
+    :param x: The raw data as an array.
+    :return: A 1-row DataFrame comprising 9 columns, one for each of the 3
+    elevation metrics for each of the 3 Wavelet levels.
+    """
+    wave_coefs = haar_approximation_1d(x)
+
+    # For each set of wavelet coefficients calculate the elevation metrics
+    wave_coefs_dict = {f"l{i+1}": x for i, x in enumerate(wave_coefs)}
+    metrics = {"ascent": ascent, "descent": descent, "max": np.max}
+    res_dict = {f"{kw}_{km}": vm(vw) for kw, vw in wave_coefs_dict.items() for km, vm in metrics.items()}
+
+    # Convert into DataFrame for output
+    return pd.DataFrame(res_dict, index=[0])
+
+
 def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates 15 time-series based features for each frame-level feature.
@@ -128,13 +147,15 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     ele_vars = interpolated.groupby(["CellID"], as_index=False)[feature_cols].agg([ascent, descent, "max"])
 
     # Calculate variables from wavelet details
-    # Looks straight forward ish. Calculate wavelet and get the DETAIL
-    # coefficients and then do the same elevation methods
-    # How to actually implement this in pandas?
-    # Want to:
-    # For each column
-    # For each wavelet level
-    # Calculate 3 summaries
+    # For each wavelet level, calculate the 3 elevation vars
+    # This is a nested loop: the groupby apply here sends a DataFrame for each
+    # cell to an anonymous function that then applies the 'wavelet_features'
+    # function to every column. I can't see a one-liner way of doing this in
+    # Pandas, as all the agg/aggregate functions expect a function that only
+    # returns a single scalar, rather than the 9 returned here (3 wavelet levels
+    # * 3 elevation features). We want to calculate all 9 in 1 function to save
+    # repeatedly calculating the Wavelet decomposition
+    wave_vars = interpolated.groupby(["CellID"], as_index=True)[feature_cols].apply(lambda x: x.agg([wavelet_features]))
 
     # Calculate trajectory area
 
