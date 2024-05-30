@@ -16,6 +16,7 @@ import pywt
 from scipy.spatial.distance import pdist, squareform
 from shapely import Polygon, simplify
 
+from cellphe.features.helpers import skewness
 from cellphe.input import read_roi, read_tiff
 from cellphe.processing import extract_subimage, normalise_image
 
@@ -215,25 +216,6 @@ def extract_features(
     # Set data types for anything that isn't float
     feature_df["Area"] = feature_df["Area"].astype("int")
     return feature_df
-
-
-def skewness(x: np.array) -> float:
-    """
-    Calculates the skewness of a sample.
-
-    It uses the type 2method in the R e1071::skewness implementation, which is
-    the version used in SAS and SPSS according to the documentation.
-
-    :param x: Sample.
-    :return: A float representing the skewness.
-    """
-    mu = x.mean()
-    n = x.size
-    deltas = x - mu
-    m2 = np.sum(np.power(deltas, 2)) / n
-    m3 = np.sum(np.power(deltas, 3)) / n
-    g1 = m3 / np.power(m2, 3 / 2)
-    return g1 * np.sqrt(n * (n - 1)) / (n - 2)
 
 
 def var_from_centre(boundaries: np.array) -> list[float]:
