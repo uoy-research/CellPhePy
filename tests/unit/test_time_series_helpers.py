@@ -38,7 +38,7 @@ def signal():
     # N = 7
     # ascent is 18/7
     # descent is -10/7
-    return pd.Series([2, 3, 5, 2, 8, 1, 10]).diff()
+    return pd.Series([2, 3, 5, 2, 8, 1, 10])
 
 
 def test_ascent(signal):

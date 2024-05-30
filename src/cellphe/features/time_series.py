@@ -64,7 +64,8 @@ def ascent(x: np.array) -> float:
     :param x: Input array.
     :return: A float representing the ascent.
     """
-    return np.sum(x[x > 0]) / x.size
+    x_diff = x.diff()
+    return np.sum(x_diff[x_diff > 0]) / x.size
 
 
 def descent(x: np.array) -> float:
@@ -77,7 +78,8 @@ def descent(x: np.array) -> float:
     :param x: Input array.
     :return: A float representing the descent.
     """
-    return np.sum(x[x < 0]) / x.size
+    x_diff = x.diff()
+    return np.sum(x_diff[x_diff < 0]) / x.size
 
 
 def haar_approximation_1d(x: pd.Series) -> list(np.array):
@@ -114,29 +116,25 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     # Remove columns that aren't used, as they aren't either unique identifiers
     # or feature columns
     df.drop(columns=["ROI_filename", "xpos", "ypos"], inplace=True)
-    # Identify time-series feature column names
-    all_cols = df.columns.values
-    frame_features = np.setdiff1d(all_cols, ["CellID", "FrameID"])
+    feature_cols = np.setdiff1d(df.columns.values, ["CellID", "FrameID"])
 
     # Calculate summary statistics
-    summary_stats = df.groupby("CellID")[frame_features].agg(["mean", "std", "max", skewness_positive])
+    summary_stats = df.groupby("CellID", as_index=False)[feature_cols].agg(["mean", "std", "max", skewness_positive])
 
-    # Interpolate any missing frames and convert to long
+    # Interpolate any missing frames
     interpolated = interpolate(df)
-    interpolated_long = interpolated.melt(id_vars=["CellID", "FrameID"], value_vars=frame_features)
-    interpolated_long.sort_values(by=["variable", "CellID", "FrameID"], inplace=True)
 
     # Calculate elevation metrics
-    # Take difference between consecutive vals, ascent is sum of positive
-    # differences / n vals and descent is sum of negative differences / n vals
-    interpolated_long["diff"] = interpolated_long.groupby(["variable", "CellID"])["value"].diff()
-    grouped = interpolated_long.groupby(["variable", "CellID"], as_index=False)
-    ele_vars = grouped["diff"].agg([ascent, descent])
-    max_vars = grouped["value"].agg(["max"])
+    ele_vars = interpolated.groupby(["CellID"], as_index=False)[feature_cols].agg([ascent, descent, "max"])
 
     # Calculate variables from wavelet details
     # Looks straight forward ish. Calculate wavelet and get the DETAIL
     # coefficients and then do the same elevation methods
+    # How to actually implement this in pandas?
+    # Want to:
+    # For each column
+    # For each wavelet level
+    # Calculate 3 summaries
 
     # Calculate trajectory area
 
