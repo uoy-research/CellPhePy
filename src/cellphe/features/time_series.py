@@ -53,7 +53,7 @@ def interpolate(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def ascent(x: np.array) -> float:
+def ascent(x: np.array, diff: bool = True) -> float:
     """
     Calculates the ascent of a signal.
 
@@ -61,13 +61,19 @@ def ascent(x: np.array) -> float:
     divided by the total length of the signal.
 
     :param x: Input array.
+    :param diff: Whether to take the difference first (required for elevation
+    variables but not those from wavelets).
     :return: A float representing the ascent.
     """
-    x_diff = np.diff(x)
-    return np.sum(x_diff[x_diff > 0]) / x.size
+    if diff:
+        n = x.size
+        x = np.diff(x)
+    else:
+        n = x.size
+    return np.sum(x[x > 0]) / n
 
 
-def descent(x: np.array) -> float:
+def descent(x: np.array, diff: bool = True) -> float:
     """
     Calculates the descent of a signal.
 
@@ -75,10 +81,16 @@ def descent(x: np.array) -> float:
     divided by the total length of the signal.
 
     :param x: Input array.
+    :param diff: Whether to take the difference first (required for elevation
+    variables but not those from wavelets).
     :return: A float representing the descent.
     """
-    x_diff = np.diff(x)
-    return np.sum(x_diff[x_diff < 0]) / x.size
+    if diff:
+        n = x.size
+        x = np.diff(x)
+    else:
+        n = x.size
+    return np.sum(x[x < 0]) / n
 
 
 def haar_approximation_1d(x: pd.Series) -> list(np.array):
@@ -90,16 +102,18 @@ def haar_approximation_1d(x: pd.Series) -> list(np.array):
     detail coefficients.
     """
 
-    def remove_last_value_if_odd(approx, detail):
-        is_odd = approx.size % 2
-        return detail[: detail.size - is_odd]
+    def remove_last_value_if_odd(input, approx, detail):
+        is_odd = input.size % 2
+        detail = detail[: detail.size - is_odd]
+        approx = approx[: approx.size - is_odd]
+        return approx, detail
 
     a1, d1 = pywt.dwt(x, "db1")
-    d1 = remove_last_value_if_odd(x, d1)
+    a1, d1 = remove_last_value_if_odd(x, a1, d1)
     a2, d2 = pywt.dwt(a1 / np.sqrt(2), "db1")
-    d2 = remove_last_value_if_odd(a1, d2)
-    _, d3 = pywt.dwt(a2 / np.sqrt(2), "db1")
-    d3 = remove_last_value_if_odd(a2, d3)
+    a2, d2 = remove_last_value_if_odd(a1, a2, d2)
+    a3, d3 = pywt.dwt(a2 / np.sqrt(2), "db1")
+    a3, d3 = remove_last_value_if_odd(a2, a3, d3)
     output = [d1, d2, d3]
     return output
 
@@ -117,7 +131,7 @@ def wavelet_features(x: pd.Series) -> pd.DataFrame:
 
     # For each set of wavelet coefficients calculate the elevation metrics
     wave_coefs_dict = {f"l{i+1}": x for i, x in enumerate(wave_coefs)}
-    metrics = {"asc": ascent, "des": descent, "max": np.max}
+    metrics = {"asc": lambda x: ascent(x, diff=False), "des": lambda x: descent(x, diff=False), "max": np.max}
     res_dict = {f"{kw}_{km}": vm(vw) for kw, vw in wave_coefs_dict.items() for km, vm in metrics.items()}
 
     # Convert into DataFrame for output
@@ -132,7 +146,7 @@ def calculate_trajectory_area(df) -> float:
     :param ys: An array of y-coordinates.
     :return: The trajectory area as a float.
     """
-    return ((df["xpos"].max() - df["xpos"].min()) * (df["ypos"].max() - df["ypos"].min())) / df.shape[0]
+    return ((df["xpos"].max() - df["xpos"].min()) * (df["ypos"].max() - df["ypos"].min())) / df["xpos"].size
 
 
 def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -173,6 +187,10 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     wave_vars = interpolated.groupby(["CellID"], as_index=True)[feature_cols].apply(lambda x: x.agg([wavelet_features]))
 
     # Calculate trajectory area for each cell
+    # The trajectory difference is due to the R code using the number of
+    # frames before interpolation as the denominator, whereas this code uses the
+    # full range of frames (i.e. max - min frame number) that cell was observed
+    # in, which I think is more correct.
     traj_vars = grouped.apply(calculate_trajectory_area)
 
     # Prepare for combination

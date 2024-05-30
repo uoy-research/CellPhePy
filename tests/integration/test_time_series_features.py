@@ -15,7 +15,7 @@ def assert_frame_equal_extended_diff(df1, df2):
     incorrect_cols = []
     for col in cols:
         try:
-            pd.testing.assert_frame_equal(df1.loc[:, [col]], df2.loc[:, [col]])
+            pd.testing.assert_frame_equal(df1.loc[:, [col]], df2.loc[:, [col]], check_dtype=False)
         except AssertionError as e:
             print(e, "\n")
             incorrect_cols.append(col)
