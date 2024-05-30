@@ -498,7 +498,7 @@ def intensity_quantiles(pixels: np.array) -> np.array:
     return vals
 
 
-def haar_approximation(image: np.array) -> np.array:
+def haar_approximation_2d(image: np.array) -> np.array:
     """
     Calculates the approximation coefficients of a 2D db1 (aka Haar) wavelet transform.
 
@@ -610,8 +610,8 @@ def extract_static_features(image: np.array, roi: np.array) -> np.array:
 
     # Cooccurrence
     n_cooccurrences = 10
-    level1 = haar_approximation(sub_image.sub_image)
-    level2 = haar_approximation(level1)
+    level1 = haar_approximation_2d(sub_image.sub_image)
+    level2 = haar_approximation_2d(level1)
     level1 = double_image(level1)
     level2 = double_image(double_image(level2))
     orig_dims = sub_image.sub_image.shape

@@ -10,6 +10,7 @@ from __future__ import annotations
 import janitor
 import numpy as np
 import pandas as pd
+import pywt
 
 from cellphe.features.helpers import skewness
 
@@ -79,6 +80,29 @@ def descent(x: np.array) -> float:
     return np.sum(x[x < 0]) / x.size
 
 
+def haar_approximation_1d(x: pd.Series) -> list(np.array):
+    """
+    Haar wavelet approximation for a 1D signal with 3 levels of decomposition.
+
+    :param x: The input signal.
+    :return: A list of length 3 for each level, with each entry containing the
+    detail coefficients.
+    """
+
+    def remove_last_value_if_odd(approx, detail):
+        is_odd = approx.size % 2
+        return detail[: detail.size - is_odd]
+
+    a1, d1 = pywt.dwt(x, "db1")
+    d1 = remove_last_value_if_odd(x, d1)
+    a2, d2 = pywt.dwt(a1 / np.sqrt(2), "db1")
+    d2 = remove_last_value_if_odd(a1, d2)
+    _, d3 = pywt.dwt(a2 / np.sqrt(2), "db1")
+    d3 = remove_last_value_if_odd(a2, d3)
+    output = [d1, d2, d3]
+    return output
+
+
 def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates 15 time-series based features for each frame-level feature.
@@ -112,7 +136,7 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
 
     # Calculate variables from wavelet details
     # Looks straight forward ish. Calculate wavelet and get the DETAIL
-    # coefficients and then do the save elevation methods
+    # coefficients and then do the same elevation methods
 
     # Calculate trajectory area
 

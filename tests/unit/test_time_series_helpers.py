@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from cellphe.features.time_series import ascent, descent, interpolate
+from cellphe.features.time_series import *
 
 
 def test_interpolate():
@@ -51,3 +51,11 @@ def test_descent(signal):
     expected = -10 / 7
     output = descent(signal)
     assert output == pytest.approx(expected)
+
+
+def test_haar_approximation_1d():
+    input = np.arange(1, 21)
+    output = haar_approximation_1d(input)
+    assert output[0] == pytest.approx(np.repeat(-1 / np.sqrt(2), 10))
+    assert output[1] == pytest.approx(np.repeat(-np.sqrt(2), 5))
+    assert output[2] == pytest.approx(np.repeat(-2 * np.sqrt(2), 2))
