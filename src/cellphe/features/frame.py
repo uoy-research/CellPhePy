@@ -16,6 +16,7 @@ import pywt
 from scipy.spatial.distance import pdist, squareform
 from shapely import Polygon, simplify
 
+from cellphe.features.helpers import skewness
 from cellphe.input import read_roi, read_tiff
 from cellphe.processing import extract_subimage, normalise_image
 
@@ -93,7 +94,12 @@ STATIC_FEATURE_NAMES = [
 
 
 def extract_features(
-    df: pd.DataFrame, roi_folder: str, frame_folder: str, framerate: float, minimum_cell_size: int = 8
+    # pylint: disable=too-many-locals, too-many-statements
+    df: pd.DataFrame,
+    roi_folder: str,
+    frame_folder: str,
+    framerate: float,
+    minimum_cell_size: int = 8,
 ) -> pd.DataFrame:
     r"""
     Calculates cell features from timelapse videos
@@ -144,8 +150,11 @@ def extract_features(
         for cell_id in cell_ids:
             roi_fn = df.loc[(df["FrameID"] == frame_id) & (df["CellID"] == cell_id)]["ROI_filename"].values[0]
             roi_path = os.path.join(roi_folder, f"{roi_fn}.roi")
-            # TODO error handle missing file
-            roi = read_roi(roi_path)
+            try:
+                roi = read_roi(roi_path)
+            except FileNotFoundError:
+                print(f"Unable to read file {roi_path} - skipping to next ROI")
+                continue
             # No negative coordinates
             roi = np.maximum(roi, 0)
             # Ensure cell is minimum size
@@ -215,25 +224,6 @@ def extract_features(
     # Set data types for anything that isn't float
     feature_df["Area"] = feature_df["Area"].astype("int")
     return feature_df
-
-
-def skewness(x: np.array) -> float:
-    """
-    Calculates the skewness of a sample.
-
-    It uses the type 2method in the R e1071::skewness implementation, which is
-    the version used in SAS and SPSS according to the documentation.
-
-    :param x: Sample.
-    :return: A float representing the skewness.
-    """
-    mu = x.mean()
-    n = x.size
-    deltas = x - mu
-    m2 = np.sum(np.power(deltas, 2)) / n
-    m3 = np.sum(np.power(deltas, 3)) / n
-    g1 = m3 / np.power(m2, 3 / 2)
-    return g1 * np.sqrt(n * (n - 1)) / (n - 2)
 
 
 def var_from_centre(boundaries: np.array) -> list[float]:
@@ -422,6 +412,8 @@ def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, leve
 
 
 def haralick(cooc: np.array) -> np.array:
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-statements
     """
     Calculates Haralick features from the given cooccurrence matrix.
 
@@ -516,7 +508,7 @@ def intensity_quantiles(pixels: np.array) -> np.array:
     return vals
 
 
-def haar_approximation(image: np.array) -> np.array:
+def haar_approximation_2d(image: np.array) -> np.array:
     """
     Calculates the approximation coefficients of a 2D db1 (aka Haar) wavelet transform.
 
@@ -586,6 +578,7 @@ def calculate_density(df: pd.DataFrame, radius_threshold: float = 6) -> np.array
 
 
 def extract_static_features(image: np.array, roi: np.array) -> np.array:
+    # pylint: disable=too-many-locals
     """
     Extracts the 68 frame-level static (i.e. no movement based) features for a given image and roi.
 
@@ -628,8 +621,8 @@ def extract_static_features(image: np.array, roi: np.array) -> np.array:
 
     # Cooccurrence
     n_cooccurrences = 10
-    level1 = haar_approximation(sub_image.sub_image)
-    level2 = haar_approximation(level1)
+    level1 = haar_approximation_2d(sub_image.sub_image)
+    level2 = haar_approximation_2d(level1)
     level1 = double_image(level1)
     level2 = double_image(double_image(level2))
     orig_dims = sub_image.sub_image.shape

@@ -94,6 +94,7 @@ def get_corner_mask(mat: np.array) -> np.array:
 
 
 def roi_corners(roi: np.array) -> np.array:
+    # pylint: disable=too-many-locals
     """
     Gets the corners from an ROI, i.e. any vertex that connect 2 sides.
 

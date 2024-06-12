@@ -20,7 +20,7 @@ def test_cooccurrence_matrix_real_image():
     subimage = extract_subimage(image, roi)
 
     # Calculate cooccurrence matrix of subimage and its wavelet approx
-    image_approx = double_image(haar_approximation(subimage.sub_image))
+    image_approx = double_image(haar_approximation_2d(subimage.sub_image))
     image_approx = image_approx[: subimage.sub_image.shape[0], : subimage.sub_image.shape[1]]
     mask = subimage.type_mask >= 0
     output = cooccurrence_matrix(subimage.sub_image, image_approx, mask, 10)

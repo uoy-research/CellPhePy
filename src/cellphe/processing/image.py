@@ -5,6 +5,8 @@
     Functions related to processing images.
 """
 
+# pylint doesn't recognise grid_points_in_poly
+# pylint: disable=no-name-in-module
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -155,6 +157,7 @@ def create_type_mask_matplotlib(roi: np.array) -> np.array:
 
 
 def find_crossing_points(corners: np.array, shape: np.array) -> np.array:
+    # pylint: disable=too-many-locals
     """
     Finds the crossing points for a ray entering a given polygon.
 
