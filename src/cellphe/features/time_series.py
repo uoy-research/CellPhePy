@@ -7,7 +7,8 @@
 
 from __future__ import annotations
 
-import janitor
+# pylint: disable=unused-import
+import janitor  # Implicitly used
 import numpy as np
 import pandas as pd
 import pywt
@@ -102,8 +103,8 @@ def haar_approximation_1d(x: pd.Series) -> list(np.array):
     detail coefficients.
     """
 
-    def remove_last_value_if_odd(input, approx, detail):
-        is_odd = input.size % 2
+    def remove_last_value_if_odd(signal, approx, detail):
+        is_odd = signal.size % 2
         detail = detail[: detail.size - is_odd]
         approx = approx[: approx.size - is_odd]
         return approx, detail

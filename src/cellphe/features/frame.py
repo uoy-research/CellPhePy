@@ -94,7 +94,12 @@ STATIC_FEATURE_NAMES = [
 
 
 def extract_features(
-    df: pd.DataFrame, roi_folder: str, frame_folder: str, framerate: float, minimum_cell_size: int = 8
+    # pylint: disable=too-many-locals
+    df: pd.DataFrame,
+    roi_folder: str,
+    frame_folder: str,
+    framerate: float,
+    minimum_cell_size: int = 8,
 ) -> pd.DataFrame:
     r"""
     Calculates cell features from timelapse videos
@@ -404,6 +409,8 @@ def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, leve
 
 
 def haralick(cooc: np.array) -> np.array:
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-statements
     """
     Calculates Haralick features from the given cooccurrence matrix.
 
@@ -568,6 +575,7 @@ def calculate_density(df: pd.DataFrame, radius_threshold: float = 6) -> np.array
 
 
 def extract_static_features(image: np.array, roi: np.array) -> np.array:
+    # pylint: disable=too-many-locals
     """
     Extracts the 68 frame-level static (i.e. no movement based) features for a given image and roi.
 
