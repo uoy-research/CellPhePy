@@ -7,8 +7,7 @@
 
 from __future__ import annotations
 
-# pylint: disable=unused-import
-import janitor  # Implicitly used
+import janitor  # noqa: F401 # pylint: disable=unused-import
 import numpy as np
 import pandas as pd
 import pywt
@@ -131,7 +130,7 @@ def wavelet_features(x: pd.Series) -> pd.DataFrame:
     wave_coefs = haar_approximation_1d(x)
 
     # For each set of wavelet coefficients calculate the elevation metrics
-    wave_coefs_dict = {f"l{i+1}": x for i, x in enumerate(wave_coefs)}
+    wave_coefs_dict = {f"l{i + 1}": x for i, x in enumerate(wave_coefs)}
     metrics = {"asc": lambda x: ascent(x, diff=False), "des": lambda x: descent(x, diff=False), "max": np.max}
     res_dict = {f"{kw}_{km}": vm(vw) for kw, vw in wave_coefs_dict.items() for km, vm in metrics.items()}
 
