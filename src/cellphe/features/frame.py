@@ -94,7 +94,7 @@ STATIC_FEATURE_NAMES = [
 
 
 def extract_features(
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-statements
     df: pd.DataFrame,
     roi_folder: str,
     frame_folder: str,
@@ -150,8 +150,11 @@ def extract_features(
         for cell_id in cell_ids:
             roi_fn = df.loc[(df["FrameID"] == frame_id) & (df["CellID"] == cell_id)]["ROI_filename"].values[0]
             roi_path = os.path.join(roi_folder, f"{roi_fn}.roi")
-            # TODO error handle missing file
-            roi = read_roi(roi_path)
+            try:
+                roi = read_roi(roi_path)
+            except FileNotFoundError:
+                print(f"Unable to read file {roi_path} - skipping to next ROI")
+                continue
             # No negative coordinates
             roi = np.maximum(roi, 0)
             # Ensure cell is minimum size
