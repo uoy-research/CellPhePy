@@ -31,6 +31,7 @@ dependencies = [
     "read-roi",
     "scipy",
     "scikit-image",
+    "scikit-learn",
     "shapely"
 ]
 

@@ -4,4 +4,4 @@
 
 from __future__ import annotations
 
-from cellphe.segmentation.seg_errors import remove_predicted_seg_errors
+from cellphe.segmentation.seg_errors import predict_segmentation_errors, remove_predicted_seg_errors
