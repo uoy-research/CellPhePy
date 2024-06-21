@@ -30,7 +30,12 @@ def remove_predicted_seg_errors(dataset: pd.DataFrame, cellid_label: str, error_
 
 
 def predict_segmentation_errors(
-    errors: pd.DataFrame, clean: pd.DataFrame, testset: pd.DataFrame, num: int = 5, proportion: float = 0.7
+    errors: pd.DataFrame,
+    clean: pd.DataFrame,
+    testset: pd.DataFrame,
+    num: int = 5,
+    proportion: float = 0.7,
+    num_repeats: int = 1,
 ) -> np.array:
     """
     Predicts whether or not cells have experienced segmentation errors through
@@ -43,6 +48,13 @@ def predict_segmentation_errors(
     vote for a segmentation error, then that cell is predicted to contain an
     error.
 
+    Optionally, this behaviour can be repeated num_repeats times with the final
+    outcome the result of a majority vote. I.e. if num_repeats = 3, then 2 of
+    the repeats must vote for an error. If num_repeats = 4 then 3 votes are
+    required.
+    This behaviour is contained in a separate function in the R package,
+    predictSegErrors_Ensemble.
+
     :param errors: DataFrame containing the 1111 frame-level features from a set
     of cells known to be incorrectly segmented (having removed the CellID column).
     :param clean: DataFrame containing the 1111 frame-level features from a set
@@ -52,6 +64,8 @@ def predict_segmentation_errors(
     :param num: Numbe of decision trees to fit.
     :param proportion: Proportion of decision trees needed for a segmentation
     error vote to be successful.
+    :param num_repeats: The number of times to run the classification, with the
+    final outcome coming from a majority vote.
     :return: Returns a Numpy boolean array the same length as there are rows in
     testset, indicating whether the associated Cell contains a segmentation
     error or not.
@@ -61,11 +75,17 @@ def predict_segmentation_errors(
 
     preds = np.array(
         [
-            tree.DecisionTreeClassifier(criterion="log_loss", min_samples_leaf=10, min_samples_split=5)
-            .fit(feats, labels)
-            .predict(testset)
-            for i in range(num)
+            [
+                tree.DecisionTreeClassifier(criterion="log_loss", min_samples_leaf=10, min_samples_split=5)
+                .fit(feats, labels)
+                .predict(testset)
+                for i in range(num)
+            ]
+            for j in range(num_repeats)
         ]
     )
-    pct_voted = preds.mean(axis=0)
-    return pct_voted > proportion
+    # Take average vote for each cell within each repeat
+    within_repeats = preds.mean(axis=1) > proportion
+    # Seeing if we have 50% agreement across repeats
+    overall_output = within_repeats.sum(axis=0) > (num_repeats / 2)
+    return overall_output
