@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
-from cellphe.segmentation import remove_predicted_seg_errors
+from cellphe.segmentation import balance_training_set, remove_predicted_seg_errors
 
 
 def test_remove_predicted_seg_errors():
@@ -14,3 +15,13 @@ def test_remove_predicted_seg_errors():
     # output index will have the row numbers from the raw larger dataframe,
     # while the target only has 1:2
     pd.testing.assert_frame_equal(output.reset_index(drop=True), expected.reset_index(drop=True))
+
+
+def test_balance_training_set():
+    y = np.concatenate((np.repeat(1, 100), np.repeat(0, 10)))
+    x = pd.DataFrame({"x": np.random.rand(110), "y": np.random.rand(110)})
+    newx, newy = balance_training_set(x, y)
+    assert newx.shape[0] == 200
+    assert newy.shape[0] == 200
+    assert np.sum(newy == 0) == 100
+    assert np.sum(newy == 1) == 100

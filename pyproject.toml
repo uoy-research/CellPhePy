@@ -18,10 +18,12 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11"
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
 ]
 requires-python = ">=3.8.1"
 dependencies = [
+    "imbalanced-learn",
     "matplotlib",
     "numpy",
     "pandas",
@@ -31,6 +33,7 @@ dependencies = [
     "read-roi",
     "scipy",
     "scikit-image",
+    "scikit-learn",
     "shapely"
 ]
 
