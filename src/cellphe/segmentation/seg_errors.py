@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from imblearn.over_sampling import SMOTE
 from sklearn import tree
 
 
@@ -74,6 +75,9 @@ def predict_segmentation_errors(
     feats = pd.concat((errors, clean))
     labels = np.concatenate((np.repeat(1, errors.shape[0]), np.repeat(0, clean.shape[0])))
 
+    # balance training set
+    feats, labels = balance_training_set(feats, labels)
+
     preds = np.array(
         [
             [
@@ -90,3 +94,21 @@ def predict_segmentation_errors(
     # Seeing if we have 50% agreement across repeats
     overall_output = within_repeats.sum(axis=0) > (num_repeats / 2)
     return overall_output
+
+
+def balance_training_set(x: pd.DataFrame, y: np.array) -> pd.DataFrame:
+    """
+    Balances a training set when one class might be underrepresented.
+    Uses the SMOTE algorithm.
+
+    :param x: A dataframe with one or more feature columns.
+    :param y: An array containing the class labels. Must have the same length as
+    rows in x. Labels can either be integer or string.
+    :return: A dataframe with the same columns as the input, but with the number
+    of rows now equal to 2 times the number of samples from the majority class.
+    I.e. if df had 5 'negative' classes and 10 'positive' classes, then the
+    output will have 20 rows as it will have oversampled 5 negative observations.
+    """
+    sm = SMOTE()
+    new_x, new_y = sm.fit_resample(x, y)
+    return new_x, new_y
