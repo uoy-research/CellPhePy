@@ -20,7 +20,9 @@ def test_calculate_separation_scores():
         (np.repeat("Untreated", train_untreated.shape[0]), np.repeat("Treated", train_treated.shape[0]))
     )
 
-    expected = {"Treated": 0.1368421, "Untreated": 0.8631579}
-    actual = classify_cells(training, test, labels)
-    assert expected["Treated"] == 0.5
-    assert expected["Untreated"] == 0.5
+    # Allow 5% margin
+    expected = {"Treated": 0.4041096, "Untreated": 0.5958904}
+    actual = classify_cells(training, labels, test)
+    ensemble_preds = actual[:, 3]
+    for label, target in expected.items():
+        assert target - 0.05 < np.mean(ensemble_preds == label) < target + 0.05
