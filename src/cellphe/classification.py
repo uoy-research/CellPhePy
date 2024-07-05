@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 from sklearn import svm
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
@@ -19,7 +20,8 @@ def classify_cells(train_x: pd.DataFrame, train_y: np.array, test_x: pd.DataFram
     Predicts cell class using an ensemble.
 
     Trains three classifiers (Linear Discriminant Analysis, Random Forest and
-    Support Vector Machine) and uses these in an ensemble by majority vote to obtain final predictions for cell type classification of a test set.
+    Support Vector Machine) and uses these in an ensemble by majority vote to
+    obtain final predictions for cell type classification of a test set.
 
     :param train_x: DataFrame containing cell features (but no labels) for the
     :param train_y: Array of labels (can be strings or integers) for the
@@ -51,6 +53,8 @@ def classify_cells(train_x: pd.DataFrame, train_y: np.array, test_x: pd.DataFram
     # classifier predictions which we also want, so we can retrieve them
     # manually. But then it returns the predictions unlabelled so then need to
     # reapply label
+    # Pylint doesn't recognise the predict method and le_ attributes
+    # pylint: disable=no-member
     ensemble_preds = ensemble.predict(test_x)
     individual_preds = np.array([ensemble.named_estimators_[x].predict(test_x) for x in model_names])
     labeller = ensemble.le_
