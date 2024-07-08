@@ -7,15 +7,13 @@
 
 from __future__ import annotations
 
-from typing import Tuple
-
 import numpy as np
 import pandas as pd
 
 from cellphe.classification import classify_cells
 
 
-def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold: float = 0) -> pd.DataFrame:
+def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold: float | str = 0) -> pd.DataFrame:
     """
     Calculates the separation score between 2 datasets across a number of
     feature.
@@ -27,9 +25,17 @@ def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold:
 
     :param df1: DataFrame for the first class containing only feature columns.
     :param df2: DataFrame for the second class containing only feature columns.
-    :param threshold: Separation threshold. Features with a separation score
-    below this value are discarded.
+    :param threshold: Separation threshold either as as a number or the string
+    'auto'. If a number then features with a separation score below this value
+    are discarded. If 'auto' then the threshold is automatically identified.
+
+    :return: A DataFrame comprising 2 columns: Feature and Separation, where
+    each row corresponds to a different feature's separation score. Any
+    features with separation scores less than threshold are removed.
     """
+    if threshold != "auto" and not (isinstance(threshold, (int, float, complex)) and not isinstance(threshold, bool)):
+        raise ValueError("threshold must be 'auto' or numeric")
+
     df1["group"] = "g1"
     df2["group"] = "g2"
     df_both = pd.concat((df1, df2))
@@ -58,7 +64,11 @@ def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold:
     sep_df.columns = sep_df.columns.droplevel(1)
 
     # Threshold check
+    if threshold == "auto":
+        threshold = optimal_separation_threshold(df1.drop(columns="group"), df2.drop(columns="group"), sep_df)
+
     sep_df = sep_df.loc[(sep_df["Separation"] >= threshold) & (pd.notna(sep_df["Separation"])),]
+
     return sep_df
 
 
