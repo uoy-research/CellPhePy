@@ -7,7 +7,12 @@
 
 from __future__ import annotations
 
+from typing import Tuple
+
+import numpy as np
 import pandas as pd
+
+from cellphe.classification import classify_cells
 
 
 def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold: float = 0) -> pd.DataFrame:
@@ -55,3 +60,44 @@ def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold:
     # Threshold check
     sep_df = sep_df.loc[(sep_df["Separation"] >= threshold) & (pd.notna(sep_df["Separation"])),]
     return sep_df
+
+
+def optimal_separation_threshold(
+    df1: pd.DataFrame,
+    df2: pd.DataFrame,
+    separation: pd.DataFrame,
+    thresholds: tuple[float] = (0, 0.025, 0.05, 0.075, 0.1, 0.2, 0.3, 0.4, 0.5),
+) -> float:
+    """
+    Determines the optimal separation threshold using the method described in the CellPhe paper
+
+    :param df1: DataFrame for the first class containing only feature columns.
+    :param df2: DataFrame for the second class containing only feature columns.
+    :param separation: DataFrame containing separation scores for each of the
+    features in df1 and df2. Has 2 columns: Feature and Separation.
+    :param thresholds: Thresholds to check in a grid search.
+
+    :return: The optimal threshold as a float.
+    """
+
+    # Form a balanced training set using the number of rows in the minority
+    # group
+    sizes = [df1.shape[0], df2.shape[0]]
+    n_samples = min(sizes)
+    df1 = df1.sample(n_samples, replace=False)
+    df2 = df2.sample(n_samples, replace=False)
+    training_df = pd.concat((df1, df2))
+    labels = np.concatenate((np.repeat("group1", n_samples), np.repeat("group2", n_samples)))
+
+    # Calculate the error rate for each threshold
+    def error_rate_from_threshold(thresh):
+        features = separation.loc[separation["Separation"] >= thresh]["Feature"]
+        results = classify_cells(training_df[features], labels, training_df[features])
+        return 1 - np.mean(results[:, 3] == labels)
+
+    error_rates = np.array([error_rate_from_threshold(x) for x in thresholds])
+
+    # Identify the elbow point as the first point where the difference is higher
+    # than a threshold
+    differences = np.diff(error_rates) > 0.01
+    return thresholds[np.argmax(differences)]
