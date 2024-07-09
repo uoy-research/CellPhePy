@@ -45,7 +45,7 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFr
         raise ValueError(f"Invalid source value '{source}'. Must be one of {', '.join(sources)}")
 
     if source == "Phase":
-        df = pd.read_csv(file, skiprows=1)
+        df = pd.read_csv(file, skiprows=1, encoding="utf-8-sig")
         df["ROI_filename"] = df["Frame"].astype(str) + "-" + df["Tracking ID"].astype(str)
         out = df[["Frame", "Tracking ID", "ROI_filename", "Volume (µm³)", "Sphericity ()"]]
         out = out.rename(

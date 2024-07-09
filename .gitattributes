@@ -1,3 +1,0 @@
-data/05062019_B3_3_imagedata filter=lfs diff=lfs merge=lfs -text
-data/05062019_B3_3_Phase/ filter=lfs diff=lfs merge=lfs -text
-data/05062019_B3_3_Phase-FullFeatureTable.csv filter=lfs diff=lfs merge=lfs -text
