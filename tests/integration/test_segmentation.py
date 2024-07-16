@@ -9,20 +9,30 @@ from cellphe.segmentation import predict_segmentation_errors
 pytestmark = pytest.mark.integration
 
 
-def test_predict_segmentation_errors():
-    clean = pd.read_csv("data/CorrectSegs_MDAMB231.csv")
-    error = pd.read_csv("data/SegErrors_MDAMB231.csv")
+@pytest.fixture()
+def treated():
+    yield pd.read_csv("data/TreatedTraining.csv").drop(columns="Unnamed: 0")
 
-    untreated = pd.read_csv("data/UntreatedTraining.csv")
-    treated = pd.read_csv("data/TreatedTraining.csv")
+
+@pytest.fixture()
+def untreated():
+    yield pd.read_csv("data/UntreatedTraining.csv").drop(columns="Unnamed: 0")
+
+
+@pytest.fixture()
+def seg_clean():
+    yield pd.read_csv("data/CorrectSegs_MDAMB231.csv").drop(columns="CellIDs")
+
+
+@pytest.fixture()
+def seg_error():
+    yield pd.read_csv("data/SegErrors_MDAMB231.csv").drop(columns="CellIDs")
+
+
+def test_predict_segmentation_errors(treated, untreated, seg_clean, seg_error):
+    np.random.seed(123)
     training = pd.concat((untreated, treated))
-
-    # Remove cellID column as not a numeric feature
-    clean.drop(columns="CellIDs", inplace=True)
-    error.drop(columns="CellIDs", inplace=True)
-    training.drop(columns="Unnamed: 0", inplace=True)
-
-    obs = predict_segmentation_errors(error, clean, training, 5, 0.7)
+    obs = predict_segmentation_errors(seg_error, seg_clean, training, 5, 0.7)
     actual = np.full(training.shape[0], False)
     benchmark_errors = (
         np.array(
@@ -80,20 +90,11 @@ def test_predict_segmentation_errors():
     assert same_classification.mean() > 0.90
 
 
-def test_predict_segmentation_errors_ensemble():
-    clean = pd.read_csv("data/CorrectSegs_MDAMB231.csv")
-    error = pd.read_csv("data/SegErrors_MDAMB231.csv")
-
-    untreated = pd.read_csv("data/UntreatedTraining.csv")
-    treated = pd.read_csv("data/TreatedTraining.csv")
+def test_predict_segmentation_errors_ensemble(treated, untreated, seg_clean, seg_error):
+    np.random.seed(123)
     training = pd.concat((untreated, treated))
 
-    # Remove cellID column as not a numeric feature
-    clean.drop(columns="CellIDs", inplace=True)
-    error.drop(columns="CellIDs", inplace=True)
-    training.drop(columns="Unnamed: 0", inplace=True)
-
-    obs = predict_segmentation_errors(error, clean, training, 5, 0.7, num_repeats=3)
+    obs = predict_segmentation_errors(seg_error, seg_clean, training, 5, 0.7, num_repeats=3)
     actual = np.full(training.shape[0], False)
     benchmark_errors = (
         np.array(
