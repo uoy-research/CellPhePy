@@ -138,6 +138,7 @@ def segment_images(input_dir: str, output_dir: str) -> None:
             print(f"Error processing file {tif_file}: {e}")
 
 
+<<<<<<< HEAD
 def track_images(
     mask_dir: str,
     csv_filename: str,
