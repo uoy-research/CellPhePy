@@ -8,12 +8,16 @@
 
 from __future__ import annotations
 
+import glob
+import os
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from cellpose import models
 from PIL import Image
 from read_roi import read_roi_file
+from skimage import io
 
 
 def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFrame:
@@ -60,14 +64,7 @@ def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFr
         df = pd.read_csv(file)
         # Lines 2-4 in the raw file contain additional header information and can be safely discarded
         out = df.loc[3 : df.shape[0], ["FRAME", "TRACK_ID", "LABEL"]]
-        out = out.rename(
-            columns={
-                "Frame": "FrameID",
-                "Tracking ID": "CellID",
-                "Volume (µm³)": "Volume",
-                "Sphericity ()": "Sphericity",
-            }
-        )
+        out = out.rename(columns={"FRAME": "FrameID", "TRACK_ID": "CellID", "LABEL": "ROI_filename"})
         out["FrameID"] = out["FrameID"].astype(int) + 1  # Convert from 0-indexed to 1-indexed
 
     # Want IDs as integers
@@ -107,3 +104,43 @@ def read_tiff(filename: str) -> np.array:
     image = Image.open(filename)
     image = np.array(image)
     return image
+
+
+def segment_images(input_dir: str, output_dir: str) -> None:
+    """
+    Segments a batch of images using cellpose.
+
+    Currently only TIFs are supported. The output segmentations are saved to
+    disk as TIFs with index labelling. I.e. on each frame, all pixels belonging
+    to the first identified cell are given value 1, the second cell are
+    assigned 3 etc... Background pixels are 0.
+
+    :param input_dir: The path to the directory containing the TIFs.
+    :param output_dir: The path to the directory where the masks will be saved
+    to.
+    :return: None, saves masks to disk as a side-effect.
+    """
+    model = models.Cellpose(gpu=False, model_type="cyto")
+    tif_files = sorted(glob.glob(os.path.join(input_dir, "*.tif")))
+    os.makedirs(output_dir, exist_ok=True)
+    for tif_file in tif_files:
+        print(f"Processing image: {tif_file}")
+        try:
+            image = read_tiff(tif_file)
+            masks, _, _, _ = model.eval(image)
+
+            # Save masks
+            filename = os.path.splitext(os.path.basename(tif_file))[0] + "_mask.tif"
+            save_path = os.path.join(output_dir, filename)
+            io.imsave(save_path, masks.astype("uint16"))  # Assuming masks are uint16
+
+            print(f"Masks saved for {tif_file} at {save_path}")
+        except Exception as e:
+            print(f"Error processing file {tif_file}: {e}")
+
+
+def track_images():
+    """
+    TODO
+    """
+    pass
