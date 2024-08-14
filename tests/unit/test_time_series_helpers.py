@@ -72,7 +72,7 @@ def test_haar_approximation_1d_odd():
 def test_calculate_trajectory_area():
     xs = pd.Series([5, 8, 12, 4, 3, 20])
     ys = pd.Series([9, 2, 1, 20, 30, 5])
-    df = pd.DataFrame({"xpos": xs, "ypos": ys})
+    df = pd.DataFrame({"x": xs, "y": ys})
     output = calculate_trajectory_area(df)
     expected = 82.16667
     assert output == pytest.approx(expected)

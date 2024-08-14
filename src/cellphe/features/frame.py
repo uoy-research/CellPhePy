@@ -540,8 +540,8 @@ def calculate_density(df: pd.DataFrame, radius_threshold: float = 6) -> np.array
     :param df: DataFrame with columns:
         - CellID
         - FrameID
-        - xpos
-        - ypos
+        - x
+        - y
         - Rad
     :return: A DataFrame with 3 columns:
         - CellID
