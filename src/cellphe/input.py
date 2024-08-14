@@ -152,6 +152,7 @@ def track_images(mask_dir: str, output_fn: str) -> None:
     The CSV will have the same columns as that extracted by the TrackMate GUI
     (from the Spots tab of the Tracks Table).
 
+    TODO mention that will take a while on first boot
 
     :param mask_dir: Path to the directory containing the image masks created by
     CellPose as in segment_images.
@@ -171,6 +172,7 @@ def track_images(mask_dir: str, output_fn: str) -> None:
     # When we have a working ROI export it will be tested against a manual
     # export using ROI Manager to check it's working the same.
     # TODO see if legacy is needed
+    # TODO just grab imagej and TrackMate
     ij = imagej.init("sc.fiji:fiji", add_legacy=True)
 
     FolderOpener = sj.jimport("ij.plugin.FolderOpener")
@@ -231,17 +233,15 @@ def track_images(mask_dir: str, output_fn: str) -> None:
     # There is an export to CSV method but it's only in Trackmate 12.2, which
     # isn't on the scijava public repository
     # TODO Make this use stdout rather than a file
-    with tempfile.NamedTemporaryFile() as fp:
+    with tempfile.NamedTemporaryFile(delete=True, delete_on_close=False) as fp:
         out_file = File(fp.name)
         writer = TmXmlWriter(out_file)
         writer.appendSettings(settings)
         writer.appendModel(model)
         writer.writeToFile()
-        with open(fp.name, "rb") as infile:
-            raw_xml = infile.read()
+        tree = ET.parse(fp.name)
 
     # Parse XML
-    tree = ET.parse(raw_xml)
     spot_records = []
     # Get all Spots firstly
     for frame in tree.findall("./Model/AllSpots/SpotsInFrame"):
