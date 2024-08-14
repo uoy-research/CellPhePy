@@ -146,7 +146,7 @@ def calculate_trajectory_area(df) -> float:
     :param ys: An array of y-coordinates.
     :return: The trajectory area as a float.
     """
-    return ((df["xpos"].max() - df["xpos"].min()) * (df["ypos"].max() - df["ypos"].min())) / df["xpos"].size
+    return ((df["x"].max() - df["x"].min()) * (df["y"].max() - df["y"].min())) / df["x"].size
 
 
 def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -160,7 +160,7 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     # Remove columns that aren't used, as they aren't either unique identifiers
     # or feature columns
     df.drop(columns=["ROI_filename"], inplace=True)
-    feature_cols = np.setdiff1d(df.columns.values, ["CellID", "FrameID", "xpos", "ypos"])
+    feature_cols = np.setdiff1d(df.columns.values, ["CellID", "FrameID", "x", "y"])
 
     # Calculate summary statistics
     summary_vars = df.groupby("CellID", as_index=False)[feature_cols].agg(["mean", "std", skewness_positive])
