@@ -10,10 +10,15 @@ from __future__ import annotations
 
 import glob
 import os
+import sys
+import tempfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import imagej
 import numpy as np
 import pandas as pd
+import scyjava as sj
 from cellpose import models
 from PIL import Image
 from read_roi import read_roi_file
@@ -139,8 +144,160 @@ def segment_images(input_dir: str, output_dir: str) -> None:
             print(f"Error processing file {tif_file}: {e}")
 
 
-def track_images():
+def track_images(mask_dir: str, output_fn: str) -> None:
     """
-    TODO
+    Tracks cells across a set of frames using TrackMate, storing the results in
+    a CSV.
+
+    The CSV will have the same columns as that extracted by the TrackMate GUI
+    (from the Spots tab of the Tracks Table).
+
+
+    :param mask_dir: Path to the directory containing the image masks created by
+    CellPose as in segment_images.
+    :param output_fn: Filename for the resultant CSV.
     """
-    pass
+    # TODO refactor into smaller functions
+    # TODO get ROIs extracted. Extracting these using the ROIManager isn't easy
+    # as the ROIManager only works if imagej is loaded interactively (i.e. with
+    # a GUI) rather than headlessly as we are doing so. There is ROI information
+    # in the XML file that we use to extract the cell features, but it needs a
+    # bit of processing to get it consistent with the ROIManager:
+    #   - It displays ROIs coordinates as full decimals, whereas ROIManager has
+    #   pixel locations rounded to the nearest 0.5
+    #   - We run a macro to ensure that ROIs are interpolated to create a
+    #   continuous perimeter with no gaps. We'll want to do this to these manual
+    #   ROIs.
+    # When we have a working ROI export it will be tested against a manual
+    # export using ROI Manager to check it's working the same.
+    # TODO see if legacy is needed
+    ij = imagej.init("sc.fiji:fiji", add_legacy=True)
+
+    FolderOpener = sj.jimport("ij.plugin.FolderOpener")
+    Model = sj.jimport("fiji.plugin.trackmate.Model")
+    Settings = sj.jimport("fiji.plugin.trackmate.Settings")
+    TrackMate = sj.jimport("fiji.plugin.trackmate.TrackMate")
+    LabelImageDetectorFactory = sj.jimport("fiji.plugin.trackmate.detection.LabelImageDetectorFactory")
+    SimpleSparseLAPTrackerFactory = sj.jimport("fiji.plugin.trackmate.tracking.jaqaman.SimpleSparseLAPTrackerFactory")
+    TmXmlWriter = sj.jimport("fiji.plugin.trackmate.io.TmXmlWriter")
+    File = sj.jimport("java.io.File")
+
+    # Load all images as framestack
+    imp = FolderOpener.open(mask_dir, "")
+
+    # Swap T and Z in the same way that is done in the manual approach when
+    # opening TrackMate
+    # TODO Understand if this is needed in all situations or if it should be
+    # checked for automatically
+    dims = imp.getDimensions()
+    imp.setDimensions(dims[2], dims[4], dims[3])
+
+    # Trackmate datastructures
+    model = Model()
+    settings = Settings(imp)
+
+    # Configure detection - using the CellPose labels
+    settings.detectorFactory = LabelImageDetectorFactory()
+    settings.detectorSettings = {"TARGET_CHANNEL": ij.py.to_java(1), "SIMPLIFY_CONTOURS": True}
+
+    # Configure tracking - just using Simple LAP for now with default settings
+    # TODO make the choice of tracker & parameters exposed to the user
+    settings.trackerFactory = SimpleSparseLAPTrackerFactory()
+    settings.trackerSettings = settings.trackerFactory.getDefaultSettings()
+    settings.trackerSettings["LINKING_MAX_DISTANCE"] = 15.0
+    settings.trackerSettings["GAP_CLOSING_MAX_DISTANCE"] = 15.0
+    settings.trackerSettings["MAX_FRAME_GAP"] = ij.py.to_java(2)
+
+    # Configure Trackmate itself
+    settings.addAllAnalyzers()
+    settings.initialSpotFilterValue = 1.0
+    trackmate = TrackMate(model, settings)
+    trackmate.computeSpotFeatures(True)
+    trackmate.computeTrackFeatures(True)
+
+    # Check settings are ok
+    ok = trackmate.checkInput()
+    if not ok:
+        print("Settings error")
+        sys.exit(str(trackmate.getErrorMessage()))
+
+    # Run the full detection + tracking process
+    ok = trackmate.process()
+    if not ok:
+        print("process error")
+        sys.exit(str(trackmate.getErrorMessage()))
+
+    # Export to XML so we can retrieve the Spots and Tracks info
+    # There is an export to CSV method but it's only in Trackmate 12.2, which
+    # isn't on the scijava public repository
+    # TODO Make this use stdout rather than a file
+    with tempfile.NamedTemporaryFile() as fp:
+        out_file = File(fp.name)
+        writer = TmXmlWriter(out_file)
+        writer.appendSettings(settings)
+        writer.appendModel(model)
+        writer.writeToFile()
+        with open(fp.name, "rb") as infile:
+            raw_xml = infile.read()
+
+    # Parse XML
+    tree = ET.parse(raw_xml)
+    spot_records = []
+    # Get all Spots firstly
+    for frame in tree.findall("./Model/AllSpots/SpotsInFrame"):
+        # Get all spots, reading in their attributes (saving to dict)
+        spots = frame.findall("Spot")
+        for spot in spots:
+            spot_records.append(spot.attrib)
+    spot_df = pd.DataFrame.from_records(spot_records)
+    spot_df = spot_df.rename(columns={"name": "LABEL"})
+
+    # Then get all Tracks so can add TRACK_ID
+    track_records = []
+    for track in tree.findall("./Model/AllTracks/Track"):
+        track_id = track.attrib["TRACK_ID"]
+        for i, edge in enumerate(track.findall("Edge")):
+            track_records.append({"TRACK_ID": track_id, "ID": edge.attrib["SPOT_TARGET_ID"]})
+            # We are parsng the edges list getting the target cellID from each
+            # edge. To complete the set we also need the first source cellid.
+            if i == 0:
+                track_records.append({"TRACK_ID": track_id, "ID": edge.attrib["SPOT_SOURCE_ID"]})
+    track_df = pd.DataFrame.from_records(track_records)
+
+    # Combine Spots and Tracks
+    comb_df = pd.merge(spot_df, track_df, on="ID")
+    # Reorder columns to be the same as exported from the GUI
+    col_order = [
+        "LABEL",
+        "ID",
+        "TRACK_ID",
+        "QUALITY",
+        "POSITION_X",
+        "POSITION_Y",
+        "POSITION_Z",
+        "POSITION_T",
+        "FRAME",
+        "RADIUS",
+        "VISIBILITY",
+        "MEAN_INTENSITY_CH1",
+        "MEDIAN_INTENSITY_CH1",
+        "MIN_INTENSITY_CH1",
+        "MAX_INTENSITY_CH1",
+        "TOTAL_INTENSITY_CH1",
+        "STD_INTENSITY_CH1",
+        "CONTRAST_CH1",
+        "SNR_CH1",
+        "ELLIPSE_X0",
+        "ELLIPSE_Y0",
+        "ELLIPSE_MAJOR",
+        "ELLIPSE_MINOR",
+        "ELLIPSE_THETA",
+        "ELLIPSE_ASPECTRATIO",
+        "AREA",
+        "PERIMETER",
+        "CIRCULARITY",
+        "SOLIDITY",
+        "SHAPE_INDEX",
+    ]
+    comb_df = comb_df[col_order]
+    comb_df.to_csv(output_fn, index=False)

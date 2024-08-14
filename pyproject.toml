@@ -29,6 +29,7 @@ dependencies = [
     "numpy",
     "pandas",
     "pillow",
+    "pyimagej",
     "pyjanitor",
     "pywavelets",
     "read-roi",
