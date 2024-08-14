@@ -12,10 +12,9 @@ import numpy as np
 
 
 def skewness(x: np.array) -> float:
-    """
-    Calculates the skewness of a sample.
+    """Calculates the skewness of a sample.
 
-    It uses the type 2method in the R e1071::skewness implementation, which is
+    Uses the type 2method in the R e1071::skewness implementation, which is
     the version used in SAS and SPSS according to the documentation.
 
     :param x: Sample.

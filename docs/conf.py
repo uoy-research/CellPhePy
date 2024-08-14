@@ -19,12 +19,12 @@ sys.path.insert(0, os.path.abspath("../src/"))
 
 # -- Project information -----------------------------------------------------
 
-PROJECT = "CellPhePy"
-COPYRIGHT = "2024, Stuart Lacy"
-AUTHOR = "Stuart Lacy"
+project = "CellPhe"
+copyright = "2024, Stuart Lacy"
+author = "Stuart Lacy"
 
 # The full version, including alpha/beta/rc tags
-RELEASE = "0.0.1"
+release = "0.0.2"
 
 
 # -- General configuration ---------------------------------------------------

@@ -16,8 +16,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 def classify_cells(train_x: pd.DataFrame, train_y: np.array, test_x: pd.DataFrame) -> np.array:
-    """
-    Predicts cell class using an ensemble.
+    """Predicts cell class using an ensemble.
 
     Trains three classifiers (Linear Discriminant Analysis, Random Forest and
     Support Vector Machine) and uses these in an ensemble by majority vote to
@@ -25,13 +24,12 @@ def classify_cells(train_x: pd.DataFrame, train_y: np.array, test_x: pd.DataFram
 
     :param train_x: DataFrame containing cell features (but no labels) for the
     :param train_y: Array of labels (can be strings or integers) for the
-    training data.
-    training set.
+        training set.
     :param test_x: DataFrame containing cell features (but no labels) for the
-    test set.
+        test set.
     :return: A 2D array with as many rows as there are rows in test_x, with 4
-    columns containing the predictions for each of the 3 classifiers and the
-    final ensemble prediction.
+        columns containing the predictions for each of the 3 classifiers and the
+        final ensemble prediction.
     """
 
     # Scale variables
