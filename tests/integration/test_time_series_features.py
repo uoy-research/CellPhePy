@@ -27,8 +27,11 @@ def assert_frame_equal_extended_diff(df1, df2):
 
 
 def test_time_series_features():
+    # R package uses 'xpos' and 'ypos' - Python package uses 'x' and 'y'
     frame_features = pd.read_csv("tests/resources/benchmark_features.csv")
+    frame_features = frame_features.rename(columns={"xpos": "x", "ypos": "y"})
     expected = pd.read_csv("tests/resources/benchmark_time_series_features.csv")
     output = time_series_features(frame_features)
+    output = output.rename(columns={"x": "xpos", "y": "ypos"})
 
     assert_frame_equal_extended_diff(expected.reset_index(drop=True), output.reset_index(drop=True))

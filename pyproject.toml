@@ -4,7 +4,7 @@ build-backend = "flit.buildapi"
 
 [project]
 name =  "cellphe"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
     {name = "Stuart Lacy", email = "stuart.lacy@york.ac.uk"},
 ]
@@ -62,9 +62,9 @@ test = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/microsoft/python-package-template/tree/main#readme"
-Source = "https://github.com/microsoft/python-package-template"
-Tracker = "https://github.com/microsoft/python-package-template/issues"
+Documentation = "https://uoy-research.github.io/CellPhePy"
+Source = "https://github.com/uoy-research/CellPhePy/issues"
+Tracker = "https://github.com/uoy-research/CellPhePy"
 
 [tool.flit.module]
 name = "cellphe"
