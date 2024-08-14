@@ -6,6 +6,10 @@ Welcome to CellPhePy's documentation!
    :caption: Contents:
 
    api
+   generated/cellphe.features
+   generated/cellphe.processing
+   generated/cellphe.segmentation
+   generated/modules
 
 
 Indices and tables

@@ -101,8 +101,7 @@ def extract_features(
     framerate: float,
     minimum_cell_size: int = 8,
 ) -> pd.DataFrame:
-    r"""
-    Calculates cell features from timelapse videos
+    r"""Calculates cell features from timelapse videos
 
     Calculates 74 features related to size, shape, texture and movement for each cell on every non-missing frame,
     as well as the cell density around each cell on each frame.
@@ -114,24 +113,24 @@ def extract_features(
     ``FrameID`` column in ``df``.
 
     :param df: DataFrame where every row corresponds to a combination of a cell
-    tracked in a frame. It must have at least columns ``CellID``, ``FrameID`` and
-    ``ROI_filename`` along with any additional features.
+        tracked in a frame. It must have at least columns ``CellID``, ``FrameID`` and
+        ``ROI_filename`` along with any additional features.
     :param roi_folder: A path to a directory containing multiple Report Object Instance
-    (ROI) files named in the format ``cellid``-``frameid``.roi
+        (ROI) files named in the format ``cellid``-``frameid``.roi
     :param frame_folder: A path to a directory containing multiple frames in TIFF format.
-    It is assumed these are named under the pattern ``<experiment
-    name>-<frameid>.tif``, where
-    ``<frameid>`` is a 4 digit zero-padded integer.
+        It is assumed these are named under the pattern ``<experiment
+        name>-<frameid>.tif``, where
+        ``<frameid>`` is a 4 digit zero-padded integer.
     :param framerate: The frame-rate, used to provide a meaningful measurement unit for velocity,
-       otherwise a scaleless unit is implied with ``framerate=1``.
+        otherwise a scaleless unit is implied with ``framerate=1``.
     :param minimum_cell_size: Minimum height and width of the cell in pixels.
     :return: A dataframe with 77+N columns (where N is the number of imported features)
-     and 1 row per cell per frame it's present in:
-      * ``FrameID``: the numeric frameID
-      * ``CellID``: the numeric cellID
-      * ``ROI_filename``: the ROI filename
-      * ``...``: 74 frame specific features
-      * ``...``: Any other data columns that were present in ``df``
+        and 1 row per cell per frame it's present in:
+        * ``FrameID``: the numeric frameID
+        * ``CellID``: the numeric cellID
+        * ``ROI_filename``: the ROI filename
+        * ``...``: 74 frame specific features
+        * ``...``: Any other data columns that were present in ``df``
     """
     records = []  # Container that will populate data frame
     # Iterate through frames, only want to read one into memory at a time
@@ -227,11 +226,9 @@ def extract_features(
 
 
 def var_from_centre(boundaries: np.array) -> list[float]:
-    """
-    Determines the distance of boundary conditions from the centre.
+    """Determines the distance of boundary conditions from the centre.
 
     :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
-
     :return: A tuple of the mean distance from the centre and the variance.
     """
     means = boundaries.mean(axis=0)
@@ -240,12 +237,10 @@ def var_from_centre(boundaries: np.array) -> list[float]:
 
 
 def curvature(boundaries: np.array, gap: int) -> float:
-    """
-    Identifies the curvature of a boundary condition.
+    """Identifies the curvature of a boundary condition.
 
     :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
     :param gap: The gap.
-
     :return: The curvature as a float.
     """
     # Create index array
@@ -269,11 +264,9 @@ def curvature(boundaries: np.array, gap: int) -> float:
 
 
 def minimum_box(boundaries: np.array) -> np.array:
-    """
-    Finds the minimum box around some boundary coordinates.
+    """Finds the minimum box around some boundary coordinates.
 
     :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
-
     :return: A 1D numpy array of an [x,y] pair.
     """
     n_points = boundaries.shape[0]
@@ -296,15 +289,11 @@ def minimum_box(boundaries: np.array) -> np.array:
 
 
 def polygon(boundaries: np.array) -> np.array:
-    """
-    Calculates the minimal polygon around a set of points using the
-    Ramer-Douglas-Peucker method.
-    Uses the shapely implementation.
+    """Calculates the minimal polygon around a set of points using the
+    Ramer-Douglas-Peucker method. Uses the shapely implementation.
 
     :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
-
     :return: A 2D array comprising the minimal set of points.
-
     """
     # Turn ROI into polygon and reduce using Douglas-Peucker
     poly = Polygon(boundaries)
@@ -320,18 +309,15 @@ def polygon(boundaries: np.array) -> np.array:
 
 
 def polygon_features(boundaries: np.array) -> np.array:
-    """
-    Derives features from the minimal polygon surrounding the boundary
+    """Derives features from the minimal polygon surrounding the boundary
     coordinates.
 
     :param boundaries: A 2D array of [[x1, y1], [x2, y2], ..., [xn, yn]] pairs.
-
     :return: A 1D array with 4 values:
         -[0] The longest edge
         -[1] The smallest interior angle
         -[2] The variance of the interior angles
         -[3] The variance of the edges
-
     """
     # Fit reduced polygon
     points = polygon(boundaries)
@@ -364,11 +350,9 @@ def polygon_features(boundaries: np.array) -> np.array:
 
 
 def polygon_angle(points: np.array) -> np.array:
-    """
-    Calculate interior angles from a polygon.
+    """Calculate interior angles from a polygon.
 
     :param points: An N x 3 matrix.
-
     :return: A 1D array of length N, each entry representing an angle.
     """
     points_squared = points**2
@@ -379,8 +363,7 @@ def polygon_angle(points: np.array) -> np.array:
 
 
 def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, levels: int) -> np.array:
-    """
-    Calculate cooccurrence matrix between 2 images downscaled to a certain
+    """Calculate cooccurrence matrix between 2 images downscaled to a certain
     level.
 
     :param image1: The first image as a 2D numpy array.
@@ -388,7 +371,7 @@ def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, leve
     :param mask: A boolean mask with the same dimensions as image1 and image2
     :param levels: Number of grayscale levels to downscale to.
     :return: Returns a levels x levels matrix of the cooccurrences of each level
-    between the 2 images.
+        between the 2 images.
     """
     # Rescale both images to levels using the normalise_image function
     image1_rescaled = np.floor(normalise_image(image1, 0, levels)[mask] + 1e-6)
@@ -414,8 +397,7 @@ def cooccurrence_matrix(image1: np.array, image2: np.array, mask: np.array, leve
 def haralick(cooc: np.array) -> np.array:
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
-    """
-    Calculates Haralick features from the given cooccurrence matrix.
+    """Calculates Haralick features from the given cooccurrence matrix.
 
     :param cooc: Cooccurrence matrix.
     :return: A Numpy array of size 14 corresponding to each of the features.
@@ -488,15 +470,14 @@ def haralick(cooc: np.array) -> np.array:
 
 
 def intensity_quantiles(pixels: np.array) -> np.array:
-    """
-    Calculates the coefficient of variation in distance between pixels at
+    """Calculates the coefficient of variation in distance between pixels at
     different quantiles of intensity.
 
     :param pixels: A 2D array with 3 columns corresponding to x, y, and
-    intensity.
+        intensity.
     :return: A 1D array with length 9, corresponding to the coefficient of
-    variation between pixel distances at different quantile thresholds
-    (0.1-0.9).
+        variation between pixel distances at different quantile thresholds
+        (0.1-0.9).
     """
     quantiles = np.quantile(pixels[:, 2], np.arange(0.1, 1.0, 0.1))
 
@@ -509,8 +490,7 @@ def intensity_quantiles(pixels: np.array) -> np.array:
 
 
 def haar_approximation_2d(image: np.array) -> np.array:
-    """
-    Calculates the approximation coefficients of a 2D db1 (aka Haar) wavelet transform.
+    """Calculates the approximation coefficients of a 2D db1 (aka Haar) wavelet transform.
 
     :param image: 2D numpy array containing the image pixels.
     :return: A 2D numpy array containing the approximation coefficients.
@@ -520,19 +500,17 @@ def haar_approximation_2d(image: np.array) -> np.array:
 
 
 def double_image(image: np.array) -> np.array:
-    """
-    Doubles the size of an image.
+    """Doubles the size of an image.
 
     :param image: 2D numpy array representing the downscaled image with
-    dimensions m x n.
+        dimensions m x n.
     :return: A 2D numpy array with dimensions 2m x 2n
     """
     return image.repeat(2, axis=0).repeat(2, axis=1)
 
 
 def calculate_density(df: pd.DataFrame, radius_threshold: float = 6) -> np.array:
-    """
-    Calculates cellular density at each frame.
+    """Calculates cellular density at each frame.
 
     In particular, this is the total inverse distance from a cell in a frame
     to every other cell.
@@ -579,8 +557,8 @@ def calculate_density(df: pd.DataFrame, radius_threshold: float = 6) -> np.array
 
 def extract_static_features(image: np.array, roi: np.array) -> np.array:
     # pylint: disable=too-many-locals
-    """
-    Extracts the 68 frame-level static (i.e. no movement based) features for a given image and roi.
+    """Extracts the 68 frame-level static (i.e. no movement based) features for
+    a given image and roi.
 
     :param image: The image as a 2D Numpy array.
     :param roi: The region of interest as an Mx2 Numpy array.

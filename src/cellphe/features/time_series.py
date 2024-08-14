@@ -16,14 +16,13 @@ from cellphe.features.helpers import skewness
 
 
 def skewness_positive(x: np.array) -> float:
-    """
-    Calculates the skewness of an array.
+    """Calculates the skewness of an array.
 
     If the array doesn't have at least one positive value then it returns 0.
 
     :param x: Input array.
     :return: Either the skewness or 0, depending if the array has no positive
-    values.
+        values.
     """
     if x.max() > 0:
         res = skewness(x)
@@ -33,17 +32,16 @@ def skewness_positive(x: np.array) -> float:
 
 
 def interpolate(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Linearly interpolates a dataframe with missing frames.
+    """Linearly interpolates a dataframe with missing frames.
 
     The resultant dataframe will have more rows than the input if at minimum one
     cell is missing from one frame. All feature columns will be linearly
     interpolated during these missing frames.
 
     :param df: The DataFrame with columns CellID, FrameID and any other feature
-    columns.
+        columns.
     :return: A DataFrame with the same column structure as df, but with either
-    the same number of rows or greater.
+        the same number of rows or greater.
     """
     frame_range = {"FrameID": lambda x: range(x["FrameID"].min(), x["FrameID"].max())}
     all_cell_frames = df[["CellID", "FrameID"]].complete(frame_range, by="CellID")
@@ -54,15 +52,14 @@ def interpolate(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def ascent(x: np.array, diff: bool = True) -> float:
-    """
-    Calculates the ascent of a signal.
+    """Calculates the ascent of a signal.
 
     This is defined as the sum of the point-to-point positive differences,
     divided by the total length of the signal.
 
     :param x: Input array.
     :param diff: Whether to take the difference first (required for elevation
-    variables but not those from wavelets).
+        variables but not those from wavelets).
     :return: A float representing the ascent.
     """
     if diff:
@@ -74,15 +71,14 @@ def ascent(x: np.array, diff: bool = True) -> float:
 
 
 def descent(x: np.array, diff: bool = True) -> float:
-    """
-    Calculates the descent of a signal.
+    """Calculates the descent of a signal.
 
     This is defined as the sum of the point-to-point negative differences,
     divided by the total length of the signal.
 
     :param x: Input array.
     :param diff: Whether to take the difference first (required for elevation
-    variables but not those from wavelets).
+        variables but not those from wavelets).
     :return: A float representing the descent.
     """
     if diff:
@@ -94,12 +90,11 @@ def descent(x: np.array, diff: bool = True) -> float:
 
 
 def haar_approximation_1d(x: pd.Series) -> list(np.array):
-    """
-    Haar wavelet approximation for a 1D signal with 3 levels of decomposition.
+    """Haar wavelet approximation for a 1D signal with 3 levels of decomposition.
 
     :param x: The input signal.
     :return: A list of length 3 for each level, with each entry containing the
-    detail coefficients.
+        detail coefficients.
     """
 
     def remove_last_value_if_odd(signal, approx, detail):
@@ -119,13 +114,12 @@ def haar_approximation_1d(x: pd.Series) -> list(np.array):
 
 
 def wavelet_features(x: pd.Series) -> pd.DataFrame:
-    """
-    Calculates the elevation metrics for the detail coefficients from 3 levels
+    """Calculates the elevation metrics for the detail coefficients from 3 levels
     of a Haar wavelet approximation.
 
     :param x: The raw data as an array.
     :return: A 1-row DataFrame comprising 9 columns, one for each of the 3
-    elevation metrics for each of the 3 Wavelet levels.
+        elevation metrics for each of the 3 Wavelet levels.
     """
     wave_coefs = haar_approximation_1d(x)
 
@@ -139,8 +133,7 @@ def wavelet_features(x: pd.Series) -> pd.DataFrame:
 
 
 def calculate_trajectory_area(df) -> float:
-    """
-    Calculates the trajectory area of a cell.
+    """Calculates the trajectory area of a cell.
 
     :param xs: An array of x-coordinates.
     :param ys: An array of y-coordinates.
@@ -150,12 +143,11 @@ def calculate_trajectory_area(df) -> float:
 
 
 def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calculates 15 time-series based features for each frame-level feature.
+    """Calculates 15 time-series based features for each frame-level feature.
 
     :param df: A DataFrame as output from extract.features.
     :return: A DataFrame with CellID then 15*F+1 columns, where F is the number
-    of feature columns in df.
+        of feature columns in df.
     """
     # Remove columns that aren't used, as they aren't either unique identifiers
     # or feature columns
