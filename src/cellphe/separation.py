@@ -12,8 +12,7 @@ import pandas as pd
 
 
 def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold: float | str = 0) -> pd.DataFrame:
-    """
-    Calculates the separation score between 2 datasets across a number of
+    """Calculates the separation score between 2 datasets across a number of
     feature.
     A threshold can be supplied to identify discriminatory variables.
 
@@ -24,12 +23,11 @@ def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold:
     :param df1: DataFrame for the first class containing only feature columns.
     :param df2: DataFrame for the second class containing only feature columns.
     :param threshold: Separation threshold either as as a number or the string
-    'auto'. If a number then features with a separation score below this value
-    are discarded. If 'auto' then the threshold is automatically identified.
-
+        'auto'. If a number then features with a separation score below this value
+        are discarded. If 'auto' then the threshold is automatically identified.
     :return: A DataFrame comprising 2 columns: Feature and Separation, where
-    each row corresponds to a different feature's separation score. Any
-    features with separation scores less than threshold are removed.
+        each row corresponds to a different feature's separation score. Any
+        features with separation scores less than threshold are removed.
     """
     if threshold != "auto" and not (isinstance(threshold, (int, float, complex)) and not isinstance(threshold, bool)):
         raise ValueError("threshold must be 'auto' or numeric")
@@ -72,12 +70,11 @@ def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold:
 
 
 def optimal_separation_features(separation: pd.DataFrame) -> pd.Series:
-    """
-    Determines the optimal feature subset by an elbow method on their separation
+    """Determines the optimal feature subset by an elbow method on their separation
     scores.
 
     :param separation: DataFrame containing separation scores for a number of
-    features. Has 2 columns: Feature and Separation.
+        features. Has 2 columns: Feature and Separation.
 
     :return: A Series of the feature names to keep.
     """

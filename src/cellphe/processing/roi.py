@@ -11,8 +11,7 @@ import numpy as np
 
 
 def boundary_vertices(roi: np.array) -> np.array:
-    """
-    Returns the vertices that lie directly on the boundary of an ROI, i.e.
+    """Returns the vertices that lie directly on the boundary of an ROI, i.e.
     removing any additional vertices that do not directly impact on the interior
     area.
 
@@ -46,18 +45,15 @@ def boundary_vertices(roi: np.array) -> np.array:
 
 
 def get_diagonals(mat: np.array) -> list[np.array]:
-    """
-    Retrieves the diagonals (both forward and backward) from a matrix.
+    """Retrieves the diagonals (both forward and backward) from a matrix.
 
     NB: There's a manual version here, which was found to be slower than Numpy
     but it's a useful resource providing the equations relating x,y to the
-    diagonal positions.
-    https://stackoverflow.com/a/43311126/1020006
+    diagonal positions. https://stackoverflow.com/a/43311126/1020006
 
-    :param mat: A 2D Numpy array.
+    :parameter mat: A 2D Numpy array.
     :return: A 2D matrix containing the diagonals on each row, right padded with
-    zeros.
-    diagonal and is of variable length.
+        zeros.
     """
     maxy, maxx = mat.shape
     max_diag = min(maxy, maxx)
@@ -70,8 +66,7 @@ def get_diagonals(mat: np.array) -> list[np.array]:
 
 
 def get_corner_mask(mat: np.array) -> np.array:
-    """
-    Finds the corners of a masked boundary.
+    """Finds the corners of a masked boundary.
 
     The boundary must be split up into its constituent dimensions, so that the
     input mat is a 2D array where the first dimension (rows) each hold another
@@ -85,18 +80,17 @@ def get_corner_mask(mat: np.array) -> np.array:
     padded with starting and trailing 0s in case the boundary lies on the
     dimension edge.
 
-    :param mat: A 2D array containing the dimensions of the original matrix. See
-    the description and usage for more details.
+    :parameter mat: A 2D array containing the dimensions of the original matrix. See
+        the description and usage for more details.
     :return: A boolean array the same dimensions as mat, where a True indicates
-    that that vertex is a corner.
+        that that vertex is a corner.
     """
     return np.diff(np.pad(mat, ((0, 0), (1, 1))), 2, axis=1) == -1
 
 
 def roi_corners(roi: np.array) -> np.array:
     # pylint: disable=too-many-locals
-    """
-    Gets the corners from an ROI, i.e. any vertex that connect 2 sides.
+    """Gets the corners from an ROI, i.e. any vertex that connect 2 sides.
 
     :param roi: 2D array of x,y coordinates.
     :return: A 2D array of x,y coordinates.

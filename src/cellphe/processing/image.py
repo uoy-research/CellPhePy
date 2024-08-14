@@ -20,13 +20,11 @@ from cellphe.processing.roi import roi_corners
 
 
 def normalise_image(image: np.array, lower: int, upper: int) -> np.array:
-    """
-    Normalises an image to a specified range.
+    """Normalises an image to a specified range.
 
     :param image: The image to normalise as a 2D numpy array.
     :param lower: The lower bound of the target normalisation range, as an integer.
     :param upper: The upper boundo of the target normalisation range, as an integer.
-
     :return: The normalised image as a 2D numpy array.
     """
     return (image - image.min()) / (image.max() - image.min()) * (upper - lower) + lower
@@ -40,12 +38,13 @@ class SubImage:
 
     Properties:
         - sub_image: A 2D array representing the image truncated to the bounds
-        of the ROI.
+            of the ROI.
         - type_mask: A 2D array the same size as the sub-image detailing which
-        pixels are either inside the ROI (1), outside (-1), or on the ROI border
-        (0).
+            pixels are either inside the ROI (1), outside (-1), or on the ROI border
+            (0).
         - centroid: A 1D array of length 2 containing the (x,y) points at the
-        centre of the ROI.
+            centre of the ROI.
+
     """
 
     sub_image: np.array
@@ -54,8 +53,7 @@ class SubImage:
 
 
 def create_type_mask_skimage(roi: np.array) -> np.array:
-    """
-    Creates a type mask for a given ROI in an image.
+    """Creates a type mask for a given ROI in an image.
 
     This returns a 2D integer array representing the sub-image of the cell
     that the ROI covers, where:
@@ -70,7 +68,7 @@ def create_type_mask_skimage(roi: np.array) -> np.array:
     :param image: 2D array of the image pixels.
     :param roi: 2D array of x,y coordinates.
     :return: Returns a 2D array representing the image where the values
-    are either -1, 0, or 1.
+        are either -1, 0, or 1.
     """
     maxcol, maxrow = roi.max(axis=0) + 1
     mask = np.full((maxrow, maxcol), -1)
@@ -82,8 +80,7 @@ def create_type_mask_skimage(roi: np.array) -> np.array:
 
 
 def create_type_mask_ray_cast_4(roi: np.array) -> np.array:
-    """
-    Creates a type mask for a given ROI in an image.
+    """Creates a type mask for a given ROI in an image.
 
     This returns a 2D integer array representing the sub-image of the cell
     that the ROI covers, where:
@@ -103,7 +100,7 @@ def create_type_mask_ray_cast_4(roi: np.array) -> np.array:
     :param image: 2D array of the image pixels.
     :param roi: 2D array of x,y coordinates.
     :return: Returns a 2D array representing the image where the values
-    are either -1, 0, or 1.
+        are either -1, 0, or 1.
     """
     maxcol, maxrow = roi.max(axis=0) + 1
     mask = np.full((maxrow, maxcol), -1)
@@ -123,8 +120,7 @@ def create_type_mask_ray_cast_4(roi: np.array) -> np.array:
 
 
 def create_type_mask_matplotlib(roi: np.array) -> np.array:
-    """
-    Creates a type mask for a given ROI in an image.
+    """Creates a type mask for a given ROI in an image.
 
     This returns a 2D integer array representing the sub-image of the cell
     that the ROI covers, where:
@@ -139,7 +135,7 @@ def create_type_mask_matplotlib(roi: np.array) -> np.array:
     :param image: 2D array of the image pixels.
     :param roi: 2D array of x,y coordinates.
     :return: Returns a 2D array representing the image where the values
-    are either -1, 0, or 1.
+        are either -1, 0, or 1.
     """
     maxcol, maxrow = roi.max(axis=0) + 1
     mask = np.full((maxrow, maxcol), -1)
@@ -158,17 +154,15 @@ def create_type_mask_matplotlib(roi: np.array) -> np.array:
 
 def find_crossing_points(corners: np.array, shape: np.array) -> np.array:
     # pylint: disable=too-many-locals
-    """
-    Finds the crossing points for a ray entering a given polygon.
-
+    """Finds the crossing points for a ray entering a given polygon.
     This implementation is based the following algorithm:
     https://www.alienryderflex.com/polygon_fill/
 
     :param corners: The corners that define the polygon. Must be ordered either
-    clockwise or anti-clockwise.
+        clockwise or anti-clockwise.
     :param shape: The maximum shape of the polygon in (height, width).
     :return: A 2D array of shape (height, width) of type integer, where each
-    value corresponds to the number of boundary crossings at this pixel.
+        value corresponds to the number of boundary crossings at this pixel.
     """
     # Setup
     height = shape[1] - 1
@@ -206,8 +200,7 @@ def find_crossing_points(corners: np.array, shape: np.array) -> np.array:
 
 
 def create_type_mask_fill_polygon(roi):
-    """
-    Creates a type mask for a given ROI in an image.
+    """Creates a type mask for a given ROI in an image.
 
     This returns a 2D integer array representing the sub-image of the cell
     that the ROI covers, where:
@@ -222,7 +215,7 @@ def create_type_mask_fill_polygon(roi):
     :param image: 2D array of the image pixels.
     :param roi: 2D array of x,y coordinates.
     :return: Returns a 2D array representing the image where the values
-    are either -1, 0, or 1.
+        are either -1, 0, or 1.
     """
     maxcol, maxrow = roi.max(axis=0) + 1
 
@@ -244,8 +237,7 @@ def create_type_mask_fill_polygon(roi):
 
 
 def create_type_mask_flood_fill(roi: np.array) -> np.array:
-    """
-    Creates a type mask for a given ROI in an image.
+    """Creates a type mask for a given ROI in an image.
 
     This returns a 2D integer array representing the sub-image of the cell
     that the ROI covers, where:
@@ -259,7 +251,7 @@ def create_type_mask_flood_fill(roi: np.array) -> np.array:
     :param image: 2D array of the image pixels.
     :param roi: 2D array of x,y coordinates.
     :return: Returns a 2D array representing the image where the values
-    are either -1, 0, or 1.
+        are either -1, 0, or 1.
     """
     # Initialise the mask
     maxcol, maxrow = roi.max(axis=0) + 1
@@ -277,8 +269,7 @@ def create_type_mask_flood_fill(roi: np.array) -> np.array:
 
 
 def create_type_mask_flood_fill_negative(roi: np.array) -> np.array:
-    """
-    Creates a type mask for a given ROI in an image.
+    """Creates a type mask for a given ROI in an image.
 
     This returns a 2D integer array representing the sub-image of the cell
     that the ROI covers, where:
@@ -292,7 +283,7 @@ def create_type_mask_flood_fill_negative(roi: np.array) -> np.array:
     :param image: 2D array of the image pixels.
     :param roi: 2D array of x,y coordinates.
     :return: Returns a 2D array representing the image where the values
-    are either -1, 0, or 1.
+        are either -1, 0, or 1.
     """
     # Initialise the mask with extra 1 buffer around the outside so can
     # guarantee that 0,0 is outside
@@ -312,12 +303,10 @@ def create_type_mask_flood_fill_negative(roi: np.array) -> np.array:
 
 
 def extract_subimage(image: np.array, roi: np.array, method: str = "flood_fill_negative") -> SubImage:
-    """
-    Extracts a sub-image and relevant statistics from a given image and ROI.
+    """Extracts a sub-image and relevant statistics from a given image and ROI.
 
     :param image: The image as a 2D Numpy array.
     :param roi: The region of interest as an Mx2 Numpy array.
-
     :return: A SubImage instance.
     """
     # Calculate centroid before subsetting roi, as units are relative to the
