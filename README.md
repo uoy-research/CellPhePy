@@ -34,6 +34,10 @@ An example dataset to demonstrate CellPhe’s capabilities is hosted on [Dryad](
 These should be extracted into a suitable location before proceeding
 with the rest of the tutorial.
 
+```python
+from cellphe import copy_features, extract_features, time_series_features
+```
+
 The first step is to prepare a dataframe containing metadata and any
 pre-existing attributes. If PhaseFocus Livecyte or Trackmate software
 has been used to generate the region-of-interest (ROI) files, then a
@@ -52,7 +56,6 @@ experimental setup, only including cells that were tracked for at least
 50 frames.
 
 ``` python
-from cellphe.input import copy_features
 min_frames = 50
 input_feature_table = "05062019_B3_3_Phase-FullFeatureTable.csv"
 feature_table = copy_features(input_feature_table, min_frames, source="Phase")
@@ -72,7 +75,6 @@ in the `frame_folder` directory, while ROI files are named according to
 the `ROI_filename` column and located in the `roi_folder` directory.
 
 ``` python
-from cellphe.features import extract_features
 roi_folder = "05062019_B3_3_Phase"
 image_folder = "05062019_B3_3_imagedata"
 new_features = extract_features(feature_table, roi_folder, image_folder, framerate=0.0028)
@@ -88,6 +90,5 @@ output in the form of a dataframe with the first column being the
 `CellID` used previously.
 
 ``` python
-from cellphe.features import time_series_features
 tsvariables = time_series_features(new_features)
 ```
