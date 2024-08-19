@@ -93,7 +93,7 @@ STATIC_FEATURE_NAMES = [
 ]
 
 
-def extract_features(
+def cell_features(
     # pylint: disable=too-many-locals, too-many-statements
     df: pd.DataFrame,
     roi_folder: str,

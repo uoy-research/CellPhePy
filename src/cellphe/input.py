@@ -16,7 +16,7 @@ from PIL import Image
 from read_roi import read_roi_file
 
 
-def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFrame:
+def import_data(file: str, minframes: int, source: str = "Phase") -> pd.DataFrame:
     """Copy metadata and cell-frame features from an existing PhaseFocus or Trackmate table
 
     Loads the frame and cell IDs along with the filename used to refer to each ROI.
