@@ -136,10 +136,17 @@ def load_tracker(settings, tracker: str, tracker_settings: dict) -> None:
         tracker.
     :return: None, updates settings as a side-effect.
     """
-    # TODO make this selectable
-    tracker_cls = sj.jimport("fiji.plugin.trackmate.tracking.jaqaman.SimpleSparseLAPTrackerFactory")
-    settings.trackerFactory = tracker_cls()
+    options = {"SimpleLAP": "fiji.plugin.trackmate.tracking.jaqaman.SimpleSparseLAPTrackerFactory"}
+    try:
+        selected = options[tracker]
+    except KeyError as ex:
+        raise KeyError(f"tracker must be one of {','.join(options.keys())}") from ex
+
+    settings.trackerFactory = sj.jimport(selected)()
     settings.trackerSettings = settings.trackerFactory.getDefaultSettings()
+    if tracker_settings is not None:
+        for k, v in tracker_settings.items():
+            settings.trackerSettings[k] = v
 
 
 def configure_trackmate(model, settings):
