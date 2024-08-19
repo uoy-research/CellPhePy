@@ -21,7 +21,6 @@ import pandas as pd
 import scyjava as sj
 from cellpose import models
 from PIL import Image
-from read_roi import read_roi_file
 from roifile import ImagejRoi
 from skimage import io
 
@@ -91,11 +90,8 @@ def read_roi(filename: str) -> np.array:
     :param filename: Filepath to the ROI file (extension .roi).
     :return: A 2D numpy array containing the coordinates.
     """
-    fn_stripped = Path(filename).stem
-    roi = read_roi_file(filename)
-    x = roi[fn_stripped]["x"]
-    y = roi[fn_stripped]["y"]
-    return np.column_stack((x, y))
+    roi = ImagejRoi.fromfile(filename)
+    return roi.coordinates()
 
 
 def read_tiff(filename: str) -> np.array:

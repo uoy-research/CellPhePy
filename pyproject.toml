@@ -33,7 +33,6 @@ dependencies = [
     "pyjanitor",
     "pywavelets",
     "roifile",
-    "read-roi",
     "scipy",
     "scikit-image",
     "scikit-learn",
