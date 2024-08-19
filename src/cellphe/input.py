@@ -168,10 +168,8 @@ def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
     # TODO refactor into smaller functions
     # TODO interpolate ROIs
     # TODO use roifile for input too
-    # TODO see if legacy is needed
-    # TODO just grab imagej and TrackMate
     os.makedirs(roi_folder, exist_ok=True)
-    ij = imagej.init("sc.fiji:fiji", add_legacy=True)
+    ij = imagej.init(["net.imagej:imagej", "sc.fiji:TrackMate:7.13.2"], add_legacy=False)
 
     FolderOpener = sj.jimport("ij.plugin.FolderOpener")
     Model = sj.jimport("fiji.plugin.trackmate.Model")
