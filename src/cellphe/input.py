@@ -163,7 +163,6 @@ def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
     """
     # TODO refactor into smaller functions
     # TODO interpolate ROIs
-    # TODO use roifile for input too
     os.makedirs(roi_folder, exist_ok=True)
     ij = imagej.init(["net.imagej:imagej", "sc.fiji:TrackMate:7.13.2"], add_legacy=False)
 
@@ -179,12 +178,24 @@ def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
     # Load all images as framestack
     imp = FolderOpener.open(mask_dir, "")
 
-    # Swap T and Z in the same way that is done in the manual approach when
-    # opening TrackMate
-    # TODO Understand if this is needed in all situations or if it should be
-    # checked for automatically
+    # When reading in the imagestack, the the number of frames is often
+    # (always?) interpreted as the number of channels. This corrects that in the
+    # same way as the info box that pops up when using TrackMate in the GUI
+    # Dims are ordered X Y Z C T
     dims = imp.getDimensions()
-    imp.setDimensions(dims[2], dims[4], dims[3])
+    if dims[4] == 1:
+        # If time dimension is actually in Z, swap Z & T
+        if dims[2] > 1:
+            imp.setDimensions(dims[4], dims[3], dims[2])
+        # If time dimension is actually in channels (usual case), swap C & T
+        elif dims[3] > 1:
+            imp.setDimensions(dims[2], dims[4], dims[3])
+        # If none of Z, C, T contain more than 1 (i.e. time), then we have an
+        # error
+        else:
+            raise ValueError(
+                f"Time-dimension could not be identified as none of the Z, C, or T channels contain more than 1 value: {dims[2:]}"
+            )
 
     # Trackmate datastructures
     model = Model()
@@ -266,8 +277,6 @@ def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
             if i == 0:
                 track_records.append({"TRACK_ID": track_id, "ID": edge.attrib["SPOT_SOURCE_ID"]})
     track_df = pd.DataFrame.from_records(track_records)
-
-    # TODO extract ROIs
 
     # Combine Spots and Tracks
     comb_df = pd.merge(spot_df, track_df, on="ID")
