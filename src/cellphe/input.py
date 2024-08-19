@@ -232,19 +232,15 @@ def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
         print("process error")
         sys.exit(str(trackmate.getErrorMessage()))
 
-    # Export to XML so we can retrieve the Spots and Tracks info
-    # There is an export to CSV method but it's only in Trackmate 12.2, which
-    # isn't on the scijava public repository
-    # TODO Make this use stdout rather than a file
-    with tempfile.NamedTemporaryFile(delete=True, delete_on_close=False) as fp:
-        out_file = File(fp.name)
-        writer = TmXmlWriter(out_file)
-        writer.appendSettings(settings)
-        writer.appendModel(model)
-        writer.writeToFile()
-        tree = ET.parse(fp.name)
+    # Export to XML so we can retrieve the Spots, Tracks, and ROIs
+    # There isn't a TmXml constructor without File, even if you don't write to it
+    writer = TmXmlWriter(File(""))
+    writer.appendSettings(settings)
+    writer.appendModel(model)
+    raw_xml = writer.toString()
 
     # Parse XML
+    tree = ET.fromstring(str(raw_xml))
     spot_records = []
     rois = {}
     # Get all Spots firstly
