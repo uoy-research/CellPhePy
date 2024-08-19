@@ -60,7 +60,7 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
             coords = coords.reshape(int(coords.size / 2), 2)
             coords[:, 0] = coords[:, 0] + float(spot.attrib["POSITION_X"])
             coords[:, 1] = coords[:, 1] + float(spot.attrib["POSITION_Y"])
-            rois.append({"ID": spot.attrib["name"], "frame": spot.attrib["FRAME"], "coords": coords})
+            rois[spot.attrib["name"]] = coords
     spot_df = pd.DataFrame.from_records(spot_records)
     spot_df = spot_df.rename(columns={"name": "LABEL"})
 

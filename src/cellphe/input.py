@@ -138,7 +138,6 @@ def segment_images(input_dir: str, output_dir: str) -> None:
             print(f"Error processing file {tif_file}: {e}")
 
 
-<<<<<<< HEAD
 def track_images(
     mask_dir: str,
     csv_filename: str,
@@ -198,11 +197,6 @@ def track_images(
 
     # Write CSV and ROIs to disk
     comb_df.to_csv(csv_filename, index=False)
-    for roi in rois:
-        fn = os.path.join(roi_folder, f"{roi['ID']}.roi")
-        roi_obj = ImagejRoi.frompoints(roi["coords"])
-        roi_obj.position = int(roi["frame"])
-        roi_obj.tofile(fn)
-
-    if create_roi_zip:
-        shutil.make_archive(roi_folder, "zip", roi_folder)
+    for cellid, roi in rois.items():
+        fn = os.path.join(roi_folder, f"{cellid}.roi")
+        ImagejRoi.frompoints(roi).tofile(fn)
