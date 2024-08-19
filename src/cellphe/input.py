@@ -11,9 +11,7 @@ from __future__ import annotations
 import glob
 import os
 import sys
-import xml.etree.ElementTree as ET
 
-import imagej
 import numpy as np
 import pandas as pd
 import scyjava as sj
@@ -21,6 +19,9 @@ from cellpose import models
 from PIL import Image
 from roifile import ImagejRoi
 from skimage import io
+
+from cellphe.imagej import read_image_stack, setup_imagej
+from cellphe.trackmate import configure_trackmate, get_trackmate_xml, load_detector, load_tracker, parse_trackmate_xml
 
 
 def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFrame:
@@ -136,7 +137,9 @@ def segment_images(input_dir: str, output_dir: str) -> None:
             print(f"Error processing file {tif_file}: {e}")
 
 
-def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
+def track_images(
+    mask_dir: str, csv_filename: str, roi_folder: str, tracker: str = "SimpleLAP", tracker_settings: dict = None
+) -> None:
     """
     Tracks cells across a set of frames using TrackMate, storing the frame
     features in a CSV, and the ROIs in a specified folder.
@@ -159,159 +162,32 @@ def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
         doesn't exist.
     :return: None, writes the CSV file and ROI files to disk as a side-effect.
     """
-    # TODO refactor into smaller functions
-    # TODO interpolate ROIs
     os.makedirs(roi_folder, exist_ok=True)
-    ij = imagej.init(["net.imagej:imagej", "sc.fiji:TrackMate:7.13.2"], add_legacy=False)
+    setup_imagej()
 
-    # pylint doesn't like the camel case naming. I think it helps readability as
-    # it denotes a Java class
-    # pylint: disable=invalid-name
-    FolderOpener = sj.jimport("ij.plugin.FolderOpener")
-    Model = sj.jimport("fiji.plugin.trackmate.Model")
-    Settings = sj.jimport("fiji.plugin.trackmate.Settings")
-    TrackMate = sj.jimport("fiji.plugin.trackmate.TrackMate")
-    LabelImageDetectorFactory = sj.jimport("fiji.plugin.trackmate.detection.LabelImageDetectorFactory")
-    SimpleSparseLAPTrackerFactory = sj.jimport("fiji.plugin.trackmate.tracking.jaqaman.SimpleSparseLAPTrackerFactory")
-    TmXmlWriter = sj.jimport("fiji.plugin.trackmate.io.TmXmlWriter")
-    File = sj.jimport("java.io.File")
+    imp = read_image_stack(mask_dir)
+    settings = sj.jimport("fiji.plugin.trackmate.Settings")(imp)
+    load_detector(settings)
+    load_tracker(settings, tracker, tracker_settings)
 
-    # Load all images as framestack
-    imp = FolderOpener.open(mask_dir, "")
-
-    # When reading in the imagestack, the the number of frames is often
-    # (always?) interpreted as the number of channels. This corrects that in the
-    # same way as the info box that pops up when using TrackMate in the GUI
-    # Dims are ordered X Y Z C T
-    dims = imp.getDimensions()
-    if dims[4] == 1:
-        # If time dimension is actually in Z, swap Z & T
-        if dims[2] > 1:
-            imp.setDimensions(dims[4], dims[3], dims[2])
-        # If time dimension is actually in channels (usual case), swap C & T
-        elif dims[3] > 1:
-            imp.setDimensions(dims[2], dims[4], dims[3])
-        # If none of Z, C, T contain more than 1 (i.e. time), then we have an
-        # error
-        else:
-            raise ValueError(
-                f"""Time-dimension could not be identified as none of the Z, C, or T
-                channels contain more than 1 value: {dims[2:]}"""
-            )
-
-    # Trackmate datastructures
-    model = Model()
-    settings = Settings(imp)
-
-    # Configure detection - using the CellPose labels
-    # pylint doesn't recognise the to_java methods
-    # pylint: disable=no-member
-    settings.detectorFactory = LabelImageDetectorFactory()
-    settings.detectorSettings = {"TARGET_CHANNEL": ij.py.to_java(1), "SIMPLIFY_CONTOURS": True}
-
-    # Configure tracking - just using Simple LAP for now with default settings
-    # TODO make the choice of tracker & parameters exposed to the user
-    settings.trackerFactory = SimpleSparseLAPTrackerFactory()
-    settings.trackerSettings = settings.trackerFactory.getDefaultSettings()
-    settings.trackerSettings["LINKING_MAX_DISTANCE"] = 15.0
-    settings.trackerSettings["GAP_CLOSING_MAX_DISTANCE"] = 15.0
-    settings.trackerSettings["MAX_FRAME_GAP"] = ij.py.to_java(2)
-
-    # Configure Trackmate itself
-    settings.addAllAnalyzers()
-    settings.initialSpotFilterValue = 1.0
-    trackmate = TrackMate(model, settings)
-    trackmate.computeSpotFeatures(True)
-    trackmate.computeTrackFeatures(True)
-
-    # Check settings are ok
-    ok = trackmate.checkInput()
-    if not ok:
+    # Configure TrackMate instance
+    model = sj.jimport("fiji.plugin.trackmate.Model")()
+    trackmate = configure_trackmate(model, settings)
+    if not trackmate.checkInput():
         print("Settings error")
         sys.exit(str(trackmate.getErrorMessage()))
 
     # Run the full detection + tracking process
-    ok = trackmate.process()
-    if not ok:
+    if not trackmate.process():
         print("process error")
         sys.exit(str(trackmate.getErrorMessage()))
 
-    # Export to XML so we can retrieve the Spots, Tracks, and ROIs
-    # There isn't a TmXml constructor without File, even if you don't write to it
-    writer = TmXmlWriter(File(""))
-    writer.appendSettings(settings)
-    writer.appendModel(model)
-    raw_xml = writer.toString()
+    # Export to and extract the Spots, Tracks, and ROIs
+    raw_xml = get_trackmate_xml(model, settings)
+    comb_df, rois = parse_trackmate_xml(raw_xml)
 
-    # Parse XML
-    tree = ET.fromstring(str(raw_xml))
-    spot_records = []
-    rois = {}
-    # Get all Spots firstly
-    for frame in tree.findall("./Model/AllSpots/SpotsInFrame"):
-        # Get all spots, reading in their attributes (saving to dict)
-        spots = frame.findall("Spot")
-        for spot in spots:
-            spot_records.append(spot.attrib)
-            coords_raw = np.array([spot.text.split(" ")]).astype(float)
-            coords = coords_raw.reshape(int(coords_raw.size / 2), 2)
-            coords[:, 0] = coords[:, 0] + float(spot.attrib["POSITION_X"])
-            coords[:, 1] = coords[:, 1] + float(spot.attrib["POSITION_Y"])
-            rois[spot.attrib["name"]] = coords
-    spot_df = pd.DataFrame.from_records(spot_records)
-    spot_df = spot_df.rename(columns={"name": "LABEL"})
-
+    # Write CSV and ROIs to disk
+    comb_df.to_csv(csv_filename, index=False)
     for cellid, roi in rois.items():
         fn = os.path.join(roi_folder, f"{cellid}.roi")
-        roi_obj = ImagejRoi.frompoints(roi)
-        roi_obj.tofile(fn)
-
-    # Then get all Tracks so can add TRACK_ID
-    track_records = []
-    for track in tree.findall("./Model/AllTracks/Track"):
-        track_id = track.attrib["TRACK_ID"]
-        for i, edge in enumerate(track.findall("Edge")):
-            track_records.append({"TRACK_ID": track_id, "ID": edge.attrib["SPOT_TARGET_ID"]})
-            # We are parsng the edges list getting the target cellID from each
-            # edge. To complete the set we also need the first source cellid.
-            if i == 0:
-                track_records.append({"TRACK_ID": track_id, "ID": edge.attrib["SPOT_SOURCE_ID"]})
-    track_df = pd.DataFrame.from_records(track_records)
-
-    # Combine Spots and Tracks
-    comb_df = pd.merge(spot_df, track_df, on="ID")
-    # Reorder columns to be the same as exported from the GUI
-    col_order = [
-        "LABEL",
-        "ID",
-        "TRACK_ID",
-        "QUALITY",
-        "POSITION_X",
-        "POSITION_Y",
-        "POSITION_Z",
-        "POSITION_T",
-        "FRAME",
-        "RADIUS",
-        "VISIBILITY",
-        "MEAN_INTENSITY_CH1",
-        "MEDIAN_INTENSITY_CH1",
-        "MIN_INTENSITY_CH1",
-        "MAX_INTENSITY_CH1",
-        "TOTAL_INTENSITY_CH1",
-        "STD_INTENSITY_CH1",
-        "CONTRAST_CH1",
-        "SNR_CH1",
-        "ELLIPSE_X0",
-        "ELLIPSE_Y0",
-        "ELLIPSE_MAJOR",
-        "ELLIPSE_MINOR",
-        "ELLIPSE_THETA",
-        "ELLIPSE_ASPECTRATIO",
-        "AREA",
-        "PERIMETER",
-        "CIRCULARITY",
-        "SOLIDITY",
-        "SHAPE_INDEX",
-    ]
-    comb_df = comb_df[col_order]
-    comb_df.to_csv(csv_filename, index=False)
+        ImagejRoi.frompoints(roi).tofile(fn)
