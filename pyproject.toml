@@ -32,6 +32,7 @@ dependencies = [
     "pyimagej",
     "pyjanitor",
     "pywavelets",
+    "roifile",
     "read-roi",
     "scipy",
     "scikit-image",

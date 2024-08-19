@@ -22,6 +22,7 @@ import scyjava as sj
 from cellpose import models
 from PIL import Image
 from read_roi import read_roi_file
+from roifile import ImagejRoi
 from skimage import io
 
 
@@ -141,35 +142,35 @@ def segment_images(input_dir: str, output_dir: str) -> None:
             print(f"Error processing file {tif_file}: {e}")
 
 
-def track_images(mask_dir: str, output_fn: str) -> None:
+def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
     """
-    Tracks cells across a set of frames using TrackMate, storing the results in
-    a CSV.
+    Tracks cells across a set of frames using TrackMate, storing the frame
+    features in a CSV, and the ROIs in a specified folder.
 
     The CSV will have the same columns as that extracted by the TrackMate GUI
     (from the Spots tab of the Tracks Table).
+    The ROIs will be saved in the binary ROI format and can be read into
+    TrackMate.
+    NB: The IDs will not necessarily be identical to those from outputs from the
+    GUI TrackMate.
 
-    TODO mention that will take a while on first boot
+    As this function doesn't require a local install of ImageJ, it downloads a
+    remote version from the SciJava Maven repository. As such the first run can
+    a while (~10 mins), although this will be cached for subsequent uses.
 
     :param mask_dir: Path to the directory containing the image masks created by
     CellPose as in segment_images.
-    :param output_fn: Filename for the resultant CSV.
+    :param csv_filename: Filename for the resultant CSV.
+    :param roi_folder: Folder where ROIs will be saved to. Will be created if it
+        doesn't exist.
+    :return: None, writes the CSV file and ROI files to disk as a side-effect.
     """
     # TODO refactor into smaller functions
-    # TODO get ROIs extracted. Extracting these using the ROIManager isn't easy
-    # as the ROIManager only works if imagej is loaded interactively (i.e. with
-    # a GUI) rather than headlessly as we are doing so. There is ROI information
-    # in the XML file that we use to extract the cell features, but it needs a
-    # bit of processing to get it consistent with the ROIManager:
-    #   - It displays ROIs coordinates as full decimals, whereas ROIManager has
-    #   pixel locations rounded to the nearest 0.5
-    #   - We run a macro to ensure that ROIs are interpolated to create a
-    #   continuous perimeter with no gaps. We'll want to do this to these manual
-    #   ROIs.
-    # When we have a working ROI export it will be tested against a manual
-    # export using ROI Manager to check it's working the same.
+    # TODO interpolate ROIs
+    # TODO use roifile for input too
     # TODO see if legacy is needed
     # TODO just grab imagej and TrackMate
+    os.makedirs(roi_folder, exist_ok=True)
     ij = imagej.init("sc.fiji:fiji", add_legacy=True)
 
     FolderOpener = sj.jimport("ij.plugin.FolderOpener")
@@ -240,14 +241,25 @@ def track_images(mask_dir: str, output_fn: str) -> None:
 
     # Parse XML
     spot_records = []
+    rois = {}
     # Get all Spots firstly
     for frame in tree.findall("./Model/AllSpots/SpotsInFrame"):
         # Get all spots, reading in their attributes (saving to dict)
         spots = frame.findall("Spot")
         for spot in spots:
             spot_records.append(spot.attrib)
+            coords_raw = np.array([spot.text.split(" ")]).astype(float)
+            coords = coords_raw.reshape(int(coords_raw.size / 2), 2)
+            coords[:, 0] = coords[:, 0] + float(spot.attrib["POSITION_X"])
+            coords[:, 1] = coords[:, 1] + float(spot.attrib["POSITION_Y"])
+            rois[spot.attrib["name"]] = coords
     spot_df = pd.DataFrame.from_records(spot_records)
     spot_df = spot_df.rename(columns={"name": "LABEL"})
+
+    for cellid, roi in rois.items():
+        fn = os.path.join(roi_folder, f"{cellid}.roi")
+        roi_obj = ImagejRoi.frompoints(roi)
+        roi_obj.tofile(fn)
 
     # Then get all Tracks so can add TRACK_ID
     track_records = []
@@ -260,6 +272,8 @@ def track_images(mask_dir: str, output_fn: str) -> None:
             if i == 0:
                 track_records.append({"TRACK_ID": track_id, "ID": edge.attrib["SPOT_SOURCE_ID"]})
     track_df = pd.DataFrame.from_records(track_records)
+
+    # TODO extract ROIs
 
     # Combine Spots and Tracks
     comb_df = pd.merge(spot_df, track_df, on="ID")
@@ -297,4 +311,4 @@ def track_images(mask_dir: str, output_fn: str) -> None:
         "SHAPE_INDEX",
     ]
     comb_df = comb_df[col_order]
-    comb_df.to_csv(output_fn, index=False)
+    comb_df.to_csv(csv_filename, index=False)
