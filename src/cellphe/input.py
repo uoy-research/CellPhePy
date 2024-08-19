@@ -11,9 +11,7 @@ from __future__ import annotations
 import glob
 import os
 import sys
-import tempfile
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
 import imagej
 import numpy as np
@@ -166,6 +164,9 @@ def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
     os.makedirs(roi_folder, exist_ok=True)
     ij = imagej.init(["net.imagej:imagej", "sc.fiji:TrackMate:7.13.2"], add_legacy=False)
 
+    # pylint doesn't like the camel case naming. I think it helps readability as
+    # it denotes a Java class
+    # pylint: disable=invalid-name
     FolderOpener = sj.jimport("ij.plugin.FolderOpener")
     Model = sj.jimport("fiji.plugin.trackmate.Model")
     Settings = sj.jimport("fiji.plugin.trackmate.Settings")
@@ -194,7 +195,8 @@ def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
         # error
         else:
             raise ValueError(
-                f"Time-dimension could not be identified as none of the Z, C, or T channels contain more than 1 value: {dims[2:]}"
+                f"""Time-dimension could not be identified as none of the Z, C, or T
+                channels contain more than 1 value: {dims[2:]}"""
             )
 
     # Trackmate datastructures
@@ -202,6 +204,8 @@ def track_images(mask_dir: str, csv_filename: str, roi_folder: str) -> None:
     settings = Settings(imp)
 
     # Configure detection - using the CellPose labels
+    # pylint doesn't recognise the to_java methods
+    # pylint: disable=no-member
     settings.detectorFactory = LabelImageDetectorFactory()
     settings.detectorSettings = {"TARGET_CHANNEL": ij.py.to_java(1), "SIMPLIFY_CONTOURS": True}
 
