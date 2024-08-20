@@ -7,7 +7,11 @@
 
 from __future__ import annotations
 
+import os
+import shutil
+
 import numpy as np
+from roifile import ImagejRoi
 
 
 def boundary_vertices(roi: np.array) -> np.array:
@@ -139,3 +143,29 @@ def roi_corners(roi: np.array) -> np.array:
     corner_order = np.arange(all_corners.shape[0])[roi_order]
 
     return all_corners[corner_order]
+
+
+def save_rois(
+    coords: list[np.array], cell_ids: list[str], frame_ids: list[int], output_folder: str, create_zip: bool = False
+):
+    """
+    Saves ROIs to disk.
+
+    :param coords: List of 2D numpy arrays containing the ROI coordinates.
+    :param cell_ids: List of cell ids.
+    :param frame_ids: List of frame ids.
+    :param output_folder: Folder where ROIs will be saved to. Will be created if it
+        doesn't exist.
+    :param create_zip: Whether to create a Zip archive of the ROI files. If
+        selected, a zip will be created with the name '<output_folder>.zip', at the
+        level above the roi_folder.
+    :return: None, writes to disk as a side-effect.
+    """
+    for cell_id, frame_id, coord in zip(cell_ids, frame_ids, coords):
+        fn = os.path.join(output_folder, f"{cell_id}.roi")
+        roi_obj = ImagejRoi.frompoints(coord)
+        roi_obj.position = frame_id
+        roi_obj.tofile(fn)
+
+    if create_zip:
+        shutil.make_archive(output_folder, "zip", output_folder)

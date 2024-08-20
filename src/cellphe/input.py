@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import glob
 import os
-import shutil
 import sys
 
 import numpy as np
@@ -22,6 +21,7 @@ from roifile import ImagejRoi
 from skimage import io
 
 from cellphe.imagej import read_image_stack, setup_imagej
+from cellphe.processing.roi import save_rois
 from cellphe.trackmate import configure_trackmate, get_trackmate_xml, load_detector, load_tracker, parse_trackmate_xml
 
 
@@ -146,6 +146,8 @@ def track_images(
     tracker: str = "SimpleLAP",
     tracker_settings: dict = None,
 ) -> None:
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-arguments
     """
     Tracks cells across a set of frames using TrackMate, storing the frame
     features in a CSV, and the ROIs in a specified folder.
@@ -197,6 +199,10 @@ def track_images(
 
     # Write CSV and ROIs to disk
     comb_df.to_csv(csv_filename, index=False)
-    for cellid, roi in rois.items():
-        fn = os.path.join(roi_folder, f"{cellid}.roi")
-        ImagejRoi.frompoints(roi).tofile(fn)
+    save_rois(
+        [x["coords"] for x in rois],
+        [x["ID"] for x in rois],
+        [int(x["frame"]) for x in rois],
+        roi_folder,
+        create_roi_zip,
+    )
