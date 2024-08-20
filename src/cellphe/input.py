@@ -188,6 +188,8 @@ def track_images(
 
     # Write CSV and ROIs to disk
     comb_df.to_csv(csv_filename, index=False)
-    for cellid, roi in rois.items():
-        fn = os.path.join(roi_folder, f"{cellid}.roi")
-        ImagejRoi.frompoints(roi).tofile(fn)
+    for roi in rois:
+        fn = os.path.join(roi_folder, f"{roi['ID']}.roi")
+        roi_obj = ImagejRoi.frompoints(roi["coords"])
+        roi_obj.position = int(roi["frame"])
+        roi_obj.tofile(fn)

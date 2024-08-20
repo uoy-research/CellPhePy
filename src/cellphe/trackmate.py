@@ -32,7 +32,7 @@ def get_trackmate_xml(model, settings) -> str:
     return str(writer.toString())
 
 
-def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, dict]:
+def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
     """
     Parses the TrackMate XML output into a list of the tracked cells and their
     ROIs.
@@ -41,12 +41,15 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, dict]:
     :return: A list with 2 items:
         - A DataFrame with the same contents as the exported Spots table in the
         TrackMate TableViewer in the GUI
-        - A dictionary where keys are Spot IDS and the values are 2D Numpy
-        arrays containing the ROI coordinates as (x,y) pairs.
+        - A list of dictionaries representing Cells. Each dictionary has the
+        following keys:
+            - ID: CellID
+            - frame: Frame number
+            - coords: 2D Numpy array of the ROI coordinates as (x,y) pairs
     """
     tree = ET.fromstring(xml)
     spot_records = []
-    rois = {}
+    rois = []
     # Get all Spots firstly
     for frame in tree.findall("./Model/AllSpots/SpotsInFrame"):
         # Get all spots, reading in their attributes and ROIs
@@ -57,7 +60,7 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, dict]:
             coords = coords.reshape(int(coords.size / 2), 2)
             coords[:, 0] = coords[:, 0] + float(spot.attrib["POSITION_X"])
             coords[:, 1] = coords[:, 1] + float(spot.attrib["POSITION_Y"])
-            rois[spot.attrib["name"]] = coords
+            rois.append({"ID": spot.attrib["name"], "frame": spot.attrib["FRAME"], "coords": coords})
     spot_df = pd.DataFrame.from_records(spot_records)
     spot_df = spot_df.rename(columns={"name": "LABEL"})
 
