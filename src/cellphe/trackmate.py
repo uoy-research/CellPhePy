@@ -111,6 +111,7 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
         "SOLIDITY",
         "SHAPE_INDEX",
     ]
+    comb_df = comb_df[col_order].drop_duplicates()
 
     # TODO Why do we get FrameIDs = 0? Did we have these before?
     clean_rois = []
@@ -121,7 +122,6 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
         except KeyError:
             pass
 
-    comb_df = comb_df[col_order]
     return comb_df, clean_rois
 
 
