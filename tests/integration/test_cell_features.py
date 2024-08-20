@@ -8,7 +8,7 @@ import pytest
 from PIL import Image
 
 from cellphe.features.frame import *
-from cellphe.input import copy_features, read_roi, read_tiff
+from cellphe.input import import_data, read_roi, read_tiff
 from cellphe.processing import normalise_image
 
 pytestmark = pytest.mark.integration
@@ -36,13 +36,13 @@ def assert_frame_equal_extended_diff(df1, df2):
         )
 
 
-def test_extract_features():
+def test_cell_features():
     # Read features from the full dataset and compare to the output from the R
     # package, saved as CSV
     expected = pd.read_csv("tests/resources/benchmark_features.csv")
-    phase_features = copy_features("data/05062019_B3_3_Phase-FullFeatureTable.csv", 200, source="Phase")
+    phase_features = import_data("data/05062019_B3_3_Phase-FullFeatureTable.csv", 200, source="Phase")
 
-    output = extract_features(phase_features, "data/05062019_B3_3_Phase", "data/05062019_B3_3_imagedata", 0.0028)
+    output = cell_features(phase_features, "data/05062019_B3_3_Phase", "data/05062019_B3_3_imagedata", 0.0028)
     # Rename x and y to match how it was in the R version
     output.rename(columns={"x": "xpos", "y": "ypos"}, inplace=True)
 
