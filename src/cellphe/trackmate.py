@@ -113,14 +113,17 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
     ]
     comb_df = comb_df[col_order].drop_duplicates()
 
-    # TODO Why do we get FrameIDs = 0? Did we have these before?
+    # Want CellID and FrameID to be 1-indexed
+    comb_df["TRACK_ID"] = comb_df["TRACK_ID"].astype(int) + 1
+    comb_df["FRAME"] = comb_df["FRAME"].astype(int) + 1
     clean_rois = []
     for _, row in comb_df.iterrows():
         try:
-            this_cell = {"CellID": int(row["TRACK_ID"]), "FrameID": int(row["FRAME"]), "coords": rois[row["LABEL"]]}
+            this_cell = {"CellID": row["TRACK_ID"], "FrameID": row["FRAME"], "coords": rois[row["LABEL"]]}
             clean_rois.append(this_cell)
         except KeyError:
             pass
+    comb_df["LABEL"] = comb_df["FRAME"].astype("str") + "-" + comb_df["TRACK_ID"].astype("str")
 
     return comb_df, clean_rois
 
