@@ -66,15 +66,15 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
     spot_df = spot_df.rename(columns={"name": "LABEL"})
 
     # Then get all Tracks so can add TRACK_ID
+    # Tracks are stored as edges between source and target cells in consecutive
+    # frames. To get the unique cell ids in each track, store both source and
+    # target and remove duplicates after. More memory intensive but simple
     track_records = []
     for track in tree.findall("./Model/AllTracks/Track"):
-        for i, edge in enumerate(track.findall("Edge")):
+        for edge in track.findall("Edge"):
             track_records.append({"TRACK_ID": track.attrib["TRACK_ID"], "ID": edge.attrib["SPOT_TARGET_ID"]})
-            # We are parsng the edges list getting the target cellID from each
-            # edge. To complete the set we also need the first source cellid.
-            if i == 0:
-                track_records.append({"TRACK_ID": track.attrib["TRACK_ID"], "ID": edge.attrib["SPOT_SOURCE_ID"]})
-    track_df = pd.DataFrame.from_records(track_records)
+            track_records.append({"TRACK_ID": track.attrib["TRACK_ID"], "ID": edge.attrib["SPOT_SOURCE_ID"]})
+    track_df = pd.DataFrame.from_records(track_records).drop_duplicates()
 
     # Combine Spots and Tracks
     comb_df = pd.merge(spot_df, track_df, on="ID")
@@ -111,7 +111,7 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
         "SOLIDITY",
         "SHAPE_INDEX",
     ]
-    comb_df = comb_df[col_order].drop_duplicates()
+    comb_df = comb_df[col_order]
 
     # Want CellID and FrameID to be 1-indexed
     comb_df["TRACK_ID"] = comb_df["TRACK_ID"].astype(int) + 1
