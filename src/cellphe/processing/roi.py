@@ -145,15 +145,14 @@ def roi_corners(roi: np.array) -> np.array:
     return all_corners[corner_order]
 
 
-def save_rois(
-    coords: list[np.array], cell_ids: list[str], frame_ids: list[int], output_folder: str, create_zip: bool = False
-):
+def save_rois(rois: list[dict], output_folder: str, create_zip: bool = False):
     """
     Saves ROIs to disk.
 
-    :param coords: List of 2D numpy arrays containing the ROI coordinates.
-    :param cell_ids: List of cell ids.
-    :param frame_ids: List of frame ids.
+    :param rois: List of dicts, each one representing an ROI with elements:
+        - coords: 2D numpy array containing the ROI coordinates.
+        - CellID: Cell ID
+        - FrameID: Frame ID
     :param output_folder: Folder where ROIs will be saved to. Will be created if it
         doesn't exist.
     :param create_zip: Whether to create a Zip archive of the ROI files. If
@@ -161,10 +160,10 @@ def save_rois(
         level above the roi_folder.
     :return: None, writes to disk as a side-effect.
     """
-    for cell_id, frame_id, coord in zip(cell_ids, frame_ids, coords):
-        fn = os.path.join(output_folder, f"{cell_id}.roi")
-        roi_obj = ImagejRoi.frompoints(coord)
-        roi_obj.position = frame_id
+    for roi in rois:
+        fn = os.path.join(output_folder, f"{roi['FrameID']}-{roi['CellID']}.roi")
+        roi_obj = ImagejRoi.frompoints(roi["coords"])
+        roi_obj.position = roi["FrameID"]
         roi_obj.tofile(fn)
 
     if create_zip:

@@ -33,6 +33,7 @@ def get_trackmate_xml(model, settings) -> str:
 
 
 def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
+    # pylint: disable=too-many-locals
     """
     Parses the TrackMate XML output into a list of the tracked cells and their
     ROIs.
@@ -43,13 +44,13 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
         TrackMate TableViewer in the GUI
         - A list of dictionaries representing Cells. Each dictionary has the
         following keys:
-            - ID: CellID
-            - frame: Frame number
+            - CellID: CellID
+            - FrameID: Frame number
             - coords: 2D Numpy array of the ROI coordinates as (x,y) pairs
     """
     tree = ET.fromstring(xml)
     spot_records = []
-    rois = []
+    rois = {}
     # Get all Spots firstly
     for frame in tree.findall("./Model/AllSpots/SpotsInFrame"):
         # Get all spots, reading in their attributes and ROIs
@@ -110,8 +111,18 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
         "SOLIDITY",
         "SHAPE_INDEX",
     ]
+
+    # TODO Why do we get FrameIDs = 0? Did we have these before?
+    clean_rois = []
+    for _, row in comb_df.iterrows():
+        try:
+            this_cell = {"CellID": int(row["TRACK_ID"]), "FrameID": int(row["FRAME"]), "coords": rois[row["LABEL"]]}
+            clean_rois.append(this_cell)
+        except KeyError:
+            pass
+
     comb_df = comb_df[col_order]
-    return comb_df, rois
+    return comb_df, clean_rois
 
 
 def load_detector(settings) -> None:

@@ -146,7 +146,6 @@ def track_images(
     tracker: str = "SimpleLAP",
     tracker_settings: dict = None,
 ) -> None:
-    # pylint: disable=too-many-locals
     # pylint: disable=too-many-arguments
     """
     Tracks cells across a set of frames using TrackMate, storing the frame
@@ -199,10 +198,4 @@ def track_images(
 
     # Write CSV and ROIs to disk
     comb_df.to_csv(csv_filename, index=False)
-    save_rois(
-        [x["coords"] for x in rois],
-        [x["ID"] for x in rois],
-        [int(x["frame"]) for x in rois],
-        roi_folder,
-        create_roi_zip,
-    )
+    save_rois(rois, roi_folder, create_roi_zip)
