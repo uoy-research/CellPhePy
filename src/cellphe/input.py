@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import glob
 import os
+import shutil
 import sys
 
 import numpy as np
@@ -138,7 +139,12 @@ def segment_images(input_dir: str, output_dir: str) -> None:
 
 
 def track_images(
-    mask_dir: str, csv_filename: str, roi_folder: str, tracker: str = "SimpleLAP", tracker_settings: dict = None
+    mask_dir: str,
+    csv_filename: str,
+    roi_folder: str,
+    create_roi_zip: bool = False,
+    tracker: str = "SimpleLAP",
+    tracker_settings: dict = None,
 ) -> None:
     """
     Tracks cells across a set of frames using TrackMate, storing the frame
@@ -160,6 +166,9 @@ def track_images(
     :param csv_filename: Filename for the resultant CSV.
     :param roi_folder: Folder where ROIs will be saved to. Will be created if it
         doesn't exist.
+    :param create_roi_zip: Whether to create a Zip archive of the ROI files. If
+        selected, a zip will be created with the name '<roi_folder>.zip', at the
+        level above the roi_folder.
     :return: None, writes the CSV file and ROI files to disk as a side-effect.
     """
     os.makedirs(roi_folder, exist_ok=True)
@@ -193,3 +202,6 @@ def track_images(
         roi_obj = ImagejRoi.frompoints(roi["coords"])
         roi_obj.position = int(roi["frame"])
         roi_obj.tofile(fn)
+
+    if create_roi_zip:
+        shutil.make_archive(roi_folder, "zip", roi_folder)
