@@ -4,9 +4,10 @@ build-backend = "flit.buildapi"
 
 [project]
 name =  "cellphe"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
     {name = "Stuart Lacy", email = "stuart.lacy@york.ac.uk"},
+    {name = "Laura Wiggins", email = "l.wiggins@sheffield.ac.uk"},
 ]
 description = "CellPhe: Toolkit for cell phenotyping from time-lapse videos"
 readme = "README.md"

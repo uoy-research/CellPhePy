@@ -25,7 +25,7 @@ from cellphe.imagej import read_image_stack, setup_imagej
 from cellphe.trackmate import configure_trackmate, get_trackmate_xml, load_detector, load_tracker, parse_trackmate_xml
 
 
-def copy_features(file: str, minframes: int, source: str = "Phase") -> pd.DataFrame:
+def import_data(file: str, minframes: int, source: str = "Phase") -> pd.DataFrame:
     """Copy metadata and cell-frame features from an existing PhaseFocus or Trackmate table
 
     Loads the frame and cell IDs along with the filename used to refer to each ROI.
