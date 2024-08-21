@@ -47,6 +47,7 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
             - CellID: CellID
             - FrameID: Frame number
             - coords: 2D Numpy array of the ROI coordinates as (x,y) pairs
+            - filename: Filename to save the ROI to
     """
     tree = ET.fromstring(xml)
     spot_records = []
@@ -116,14 +117,26 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
     # Want CellID and FrameID to be 1-indexed
     comb_df["TRACK_ID"] = comb_df["TRACK_ID"].astype(int) + 1
     comb_df["FRAME"] = comb_df["FRAME"].astype(int) + 1
+    # Create a ROI filename column - 0 padded
+    n_digits_track_id = len(str(np.max(comb_df["TRACK_ID"])))
+    n_digits_frame_id = len(str(np.max(comb_df["FRAME"])))
+    comb_df["ROI_FILENAME"] = (
+        comb_df["FRAME"].astype(str).str.pad(n_digits_frame_id, fillchar="0")
+        + "-"
+        + comb_df["TRACK_ID"].astype(str).str.pad(n_digits_track_id, fillchar="0")
+    )
     clean_rois = []
     for _, row in comb_df.iterrows():
         try:
-            this_cell = {"CellID": row["TRACK_ID"], "FrameID": row["FRAME"], "coords": rois[row["LABEL"]]}
+            this_cell = {
+                "CellID": row["TRACK_ID"],
+                "FrameID": row["FRAME"],
+                "Filename": row["ROI_FILENAME"],
+                "coords": rois[row["LABEL"]],
+            }
             clean_rois.append(this_cell)
         except KeyError:
             pass
-    comb_df["LABEL"] = comb_df["FRAME"].astype("str") + "-" + comb_df["TRACK_ID"].astype("str")
 
     return comb_df, clean_rois
 

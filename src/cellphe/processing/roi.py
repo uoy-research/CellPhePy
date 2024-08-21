@@ -153,6 +153,7 @@ def save_rois(rois: list[dict], output_folder: str, create_zip: bool = False):
         - coords: 2D numpy array containing the ROI coordinates.
         - CellID: Cell ID
         - FrameID: Frame ID
+        - filename: Filename to save the ROI to
     :param output_folder: Folder where ROIs will be saved to. Will be created if it
         doesn't exist.
     :param create_zip: Whether to create a Zip archive of the ROI files. If
@@ -161,7 +162,7 @@ def save_rois(rois: list[dict], output_folder: str, create_zip: bool = False):
     :return: None, writes to disk as a side-effect.
     """
     for roi in rois:
-        fn = os.path.join(output_folder, f"{roi['FrameID']}-{roi['CellID']}.roi")
+        fn = os.path.join(output_folder, f"{roi['Filename']}.roi")
         roi_obj = ImagejRoi.frompoints(roi["coords"])
         roi_obj.position = roi["FrameID"]
         roi_obj.tofile(fn)
