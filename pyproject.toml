@@ -4,7 +4,7 @@ build-backend = "flit.buildapi"
 
 [project]
 name =  "cellphe"
-version = "0.0.3"
+version = "0.1.0"
 authors = [
     {name = "Stuart Lacy", email = "stuart.lacy@york.ac.uk"},
     {name = "Laura Wiggins", email = "l.wiggins@sheffield.ac.uk"},
@@ -24,14 +24,16 @@ classifiers = [
 ]
 requires-python = ">=3.8.1"
 dependencies = [
+    "cellpose",
     "imbalanced-learn",
     "matplotlib",
     "numpy",
     "pandas",
     "pillow",
+    "pyimagej",
     "pyjanitor",
     "pywavelets",
-    "read-roi",
+    "roifile",
     "scipy",
     "scikit-image",
     "scikit-learn",

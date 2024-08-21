@@ -40,7 +40,7 @@ def test_cell_features():
     # Read features from the full dataset and compare to the output from the R
     # package, saved as CSV
     expected = pd.read_csv("tests/resources/benchmark_features.csv")
-    phase_features = import_data("data/05062019_B3_3_Phase-FullFeatureTable.csv", 200, source="Phase")
+    phase_features = import_data("data/05062019_B3_3_Phase-FullFeatureTable.csv", "Phase", 200)
 
     output = cell_features(phase_features, "data/05062019_B3_3_Phase", "data/05062019_B3_3_imagedata", 0.0028)
     # Rename x and y to match how it was in the R version
