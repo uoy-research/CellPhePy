@@ -25,7 +25,7 @@ from cellphe.processing.roi import save_rois
 from cellphe.trackmate import configure_trackmate, get_trackmate_xml, load_detector, load_tracker, parse_trackmate_xml
 
 
-def import_data(file: str, source: str, minframes: int) -> pd.DataFrame:
+def import_data(file: str, source: str, minframes: int = 0) -> pd.DataFrame:
     """Copy metadata and cell-frame features from an existing TrackMate or
     PhaseFocus export.
 
@@ -53,7 +53,7 @@ def import_data(file: str, source: str, minframes: int) -> pd.DataFrame:
           * ``Volume``: a real-valued number
           * ``Sphericity``: a real-valued number
     """
-    sources = ["Phase", "Trackmate_imagej', 'Trackmate_auto'"]
+    sources = ["Phase", "Trackmate_imagej", "Trackmate_auto"]
     if source not in sources:
         raise ValueError(f"Invalid source value '{source}'. Must be one of {', '.join(sources)}")
 
@@ -104,7 +104,11 @@ def read_roi(filename: str) -> np.array:
     :return: A 2D numpy array containing the coordinates.
     """
     roi = ImagejRoi.fromfile(filename)
-    return roi.coordinates()
+    # The coordinates() method returns the subpixel coordinates for TrackMate
+    # ROIs as these are available. These are floats however and result in
+    # problems downstream. Want to explicitly use the integer coordinates.
+    coords = roi.integer_coordinates + [roi.left, roi.top]
+    return coords
 
 
 def read_tiff(filename: str) -> np.array:
