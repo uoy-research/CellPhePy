@@ -25,21 +25,26 @@ from cellphe.processing.roi import save_rois
 from cellphe.trackmate import configure_trackmate, get_trackmate_xml, load_detector, load_tracker, parse_trackmate_xml
 
 
-def import_data(file: str, minframes: int, source: str = "Phase") -> pd.DataFrame:
-    """Copy metadata and cell-frame features from an existing PhaseFocus or Trackmate table
+def import_data(file: str, source: str, minframes: int) -> pd.DataFrame:
+    """Copy metadata and cell-frame features from an existing TrackMate or
+    PhaseFocus export.
 
     Loads the frame and cell IDs along with the filename used to refer to each ROI.
-    For PhaseFocus generated data, volume and sphericity features are also extracted.
+    None of the TrackMate generated features are retained, while for PhaseFocus
+    sources volume and sphericity features are also extracted.
     Only cells that are tracked for a minimum of `minframes` are included.
 
     :param file: The filepath to a CSV file containing features output by PhaseFocus or Trackmate software.
     :type file: str
+    :param source: The name of the software that produced the metadata file.
+        - Trackmate_auto refers to an exported CSV produced within CellPhe by
+        track_images().
+        - Trackmate_imagej refers to an exported CSV from the ImageJ GUI.
+        - Phase refers to a CSV exported by PhaseFocus software.
+    :type source: str
     :param minframes: The minimum number of frames a cell must be tracked for to
         be included in the output features.
     :type minframes: int
-    :param source: The name of the software that produced the metadata file,
-        either 'Phase' or 'Trackmate' are currently supported.
-    :type source: str
     :return: A dataframe with 1 row corresponding to 1 cell tracked in 1 frame
         with the following columns:
           * ``FrameID``: the numeric FrameID
@@ -48,7 +53,7 @@ def import_data(file: str, minframes: int, source: str = "Phase") -> pd.DataFram
           * ``Volume``: a real-valued number
           * ``Sphericity``: a real-valued number
     """
-    sources = ["Phase", "Trackmate"]
+    sources = ["Phase", "Trackmate_imagej', 'Trackmate_auto'"]
     if source not in sources:
         raise ValueError(f"Invalid source value '{source}'. Must be one of {', '.join(sources)}")
 
@@ -64,12 +69,20 @@ def import_data(file: str, minframes: int, source: str = "Phase") -> pd.DataFram
                 "Sphericity ()": "Sphericity",
             }
         )
-    elif source == "Trackmate":
+    elif source == "Trackmate_imagej":
         df = pd.read_csv(file)
         # Lines 2-4 in the raw file contain additional header information and can be safely discarded
         out = df.loc[3 : df.shape[0], ["FRAME", "TRACK_ID", "LABEL"]]
         out = out.rename(columns={"FRAME": "FrameID", "TRACK_ID": "CellID", "LABEL": "ROI_filename"})
         out["FrameID"] = out["FrameID"].astype(int) + 1  # Convert from 0-indexed to 1-indexed
+    elif source == "Trackmate_auto":
+        # Basically the same as Trackmate_imagej but with 3 differences:
+        #   - No redundant header lines
+        #   - There is already a column called ROI_FILENAME
+        #   - FrameIDs and CellIDs are already 1-indexed
+        df = pd.read_csv(file)
+        out = df[["FRAME", "TRACK_ID", "ROI_FILENAME"]]
+        out = out.rename(columns={"FRAME": "FrameID", "TRACK_ID": "CellID", "ROI_FILENAME": "ROI_filename"})
 
     # Want IDs as integers
     out["CellID"] = out["CellID"].astype(int)
