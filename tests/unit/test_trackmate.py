@@ -13,6 +13,16 @@ def ij():
     yield setup_imagej()
 
 
+@pytest.fixture(scope="session", autouse=True)
+def cleanup(request):
+    """Cleanup a testing directory once we are finished."""
+
+    def shutdown_jvm():
+        sj.shutdown_jvm()
+
+    request.addfinalizer(shutdown_jvm)
+
+
 def test_load_tracker_unknown_tracker_raises_error(ij):
     with pytest.raises(KeyError):
         load_tracker(None, "Unknown", None)
