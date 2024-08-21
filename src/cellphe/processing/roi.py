@@ -13,6 +13,10 @@ import shutil
 import numpy as np
 from roifile import ImagejRoi
 
+# pylint doesn't recognise line
+# pylint: disable=no-name-in-module
+from skimage.draw import line
+
 
 def boundary_vertices(roi: np.array) -> np.array:
     """Returns the vertices that lie directly on the boundary of an ROI, i.e.
@@ -145,6 +149,41 @@ def roi_corners(roi: np.array) -> np.array:
     return all_corners[corner_order]
 
 
+def interpolate_between_points(coords: np.array) -> np.array:
+    """
+    Interpolates between the ROI coordinates to ensure there aren't any breaks
+    in the boundary.
+
+    All the downstream CellPhe analysis assumes that there aren't any gaps in
+    the ROIs. This function guarantees that.
+
+    :param coords: A 2D Numpy array of coordinate pairs in the form (x,y).
+    :return: An array in the same format as coords with either the same number
+        of coordinates, or more.
+    """
+    new_coords_raw = []
+    # Iterate through each consecutive coordinate pair interpolating a
+    # line between them
+    # NB: assumes that ROIs are stored in order, which they should be from
+    # TrackMate
+    for i in range(1, coords.shape[0]):
+        # These are in format (y, x) (i.e. row/column)
+        new_coords_raw.append(line(coords[i - 1, 1], coords[i - 1, 0], coords[i, 1], coords[i, 0]))
+    # Ensure first and last point are connected
+    new_coords_raw.append(line(coords[-1, 1], coords[-1, 0], coords[0, 1], coords[0, 0]))
+    # Convert back to a single 2D numpy array in (y,x) format
+    new_coords = np.concatenate([np.asarray(x).T for x in new_coords_raw])
+    # Remove duplicate coordinates
+    # Have to do a 2-step process as np.unique() sorts by default and cannot
+    # be told not to
+    _, inds = np.unique(new_coords, axis=0, return_index=True)
+    new_coords = new_coords[np.sort(inds)]
+
+    # Convert back to (x,y)
+    new_coords = np.flip(new_coords, axis=1)
+    return new_coords
+
+
 def save_rois(rois: list[dict], output_folder: str, create_zip: bool = False):
     """
     Saves ROIs to disk.
@@ -163,7 +202,8 @@ def save_rois(rois: list[dict], output_folder: str, create_zip: bool = False):
     """
     for roi in rois:
         fn = os.path.join(output_folder, f"{roi['Filename']}.roi")
-        roi_obj = ImagejRoi.frompoints(roi["coords"])
+        new_coords = interpolate_between_points(roi["coords"].astype(int))
+        roi_obj = ImagejRoi.frompoints(new_coords)
         roi_obj.position = roi["FrameID"]
         roi_obj.tofile(fn)
 
