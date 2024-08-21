@@ -42,6 +42,8 @@ CellPhe, or pre-segmented and tracked data from two widely used software
 
 ### Segmenting and tracking
 
+**NB: This feature is still experimental, please report any bugs at the [issue tracker](https://github.com/uoy-research/CellPhePy/issues)**
+
 CellPhe provides 2 functions to segment and track an image sequence:
 
   - `segment_images`: Segments images using Cellpose
