@@ -11,48 +11,63 @@ import numpy as np
 import pandas as pd
 
 
-def calculate_separation_scores(df1: pd.DataFrame, df2: pd.DataFrame, threshold: float | str = 0) -> pd.DataFrame:
-    """Calculates the separation score between 2 datasets across a number of
-    feature.
+def calculate_separation_scores(dfs: list[pd.DataFrame], threshold: float | str = 0) -> pd.DataFrame:
+    """
+    Calculates the separation score between multiple datasets (n groups) across a number of features.
     A threshold can be supplied to identify discriminatory variables.
 
-    Note that df1 and df2 should include only columns of features (i.e remove
+    Note that each DataFrame should include only columns of features (i.e., remove
     cell identifier columns prior to function use), and these columns must be
-    the same in number and data type.
+    the same in number and data type across all DataFrames.
 
-    :param df1: DataFrame for the first class containing only feature columns.
-    :param df2: DataFrame for the second class containing only feature columns.
-    :param threshold: Separation threshold either as as a number or the string
-        'auto'. If a number then features with a separation score below this value
-        are discarded. If 'auto' then the threshold is automatically identified.
+    :param dfs: List of DataFrames, each representing a different group, containing only feature columns.
+    :param threshold: Separation threshold either as a number or the string 'auto'. 
+        If a number, then features with a separation score below this value are discarded.
+        If 'auto', then the threshold is automatically identified.
     :return: A DataFrame comprising 2 columns: Feature and Separation, where
         each row corresponds to a different feature's separation score. Any
         features with separation scores less than threshold are removed.
     """
-    if threshold != "auto" and not (isinstance(threshold, (int, float, complex)) and not isinstance(threshold, bool)):
+    # Validate input
+    if len(dfs) < 2:
+        raise ValueError("At least 2 DataFrames are required.")
+    if threshold != "auto" and not (isinstance(threshold, (int, float))):
         raise ValueError("threshold must be 'auto' or numeric")
 
-    df1["group"] = "g1"
-    df2["group"] = "g2"
-    df_both = pd.concat((df1, df2))
-    # Melt into long
-    df_long = pd.melt(df_both, id_vars="group", var_name="Feature", value_name="value")
-    # Now get wide with 1 column per group
+    # Assign group labels to each DataFrame and concatenate them
+    for i, df in enumerate(dfs):
+        df["group"] = f"g{i + 1}"
+    
+    # Combine all DataFrames into one
+    df_combined = pd.concat(dfs)
+    
+    # Melt into long format
+    df_long = pd.melt(df_combined, id_vars="group", var_name="Feature", value_name="value")
+    
+    # Aggregate data
     df_agg = df_long.groupby(["group", "Feature"]).agg(["count", "mean", "var"]).reset_index()
 
     # Remove multi-index columns
     df_agg.columns = [x[0] if i < 2 else x[1] for i, x in enumerate(df_agg.columns.values)]
 
-    # Turn wide, so each row represents a feature and columns are group/features
+    # Pivot the DataFrame to have each group as columns for count, mean, and var
     df = df_agg.pivot(columns="group", index="Feature").reset_index()
 
-    # Calculations: haven't modified from the R code
-    df["sum"] = df["count"]["g1"] + df["count"]["g2"]
-    df["Vw"] = ((df["count"]["g1"] - 1) * df["var"]["g1"] + (df["count"]["g2"] - 1) * df["var"]["g2"]) / (df["sum"] - 2)
-    overmean = (df["count"]["g1"] * df["mean"]["g1"] + df["count"]["g2"] * df["mean"]["g2"]) / df["sum"]
-    df["Vb"] = (
-        df["count"]["g1"] * (df["mean"]["g1"] - overmean) ** 2 + df["count"]["g2"] * (df["mean"]["g2"] - overmean) ** 2
-    ) / (df["sum"] - 2)
+    # Calculate the grand total (sum of counts across all groups)
+    df["sum"] = df["count"].sum(axis=1)
+    
+    # Calculate the grand mean (weighted mean of means from all groups)
+    overmean = sum(df["count"][f"g{i + 1}"] * df["mean"][f"g{i + 1}"] for i in range(len(dfs))) / df["sum"]
+    
+    # Calculate within-group variance (Vw)
+    df["Vw"] = sum((df["count"][f"g{i + 1}"] - 1) * df["var"][f"g{i + 1}"] for i in range(len(dfs))) / (df["sum"] - len(dfs))
+    
+    # Calculate between-group variance (Vb)
+    df["Vb"] = sum(
+        df["count"][f"g{i + 1}"] * (df["mean"][f"g{i + 1}"] - overmean) ** 2 for i in range(len(dfs))
+    ) / (df["sum"] - len(dfs))
+    
+    # Calculate the Separation score
     df["Separation"] = df["Vb"] / df["Vw"]
 
     # Clean up
