@@ -31,7 +31,7 @@ def calculate_separation_scores(dfs: list[pd.DataFrame], threshold: float | str 
     # Validate input
     if len(dfs) < 2:
         raise ValueError("At least 2 DataFrames are required.")
-    if threshold != "auto" and not (isinstance(threshold, (int, float))):
+    if threshold != "auto" and not isinstance(threshold, (int, float)):
         raise ValueError("threshold must be 'auto' or numeric")
 
     # Assign group labels to each DataFrame and concatenate them
