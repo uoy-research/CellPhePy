@@ -21,7 +21,7 @@ def calculate_separation_scores(dfs: list[pd.DataFrame], threshold: float | str 
     the same in number and data type across all DataFrames.
 
     :param dfs: List of DataFrames, each representing a different group, containing only feature columns.
-    :param threshold: Separation threshold either as a number or the string 'auto'. 
+    :param threshold: Separation threshold either as a number or the string 'auto'.
         If a number, then features with a separation score below this value are discarded.
         If 'auto', then the threshold is automatically identified.
     :return: A DataFrame comprising 2 columns: Feature and Separation, where
@@ -37,13 +37,10 @@ def calculate_separation_scores(dfs: list[pd.DataFrame], threshold: float | str 
     # Assign group labels to each DataFrame and concatenate them
     for i, df in enumerate(dfs):
         df["group"] = f"g{i + 1}"
-    
     # Combine all DataFrames into one
     df_combined = pd.concat(dfs)
-    
     # Melt into long format
     df_long = pd.melt(df_combined, id_vars="group", var_name="Feature", value_name="value")
-    
     # Aggregate data
     df_agg = df_long.groupby(["group", "Feature"]).agg(["count", "mean", "var"]).reset_index()
 
@@ -55,18 +52,18 @@ def calculate_separation_scores(dfs: list[pd.DataFrame], threshold: float | str 
 
     # Calculate the grand total (sum of counts across all groups)
     df["sum"] = df["count"].sum(axis=1)
-    
     # Calculate the grand mean (weighted mean of means from all groups)
     overmean = sum(df["count"][f"g{i + 1}"] * df["mean"][f"g{i + 1}"] for i in range(len(dfs))) / df["sum"]
-    
     # Calculate within-group variance (Vw)
-    df["Vw"] = sum((df["count"][f"g{i + 1}"] - 1) * df["var"][f"g{i + 1}"] for i in range(len(dfs))) / (df["sum"] - len(dfs))
-    
+    df["Vw"] = sum((df["count"][f"g{i + 1}"] - 1) * df["var"][f"g{i + 1}"] for i in range(len(dfs))) / (
+        df["sum"] - len(dfs)
+    )
+
     # Calculate between-group variance (Vb)
-    df["Vb"] = sum(
-        df["count"][f"g{i + 1}"] * (df["mean"][f"g{i + 1}"] - overmean) ** 2 for i in range(len(dfs))
-    ) / (df["sum"] - len(dfs))
-    
+    df["Vb"] = sum(df["count"][f"g{i + 1}"] * (df["mean"][f"g{i + 1}"] - overmean) ** 2 for i in range(len(dfs))) / (
+        df["sum"] - len(dfs)
+    )
+
     # Calculate the Separation score
     df["Separation"] = df["Vb"] / df["Vw"]
 
