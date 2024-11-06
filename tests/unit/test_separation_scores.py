@@ -24,7 +24,7 @@ def mocked_return(separation):
 def test_calculate_separation_scores_errors_nonautostring(df1, df2):
     # If pass a string that isn't 'auto', the function should raise a ValueError
     with pytest.raises(ValueError):
-        calculate_separation_scores(df1, df2, "foo")
+        calculate_separation_scores([df1, df2], "foo")
 
 
 def test_calculate_separation_scores_calls_optimal_separation_threshold(df1, df2, mocker):
@@ -32,7 +32,7 @@ def test_calculate_separation_scores_calls_optimal_separation_threshold(df1, df2
     # optimal_separation_features function should be called
     mocked_func = mocker.patch("cellphe.separation.optimal_separation_features")
     mocked_func.side_effect = mocked_return
-    calculate_separation_scores(df1, df2, "auto")
+    calculate_separation_scores([df1, df2], "auto")
     mocked_func.assert_called_once()
 
 
@@ -41,5 +41,5 @@ def test_calculate_separation_scores_doesnt_call_optimal_separation_threshold(df
     # optimal_separation_features
     mocked_func = mocker.patch("cellphe.separation.optimal_separation_features")
     mocked_func.side_effect = mocked_return
-    calculate_separation_scores(df1, df2, 0.3)
+    calculate_separation_scores([df1, df2], 0.3)
     mocked_func.assert_not_called()
