@@ -25,7 +25,7 @@ def separation():
 
 
 def test_calculate_separation_scores(treated, untreated, separation):
-    output = calculate_separation_scores(treated, untreated)
+    output = calculate_separation_scores([treated, untreated])
     expected = pd.read_csv("tests/resources/benchmark_separation.csv")
 
     # Prepare for testing
