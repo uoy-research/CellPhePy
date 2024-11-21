@@ -9,7 +9,7 @@ from cellphe.classification import classify_cells
 pytestmark = pytest.mark.integration
 
 
-def test_calculate_separation_scores():
+def test_classify_cells():
     train_untreated = pd.read_csv("data/UntreatedTraining.csv").drop(columns="Unnamed: 0")
     train_treated = pd.read_csv("data/TreatedTraining.csv").drop(columns="Unnamed: 0")
     test_untreated = pd.read_csv("data/UntreatedTest.csv").drop(columns="Unnamed: 0")
