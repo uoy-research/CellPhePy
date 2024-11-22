@@ -52,7 +52,7 @@ def classify_cells(train_x: pd.DataFrame, train_y: np.array, test_x: pd.DataFram
     # manually. But then it returns the predictions unlabelled so then need to
     # reapply label
     # Pylint doesn't recognise the predict method and le_ attributes
-    # TODO: Could probably individual_preds = use ensemble.transform(test_x)
+    # Could probably individual_preds = use ensemble.transform(test_x)
     # And get model_names from list(ensemble.named_estimators.keys())
     # pylint: disable=no-member
     ensemble_preds = ensemble.predict(test_x)
