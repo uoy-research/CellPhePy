@@ -142,13 +142,19 @@ def calculate_trajectory_area(df) -> float:
     return ((df["x"].max() - df["x"].min()) * (df["y"].max() - df["y"].min())) / df["x"].size
 
 
-def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Calculates 15 time-series based features for each frame-level feature.
+def time_series_features(df: pd.DataFrame, numframes: int) -> pd.DataFrame:
+    """Calculates 15 time-series-based features for each frame-level feature.
 
     :param df: A DataFrame as output from extract.features.
+    :param numframes: The threshold number of frames a CellID must have to be included.
     :return: A DataFrame with CellID then 15*F+1 columns, where F is the number
         of feature columns in df.
     """
+    # Filter to include only CellIDs present for more than numframes frames
+    cell_frame_counts = df["CellID"].value_counts()
+    valid_cells = cell_frame_counts[cell_frame_counts > numframes].index
+    df = df[df["CellID"].isin(valid_cells)]
+    
     # Remove columns that aren't used, as they aren't either unique identifiers
     # or feature columns
     df.drop(columns=["ROI_filename"], inplace=True)
@@ -167,31 +173,18 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     ele_vars.rename(columns={"ascent": "asc", "descent": "des"}, inplace=True)
 
     # Calculate variables from wavelet details
-    # This is a nested loop: the groupby apply sends a DataFrame for each
-    # cell to an anonymous function that then applies the 'wavelet_features'
-    # function to every column, which returns 9 columns (3 wavelet levels x 3
-    # elevation variables).
-    # I can't see a one-liner way of doing this, as the aggregate functions
-    # accept functions that only return a single scalar, not the 9 columns here.
-    # The alternative is to have 9 separate functions in a single .agg call, but
-    # that means running the Wavelet decomposition 9 times rather than once.
-    wave_vars = interpolated.groupby(["CellID"], as_index=True)[feature_cols].apply(lambda x: x.agg([wavelet_features]))
+    wave_vars = interpolated.groupby(["CellID"], as_index=True)[feature_cols].apply(
+        lambda x: x.agg([wavelet_features])
+    )
 
     # Calculate trajectory area for each cell
-    # The trajectory difference is due to the R code using the number of
-    # frames before interpolation as the denominator, whereas this code uses the
-    # full range of frames (i.e. max - min frame number) that cell was observed
-    # in, which I think is more correct.
     traj_vars = grouped.apply(calculate_trajectory_area, include_groups=False)
 
     # Prepare for combination
-    # Set CellID as index for easy joining, and merge hierarchical column names
     summary_vars.set_index("CellID", inplace=True)
     summary_vars.columns = summary_vars.columns.map("_".join).str.strip("|")
     ele_vars.set_index("CellID", inplace=True)
     ele_vars.columns = ele_vars.columns.map("_".join).str.strip("|")
-    # Remove unused middle level from both columns and indices, which arose from
-    # the double loop
     wave_vars.columns = wave_vars.columns.droplevel(1)
     wave_vars.index = wave_vars.index.droplevel(1)
     wave_vars.columns = wave_vars.columns.map("_".join).str.strip("|")
