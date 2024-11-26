@@ -47,6 +47,8 @@ def classify_cells(
 
     if return_probs:
         pred_probs = mod_xgb.predict_proba(test_x)
-        return preds_xgb, pred_probs
+        ret = (preds_xgb, pred_probs)
     else:
-        return preds_xgb
+        ret = preds_xgb
+
+    return ret
