@@ -23,6 +23,5 @@ def test_classify_cells():
     # Allow 5% margin
     expected = {"Treated": 0.4041096, "Untreated": 0.5958904}
     actual = classify_cells(training, labels, test)
-    ensemble_preds = actual[:, 3]
     for label, target in expected.items():
-        assert target - 0.05 < np.mean(ensemble_preds == label) < target + 0.05
+        assert target - 0.05 < np.mean(actual == label) < target + 0.05

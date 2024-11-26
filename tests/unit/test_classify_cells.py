@@ -24,4 +24,5 @@ def train_y():
 
 def test_get_labels_default(train_x, test_x, train_y):
     output = classify_cells(train_x, train_y, test_x)
-    assert output.shape == (10, 4)
+    assert output.shape == (10,)
+    assert (np.sort(np.unique(output)) == np.array(["a", "b"])).all()
