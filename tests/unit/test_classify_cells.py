@@ -26,3 +26,11 @@ def test_get_labels_default(train_x, test_x, train_y):
     output = classify_cells(train_x, train_y, test_x)
     assert output.shape == (10,)
     assert (np.sort(np.unique(output)) == np.array(["a", "b"])).all()
+
+
+def test_get_probs(train_x, test_x, train_y):
+    labels, probs = classify_cells(train_x, train_y, test_x, return_probs=True)
+    assert labels.shape == (10,)
+    assert (np.sort(np.unique(labels)) == np.array(["a", "b"])).all()
+    assert probs.shape == (10, 2)
+    assert (np.sum(probs, axis=1) == 1).all()
