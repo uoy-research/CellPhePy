@@ -11,13 +11,19 @@ import imagej
 import scyjava as sj
 
 
-def setup_imagej() -> None:
+def setup_imagej(max_heap: int | None = None) -> None:
     """
     Sets up a JVM with ImageJ and the TrackMate plugin loaded.
 
+    :param max_heap: Size in GB of the maximum heap size allocated to the JVM.
+    Use if you are encountering memory problems with large datasets. Be careful
+    when using this parameter, the rule of thumb is not to assign more than 80%
+    of your computer's available memory.
     :return: None, although could be updated to return reference to a Java class
     net.imagej.ImageJ.
     """
+    if max_heap is not None and isinstance(max_heap, int) and max_heap > 0:
+        sj.config.add_option(f"-Xmx{max_heap}g")
     imagej.init(["net.imagej:imagej", "sc.fiji:TrackMate:7.13.2"], add_legacy=False)
 
 
