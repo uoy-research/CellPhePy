@@ -9,53 +9,46 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from sklearn import svm
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier
-from sklearn.preprocessing import StandardScaler
+import xgboost as xgb
+from sklearn.preprocessing import LabelEncoder
 
 
-def classify_cells(train_x: pd.DataFrame, train_y: np.array, test_x: pd.DataFrame) -> np.array:
-    """Predicts cell class using an ensemble.
+def classify_cells(
+    train_x: pd.DataFrame, train_y: np.array, test_x: pd.DataFrame, return_probs: bool = False
+) -> np.array:
+    """Predicts cell class.
 
-    Trains three classifiers (Linear Discriminant Analysis, Random Forest and
-    Support Vector Machine) and uses these in an ensemble by majority vote to
-    obtain final predictions for cell type classification of a test set.
+    Trains an xgboost classifier to predict cell labels.
 
     :param train_x: DataFrame containing cell features (but no labels) for the
     :param train_y: Array of labels (can be strings or integers) for the
         training set.
     :param test_x: DataFrame containing cell features (but no labels) for the
         test set.
-    :return: A 2D array with as many rows as there are rows in test_x, with 4
-        columns containing the predictions for each of the 3 classifiers and the
-        final ensemble prediction.
+    :param return_probs: Whether to return the probabilities as well as the
+        labels. In this case the function returns a tuple of 2 items.
+    :return: If return_probs is False, an N length 1D array where N is the
+        number of rows in test_x. Each entry is the associated predicted label.
+        If return_probs is True, then a tuple with the first item being the
+        labels array, and the second being a matrix of N x M, where M is the
+        number of unique classes in train_y.
     """
+    # Transform labels
+    le = LabelEncoder()
+    train_y = le.fit_transform(train_y)
 
-    # Scale variables
-    scaler = StandardScaler().fit(train_x)
-    train_x = scaler.transform(train_x)
-    test_x = scaler.transform(test_x)
+    # Fit xgboost
+    mod_xgb = xgb.XGBClassifier(tree_method="hist")
+    mod_xgb.fit(train_x, train_y)
 
-    # Define the models to be used in the ensemble
-    mod_lda = LinearDiscriminantAnalysis()
-    mod_rf = RandomForestClassifier(n_estimators=200, max_features=5)
-    mod_svm = svm.SVC(kernel="rbf")
+    # Make predictions and convert back to the original label range
+    preds_xgb_raw = mod_xgb.predict(test_x)
+    preds_xgb = le.inverse_transform(preds_xgb_raw)
 
-    # Create the ensemble
-    models = [("lda", mod_lda), ("rf", mod_rf), ("svm", mod_svm)]
-    model_names = [x[0] for x in models]
-    ensemble = VotingClassifier(models, voting="hard").fit(train_x, train_y)
+    if return_probs:
+        pred_probs = mod_xgb.predict_proba(test_x)
+        ret = (preds_xgb, pred_probs)
+    else:
+        ret = preds_xgb
 
-    # Generate the ensemble predictions. This doesn't return the individual
-    # classifier predictions which we also want, so we can retrieve them
-    # manually. But then it returns the predictions unlabelled so then need to
-    # reapply label
-    # Pylint doesn't recognise the predict method and le_ attributes
-    # pylint: disable=no-member
-    ensemble_preds = ensemble.predict(test_x)
-    individual_preds = np.array([ensemble.named_estimators_[x].predict(test_x) for x in model_names])
-    labeller = ensemble.le_
-    individual_preds = np.array([labeller.inverse_transform(x) for x in individual_preds]).T
-    all_preds = np.column_stack((individual_preds, ensemble_preds))
-    return all_preds
+    return ret
