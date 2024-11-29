@@ -163,7 +163,7 @@ def track_images(
     tracker: str = "SimpleLAP",
     tracker_settings: dict = None,
 ) -> None:
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-positional-arguments
     """
     Tracks cells across a set of frames using TrackMate, storing the frame
     features in a CSV, and the ROIs in a specified folder.
