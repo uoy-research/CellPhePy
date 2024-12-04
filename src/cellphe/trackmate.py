@@ -161,12 +161,28 @@ def load_tracker(settings, tracker: str, tracker_settings: dict) -> None:
 
     :param settings: An instance of the Java class
         fiji.plugin.Trackmate.Settings
-    :param tracker: String specifying which tracking algorithm to use.
+    :param tracker: String specifying which tracking algorithm to use. Possible
+        options are:
+            - SimpleSparseLAP
+            - SparseLAP
+            - Kalman
+            - AdvancedKalman
+            - NearestNeighbor
+            - Overlap
     :param tracker_settings: Dictionary containing parameters for the specified
-        tracker.
+        tracker. These should be written the same way they are in the TrackMate
+        GUI. See the source code for a full reference:
+            https://github.com/trackmate-sc/TrackMate/blob/master/src/main/java/fiji/plugin/trackmate/tracking/TrackerKeys.java.
     :return: None, updates settings as a side-effect.
     """
-    options = {"SimpleLAP": "fiji.plugin.trackmate.tracking.jaqaman.SimpleSparseLAPTrackerFactory"}
+    options = {
+        "SimpleSparseLAP": "fiji.plugin.trackmate.tracking.jaqaman.SimpleSparseLAPTrackerFactory",
+        "SparseLAP": "fiji.plugin.trackmate.tracking.jaqaman.SparseLAPTrackerFactory",
+        "Kalman": "fiji.plugin.trackmate.tracking.kalman.KalmanTrackerFactory",
+        "AdvancedKalman": "fiji.plugin.trackmate.tracking.kalman.AdvancedKalmanTrackerFactory",
+        "NearestNeighbor": "fiji.plugin.trackmate.tracking.kdtree.NearestNeighborTrackerFactory",
+        "Overlap": "fiji.plugin.trackmate.tracking.overlap.OverlapTrackerFactory",
+    }
     try:
         selected = options[tracker]
     except KeyError as ex:
