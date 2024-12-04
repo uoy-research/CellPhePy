@@ -138,7 +138,10 @@ def segment_images(input_dir: str, output_dir: str) -> None:
     """
     model = models.Cellpose(gpu=False, model_type="cyto")
     tif_files = sorted(glob.glob(os.path.join(input_dir, "*.tif")))
-    os.makedirs(output_dir, exist_ok=True)
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+    except FileExistsError:
+        pass  # exist_ok doesn't work if dir exists but with different mode
     for tif_file in tif_files:
         print(f"Processing image: {tif_file}")
         try:
@@ -189,7 +192,10 @@ def track_images(
         level above the roi_folder.
     :return: None, writes the CSV file and ROI files to disk as a side-effect.
     """
-    os.makedirs(roi_folder, exist_ok=True)
+    try:
+        os.makedirs(roi_folder, exist_ok=True)
+    except FileExistsError:
+        pass  # exist_ok doesn't work if dir exists but with different mode
     setup_imagej()
 
     imp = read_image_stack(mask_dir)
