@@ -165,6 +165,7 @@ def track_images(
     create_roi_zip: bool = False,
     tracker: str = "SimpleLAP",
     tracker_settings: dict = None,
+    max_heap: int | None = None,
 ) -> None:
     # pylint: disable=too-many-arguments
     """
@@ -190,13 +191,17 @@ def track_images(
     :param create_roi_zip: Whether to create a Zip archive of the ROI files. If
         selected, a zip will be created with the name '<roi_folder>.zip', at the
         level above the roi_folder.
+    :param max_heap: Size in GB of the maximum heap size allocated to the JVM.
+        Use if you are encountering memory problems with large datasets. Be careful
+        when using this parameter, the rule of thumb is not to assign more than 80%
+        of your computer's available memory.
     :return: None, writes the CSV file and ROI files to disk as a side-effect.
     """
     try:
         os.makedirs(roi_folder, exist_ok=True)
     except FileExistsError:
         pass  # exist_ok doesn't work if dir exists but with different mode
-    setup_imagej()
+    setup_imagej(max_heap)
 
     imp = read_image_stack(mask_dir)
     settings = sj.jimport("fiji.plugin.trackmate.Settings")(imp)
