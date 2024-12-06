@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import glob
 import os
+import re
 
 import numpy as np
 import pandas as pd
@@ -135,13 +136,15 @@ def cell_features(
     records = []  # Container that will populate data frame
     # Iterate through frames, only want to read one into memory at a time
     frame_ids = df["FrameID"].unique()
+    all_fns = os.listdir(frame_folder)
+    # Get their corresponding frameIDs
+    fn_frame_ids = {get_frame_id_from_filename(x): x for x in all_fns}
     for frame_id in frame_ids:
         # Load frame
-        image_fn_search = glob.glob(os.path.join(frame_folder, f"*-{frame_id:04}.tif"))
-        if len(image_fn_search) != 1:
+        image_fn = fn_frame_ids[int(frame_id)]
+        if image_fn is None:
             raise FileNotFoundError(f"Unable to find frame ID {frame_id} in {frame_folder}")
-        image_fn = image_fn_search[0]
-        image = read_tiff(image_fn)
+        image = read_tiff(os.path.join(frame_folder, image_fn))
         image = normalise_image(image, 0, 255)
 
         # Find all cells in this frame
@@ -622,3 +625,16 @@ def extract_static_features(image: np.array, roi: np.array) -> np.array:
     feats[67:69] = sub_image.centroid
 
     return feats
+
+
+def get_frame_id_from_filename(fn: str) -> int | None:
+    """
+    Retrieves the FrameID from a given filename.
+
+    :param fn: The filename.
+    :return: An integer giving the frameID, or None if not found.
+    """
+    res = re.search(r"([0-9]+)(?:.ome)?\.tiff?$", fn)
+    if res is None:
+        return None
+    return int(res.group(1))
