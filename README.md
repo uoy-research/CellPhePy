@@ -63,11 +63,11 @@ segment_images("05062019_B3_3_imagedata", "masks")
 
 Confirm that the `masks` directory has been created and populated with TIFs containing cell masks.
 If it has, then you are ready to track the cells.
-`track_images` takes at minimum 3 arguments: the location of the masks created by `segment_images`, the filename to save the output metadata to, and a folder name to save the ROIs in.
-Optionally you can also save the ROIs as a zip so they can be easily opened in ImageJ, and change the tracking options - by default the Simple LAP method is employed.
+`track_images` takes at minimum 3 arguments: the location of the masks created by `segment_images`, the filename to save the output metadata to, and a filename for the output ROI zip.
+Optionally you can also change the tracking options - by default the Simple LAP method is employed - with the `tracker` and `tracker_settings` arguments.
 
 ```python
-track_images("masks", "tracked.csv", "rois")
+track_images("masks", "tracked.csv", "rois.zip")
 ```
 
 Confirm that the `tracked.csv` file was created and the `rois` folder has been populated with ROI files.

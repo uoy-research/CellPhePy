@@ -161,8 +161,7 @@ def segment_images(input_dir: str, output_dir: str) -> None:
 def track_images(
     mask_dir: str,
     csv_filename: str,
-    roi_folder: str,
-    create_roi_zip: bool = False,
+    roi_filename: str = "rois.zip",
     tracker: str = "SimpleLAP",
     tracker_settings: dict = None,
     max_heap: int | None = None,
@@ -189,19 +188,13 @@ def track_images(
     :param csv_filename: Filename for the resultant CSV.
     :param roi_folder: Folder where ROIs will be saved to. Will be created if it
         doesn't exist.
-    :param create_roi_zip: Whether to create a Zip archive of the ROI files. If
-        selected, a zip will be created with the name '<roi_folder>.zip', at the
-        level above the roi_folder.
+    :param roi_filename: Filename of output archive.
     :param max_heap: Size in GB of the maximum heap size allocated to the JVM.
         Use if you are encountering memory problems with large datasets. Be careful
         when using this parameter, the rule of thumb is not to assign more than 80%
         of your computer's available memory.
     :return: None, writes the CSV file and ROI files to disk as a side-effect.
     """
-    try:
-        os.makedirs(roi_folder, exist_ok=True)
-    except FileExistsError:
-        pass  # exist_ok doesn't work if dir exists but with different mode
     setup_imagej(max_heap)
 
     imp = read_image_stack(mask_dir)
@@ -227,4 +220,4 @@ def track_images(
 
     # Write CSV and ROIs to disk
     comb_df.to_csv(csv_filename, index=False)
-    save_rois(rois, roi_folder, create_roi_zip)
+    save_rois(rois, roi_filename)
