@@ -167,6 +167,7 @@ def track_images(
     tracker_settings: dict = None,
     max_heap: int | None = None,
 ) -> None:
+    # pylint: disable=too-many-positional-arguments
     # pylint: disable=too-many-arguments
     """
     Tracks cells across a set of frames using TrackMate, storing the frame

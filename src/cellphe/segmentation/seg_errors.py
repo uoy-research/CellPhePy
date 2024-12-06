@@ -30,6 +30,7 @@ def remove_predicted_seg_errors(dataset: pd.DataFrame, cellid_label: str, error_
 
 
 def predict_segmentation_errors(
+    # pylint: disable=too-many-positional-arguments
     # pylint: disable=too-many-arguments
     errors: pd.DataFrame,
     clean: pd.DataFrame,
