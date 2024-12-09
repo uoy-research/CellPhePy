@@ -11,6 +11,7 @@ from __future__ import annotations
 import glob
 import os
 import sys
+import zipfile
 
 import numpy as np
 import pandas as pd
@@ -95,6 +96,26 @@ def import_data(file: str, source: str, minframes: int = 0) -> pd.DataFrame:
     out = out.sort_values(["CellID", "FrameID"])
 
     return out
+
+
+def read_rois(archive: str) -> dict[str, np.array]:
+    """Reads multiple ROI files saved in a Zip archive.
+
+    :param archive: Filepath to an archive containing ROI files.
+    :return: A dict where each entry is a 2D numpy array containing the
+        coordinates, and the keys are the ROI filenames ("<frameid>-<roiid.roi").
+    """
+    rois = {}
+    with zipfile.ZipFile(archive) as zf:
+        for name in zf.namelist():
+            with zf.open(name, "r") as roi_f:
+                raw = roi_f.read()
+                roi = ImagejRoi.frombytes(raw)
+                rois[name] = roi.integer_coordinates + [roi.left, roi.top]
+    # The coordinates() method returns the subpixel coordinates for TrackMate
+    # ROIs as these are available. These are floats however and result in
+    # problems downstream. Want to explicitly use the integer coordinates.
+    return rois
 
 
 def read_roi(filename: str) -> np.array:

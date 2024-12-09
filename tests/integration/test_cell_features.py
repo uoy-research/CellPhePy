@@ -42,7 +42,7 @@ def test_cell_features():
     expected = pd.read_csv("tests/resources/benchmark_features.csv")
     phase_features = import_data("data/05062019_B3_3_Phase-FullFeatureTable.csv", "Phase", 200)
 
-    output = cell_features(phase_features, "data/05062019_B3_3_Phase", "data/05062019_B3_3_imagedata", 0.0028)
+    output = cell_features(phase_features, "data/05062019_B3_3_Phase.zip", "data/05062019_B3_3_imagedata", 0.0028)
     # Rename x and y to match how it was in the R version
     output.rename(columns={"x": "xpos", "y": "ypos"}, inplace=True)
 

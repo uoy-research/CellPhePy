@@ -121,7 +121,7 @@ in further columns.
 from cellphe import cell_features
 ```
 
-`cell_features()` takes as arguments the feature table, the folder where ROIs are saved, the folder where the images are, and the framerate.
+`cell_features()` takes as arguments the feature table, the archive where ROIs are saved, the folder where the images are, and the framerate.
 It expects frames to be named according to the scheme
 `<experiment name>-<frameid>.tif`, where `<frameid>` is a 4 digit
 zero-padded integer corresponding to the `FrameID` column,
@@ -129,9 +129,9 @@ while ROI files are named according to
 the `ROI_filename` column.
 
 ```python
-roi_folder = "05062019_B3_3_Phase"
+roi_archive = "05062019_B3_3_Phase.zip"
 image_folder = "05062019_B3_3_imagedata"
-new_features = cell_features(feature_table, roi_folder, image_folder, framerate=0.0028)
+new_features = cell_features(feature_table, roi_archive, image_folder, framerate=0.0028)
 ```
 
 ### Generating time-series features
