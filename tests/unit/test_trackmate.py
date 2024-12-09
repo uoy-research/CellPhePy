@@ -30,6 +30,6 @@ def test_load_tracker_unknown_tracker_raises_error(ij):
 
 def test_load_tracker_settings_imported(ij):
     settings = sj.jimport("fiji.plugin.trackmate.Settings")()
-    load_tracker(settings, "SimpleLAP", {"LINKING_MAX_DISTANCE": 25})
+    load_tracker(settings, "SimpleSparseLAP", {"LINKING_MAX_DISTANCE": 25})
     new_distance = settings.trackerSettings["LINKING_MAX_DISTANCE"]
     assert new_distance == 25
