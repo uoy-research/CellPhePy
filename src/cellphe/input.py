@@ -11,6 +11,7 @@ from __future__ import annotations
 import glob
 import os
 import sys
+import zipfile
 
 import numpy as np
 import pandas as pd
@@ -97,6 +98,26 @@ def import_data(file: str, source: str, minframes: int = 0) -> pd.DataFrame:
     return out
 
 
+def read_rois(archive: str) -> dict[str, np.array]:
+    """Reads multiple ROI files saved in a Zip archive.
+
+    :param archive: Filepath to an archive containing ROI files.
+    :return: A dict where each entry is a 2D numpy array containing the
+        coordinates, and the keys are the ROI filenames ("<frameid>-<roiid.roi").
+    """
+    rois = {}
+    with zipfile.ZipFile(archive) as zf:
+        for name in zf.namelist():
+            with zf.open(name, "r") as roi_f:
+                raw = roi_f.read()
+                roi = ImagejRoi.frombytes(raw)
+                rois[name] = roi.integer_coordinates + [roi.left, roi.top]
+    # The coordinates() method returns the subpixel coordinates for TrackMate
+    # ROIs as these are available. These are floats however and result in
+    # problems downstream. Want to explicitly use the integer coordinates.
+    return rois
+
+
 def read_roi(filename: str) -> np.array:
     """Returns the coordinates from an ImageJ produced ROI file.
 
@@ -138,7 +159,10 @@ def segment_images(input_dir: str, output_dir: str) -> None:
     """
     model = models.Cellpose(gpu=False, model_type="cyto")
     tif_files = sorted(glob.glob(os.path.join(input_dir, "*.tif")))
-    os.makedirs(output_dir, exist_ok=True)
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+    except FileExistsError:
+        pass  # exist_ok doesn't work if dir exists but with different mode
     for tif_file in tif_files:
         print(f"Processing image: {tif_file}")
         try:
@@ -158,12 +182,13 @@ def segment_images(input_dir: str, output_dir: str) -> None:
 def track_images(
     mask_dir: str,
     csv_filename: str,
-    roi_folder: str,
-    create_roi_zip: bool = False,
+    roi_filename: str = "rois.zip",
     tracker: str = "SimpleLAP",
     tracker_settings: dict = None,
+    max_heap: int | None = None,
 ) -> None:
     # pylint: disable=too-many-positional-arguments
+    # pylint: disable=too-many-arguments
     """
     Tracks cells across a set of frames using TrackMate, storing the frame
     features in a CSV, and the ROIs in a specified folder.
@@ -184,13 +209,14 @@ def track_images(
     :param csv_filename: Filename for the resultant CSV.
     :param roi_folder: Folder where ROIs will be saved to. Will be created if it
         doesn't exist.
-    :param create_roi_zip: Whether to create a Zip archive of the ROI files. If
-        selected, a zip will be created with the name '<roi_folder>.zip', at the
-        level above the roi_folder.
+    :param roi_filename: Filename of output archive.
+    :param max_heap: Size in GB of the maximum heap size allocated to the JVM.
+        Use if you are encountering memory problems with large datasets. Be careful
+        when using this parameter, the rule of thumb is not to assign more than 80%
+        of your computer's available memory.
     :return: None, writes the CSV file and ROI files to disk as a side-effect.
     """
-    os.makedirs(roi_folder, exist_ok=True)
-    setup_imagej()
+    setup_imagej(max_heap)
 
     imp = read_image_stack(mask_dir)
     settings = sj.jimport("fiji.plugin.trackmate.Settings")(imp)
@@ -215,4 +241,4 @@ def track_images(
 
     # Write CSV and ROIs to disk
     comb_df.to_csv(csv_filename, index=False)
-    save_rois(rois, roi_folder, create_roi_zip)
+    save_rois(rois, roi_filename)

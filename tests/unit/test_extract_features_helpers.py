@@ -402,3 +402,46 @@ def test_skewness():
     input = np.array([5, 6, 7, 8, 8, 8, 9, 10, 11, 12, 13, 17])
     output = skewness(input)
     assert output == pytest.approx(0.9452897)
+
+
+def test_get_frame_id_from_filename_correctly_parses():
+    # Test a full range of:
+    #   - Separator between experiment and number
+    #   - zero padding
+    #   - tif or tiff file extension
+    #   - .ome preceding .tif
+    #   - frame id digit length
+    separators = ["-", "_"]
+    extensions = [".tif", ".tiff", ".ome.tif", ".ome.tiff"]
+    experiments = ["myexperiment", "my-experiment", "my-experiment-5", "my_experiment", "my_experiment_5"]
+    zero_padding = [0, 1, 2, 3, 4]
+    numbers = [3, 17, 323, 1429]
+
+    test_cases = {}
+    for n in numbers:
+        for sep in separators:
+            for ext in extensions:
+                for exp in experiments:
+                    for pad in zero_padding:
+                        test_cases[f"{exp}{sep}{n:0{pad}}{ext}"] = n
+    for test_case, expected in test_cases.items():
+        assert get_frame_id_from_filename(test_case) == expected
+
+
+def test_get_frame_id_from_filename_handles_no_separator():
+    # Still works even if there isn't a separator between experiment name and
+    # frameid. Here can't have a trailing number from the experiment name
+    extensions = [".tif", ".tiff", ".ome.tif", ".ome.tiff"]
+    experiments = ["myexperiment", "my-experiment", "my_experiment"]
+    zero_padding = [0, 1, 2, 3, 4]
+    numbers = [3, 17, 323, 1429]
+
+    test_cases = {}
+    sep = ""
+    for n in numbers:
+        for ext in extensions:
+            for exp in experiments:
+                for pad in zero_padding:
+                    test_cases[f"{exp}{sep}{n:0{pad}}{ext}"] = n
+    for test_case, expected in test_cases.items():
+        assert get_frame_id_from_filename(test_case) == expected
