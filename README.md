@@ -63,11 +63,11 @@ segment_images("05062019_B3_3_imagedata", "masks")
 
 Confirm that the `masks` directory has been created and populated with TIFs containing cell masks.
 If it has, then you are ready to track the cells.
-`track_images` takes at minimum 3 arguments: the location of the masks created by `segment_images`, the filename to save the output metadata to, and a folder name to save the ROIs in.
-Optionally you can also save the ROIs as a zip so they can be easily opened in ImageJ, and change the tracking options - by default the Simple LAP method is employed.
+`track_images` takes at minimum 3 arguments: the location of the masks created by `segment_images`, the filename to save the output metadata to, and a filename for the output ROI zip.
+Optionally you can also change the tracking options - by default the Simple LAP method is employed - with the `tracker` and `tracker_settings` arguments.
 
 ```python
-track_images("masks", "tracked.csv", "rois")
+track_images("masks", "tracked.csv", "rois.zip")
 ```
 
 Confirm that the `tracked.csv` file was created and the `rois` folder has been populated with ROI files.
@@ -121,7 +121,7 @@ in further columns.
 from cellphe import cell_features
 ```
 
-`cell_features()` takes as arguments the feature table, the folder where ROIs are saved, the folder where the images are, and the framerate.
+`cell_features()` takes as arguments the feature table, the archive where ROIs are saved, the folder where the images are, and the framerate.
 It expects frames to be named according to the scheme
 `<experiment name>-<frameid>.tif`, where `<frameid>` is a 4 digit
 zero-padded integer corresponding to the `FrameID` column,
@@ -129,9 +129,9 @@ while ROI files are named according to
 the `ROI_filename` column.
 
 ```python
-roi_folder = "05062019_B3_3_Phase"
+roi_archive = "05062019_B3_3_Phase.zip"
 image_folder = "05062019_B3_3_imagedata"
-new_features = cell_features(feature_table, roi_folder, image_folder, framerate=0.0028)
+new_features = cell_features(feature_table, roi_archive, image_folder, framerate=0.0028)
 ```
 
 ### Generating time-series features

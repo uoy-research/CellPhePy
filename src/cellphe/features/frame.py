@@ -17,7 +17,7 @@ from scipy.spatial.distance import pdist, squareform
 from shapely import Polygon, simplify
 
 from cellphe.features.helpers import skewness
-from cellphe.input import read_roi, read_tiff
+from cellphe.input import read_rois, read_tiff
 from cellphe.processing import extract_subimage, normalise_image
 
 STATIC_FEATURE_NAMES = [
@@ -96,7 +96,7 @@ STATIC_FEATURE_NAMES = [
 def cell_features(
     # pylint: disable=too-many-locals, too-many-statements
     df: pd.DataFrame,
-    roi_folder: str,
+    roi_archive: str,
     frame_folder: str,
     framerate: float,
     minimum_cell_size: int = 8,
@@ -106,7 +106,7 @@ def cell_features(
     Calculates 74 features related to size, shape, texture and movement for each cell on every non-missing frame,
     as well as the cell density around each cell on each frame.
     NB: while the ROI filenames are expected to be provided in ``df`` and found
-    in ``roi_folder``,
+    in ``roi_archive``,
     the frame filenames are just expected to follow the naming convention
     ``<some text>-<FrameID>.tiff``,
     where FrameID is a 4 digit leading zero-padded number, corresponding to the
@@ -115,7 +115,7 @@ def cell_features(
     :param df: DataFrame where every row corresponds to a combination of a cell
         tracked in a frame. It must have at least columns ``CellID``, ``FrameID`` and
         ``ROI_filename`` along with any additional features.
-    :param roi_folder: A path to a directory containing multiple Report Object Instance
+    :param roi_archive: A path to a Zip containing multiple Report Object Instance
         (ROI) files named in the format ``cellid``-``frameid``.roi
     :param frame_folder: A path to a directory containing multiple frames in TIFF format.
         It is assumed these are named under the pattern ``<experiment
@@ -138,6 +138,11 @@ def cell_features(
     all_fns = os.listdir(frame_folder)
     # Get their corresponding frameIDs
     fn_frame_ids = {get_frame_id_from_filename(x): x for x in all_fns}
+    try:
+        rois = read_rois(roi_archive)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"Unable to find archive {roi_archive}") from e
+
     for frame_id in frame_ids:
         # Load frame
         image_fn = fn_frame_ids[int(frame_id)]
@@ -150,12 +155,12 @@ def cell_features(
         cell_ids = df.loc[df["FrameID"] == frame_id]["CellID"].unique()
         for cell_id in cell_ids:
             roi_fn = df.loc[(df["FrameID"] == frame_id) & (df["CellID"] == cell_id)]["ROI_filename"].values[0]
-            roi_path = os.path.join(roi_folder, f"{roi_fn}.roi")
             try:
-                roi = read_roi(roi_path)
-            except FileNotFoundError:
-                print(f"Unable to read file {roi_path} - skipping to next ROI")
+                roi = rois[f"{roi_fn}.roi"]
+            except KeyError:
+                print(f"Unable to find ROI {roi_fn} - skipping to next ROI")
                 continue
+
             # No negative coordinates
             roi = np.maximum(roi, 0)
             # Ensure cell is minimum size

@@ -7,11 +7,8 @@
 
 from __future__ import annotations
 
-import os
-import shutil
-
 import numpy as np
-from roifile import ImagejRoi
+from roifile import ImagejRoi, roiwrite
 
 # pylint doesn't recognise line
 # pylint: disable=no-name-in-module
@@ -184,7 +181,7 @@ def interpolate_between_points(coords: np.array) -> np.array:
     return new_coords
 
 
-def save_rois(rois: list[dict], output_folder: str, create_zip: bool = False):
+def save_rois(rois: list[dict], filename: str = "rois.zip"):
     """
     Saves ROIs to disk.
 
@@ -193,19 +190,15 @@ def save_rois(rois: list[dict], output_folder: str, create_zip: bool = False):
         - CellID: Cell ID
         - FrameID: Frame ID
         - filename: Filename to save the ROI to
-    :param output_folder: Folder where ROIs will be saved to. Will be created if it
-        doesn't exist.
-    :param create_zip: Whether to create a Zip archive of the ROI files. If
-        selected, a zip will be created with the name '<output_folder>.zip', at the
-        level above the roi_folder.
+    :param filename: Filename of output archive.
     :return: None, writes to disk as a side-effect.
     """
+    roi_objs = []
     for roi in rois:
-        fn = os.path.join(output_folder, f"{roi['Filename']}.roi")
         new_coords = interpolate_between_points(roi["coords"].astype(int))
         roi_obj = ImagejRoi.frompoints(new_coords)
         roi_obj.position = roi["FrameID"]
-        roi_obj.tofile(fn)
+        roi_obj.name = roi["Filename"]
+        roi_objs.append(roi_obj)
 
-    if create_zip:
-        shutil.make_archive(output_folder, "zip", output_folder)
+    roiwrite(filename, roi_objs)
