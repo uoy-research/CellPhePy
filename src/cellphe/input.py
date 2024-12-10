@@ -143,7 +143,7 @@ def read_tiff(filename: str) -> np.array:
     return image
 
 
-def segment_images(input_dir: str, output_dir: str) -> None:
+def segment_images(input_dir: str, output_dir: str, cellpose_model: str = "cyto") -> None:
     """
     Segments a batch of images using cellpose.
 
@@ -155,9 +155,13 @@ def segment_images(input_dir: str, output_dir: str) -> None:
     :param input_dir: The path to the directory containing the TIFs.
     :param output_dir: The path to the directory where the masks will be saved
     to.
+    :param cellpose_model: The name of the CellPose model to use for
+    segmentation. Defaults to cyto. Refer to
+    https://cellpose.readthedocs.io/en/latest/models.html
+    for a full list of options.
     :return: None, saves masks to disk as a side-effect.
     """
-    model = models.Cellpose(gpu=False, model_type="cyto")
+    model = models.Cellpose(gpu=False, model_type=cellpose_model)
     tif_files = sorted(glob.glob(os.path.join(input_dir, "*.tif")))
     try:
         os.makedirs(output_dir, exist_ok=True)
