@@ -53,7 +53,11 @@ CellPhe provides 2 functions to segment and track an image sequence:
 from cellphe import segment_images, track_images
 ```
 
-`segment_images` takes 2 arguments: the path to the directory where the images are stored (where the folder `05062019_B3_3_imagedata` was extracted to), and a path to an output folder where the resultant Cellpose masks will be saved.
+`segment_images` takes 3 arguments:
+
+  - the path to the directory where the images are stored (where the folder `05062019_B3_3_imagedata` was extracted to)
+  - a path to an output folder where the resultant Cellpose masks will be saved
+  - the name of the CellPose model to use (defaults to 'cyto', refer to the [CellPose docs](https://cellpose.readthedocs.io/en/latest/models.html) for a full list of options)
 
 This can take several minutes depending on the number of images and their resolution.
 
