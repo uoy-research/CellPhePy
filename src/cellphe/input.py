@@ -183,7 +183,7 @@ def track_images(
     mask_dir: str,
     csv_filename: str,
     roi_filename: str = "rois.zip",
-    tracker: str = "SimpleLAP",
+    tracker: str = "SimpleSparseLAP",
     tracker_settings: dict = None,
     max_heap: int | None = None,
 ) -> None:
