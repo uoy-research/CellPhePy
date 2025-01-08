@@ -143,7 +143,12 @@ def read_tiff(filename: str) -> np.array:
     return image
 
 
-def segment_images(input_dir: str, output_dir: str, cellpose_model: str = "cyto") -> None:
+def segment_images(
+    input_dir: str, output_dir: str, model_params: dict = {"model_type": "cyto3"}, eval_params: dict = {}  # noqa: B006
+) -> None:  # noqa: B006
+    # Can ignore {} warning in both pylint and flake8 as the dicts aren't being
+    # modified within the function.
+    # pylint: disable=dangerous-default-value
     """
     Segments a batch of images using cellpose.
 
@@ -155,13 +160,17 @@ def segment_images(input_dir: str, output_dir: str, cellpose_model: str = "cyto"
     :param input_dir: The path to the directory containing the TIFs.
     :param output_dir: The path to the directory where the masks will be saved
     to.
-    :param cellpose_model: The name of the CellPose model to use for
-    segmentation. Defaults to cyto. Refer to
-    https://cellpose.readthedocs.io/en/latest/models.html
+    :param model_params: Parameters to pass into the Cellpose instantiation,
+    including the model type. See
+    https://cellpose.readthedocs.io/en/latest/api.html#cellpose.models.Cellpose
+    for a full list of options.
+    :param eval_params: Parameters to pass into the Cellpose eval function
+    governing the segmentation.
+    https://cellpose.readthedocs.io/en/latest/api.html#cellpose.models.CellposeModel.eval
     for a full list of options.
     :return: None, saves masks to disk as a side-effect.
     """
-    model = models.Cellpose(gpu=False, model_type=cellpose_model)
+    model = models.Cellpose(**model_params)
     tif_files = sorted(glob.glob(os.path.join(input_dir, "*.tif")))
     try:
         os.makedirs(output_dir, exist_ok=True)
@@ -171,7 +180,7 @@ def segment_images(input_dir: str, output_dir: str, cellpose_model: str = "cyto"
         print(f"Processing image: {tif_file}")
         try:
             image = read_tiff(tif_file)
-            masks, _, _, _ = model.eval(image)
+            masks, _, _, _ = model.eval(image, **eval_params)
 
             # Save masks
             filename = os.path.splitext(os.path.basename(tif_file))[0] + "_mask.tif"
