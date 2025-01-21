@@ -53,13 +53,16 @@ CellPhe provides 2 functions to segment and track an image sequence:
 from cellphe import segment_images, track_images
 ```
 
-`segment_images` takes 3 arguments:
+`segment_images` takes 4 arguments:
 
   - the path to the directory where the images are stored (where the folder `05062019_B3_3_imagedata` was extracted to)
   - a path to an output folder where the resultant Cellpose masks will be saved
-  - the name of the CellPose model to use (defaults to 'cyto', refer to the [CellPose docs](https://cellpose.readthedocs.io/en/latest/models.html) for a full list of options)
+  - parameters for the CellPose model instantiation, including the model type (defaults to `cyto3`).
+  - parameters for the CellPose `eval` function which governs the segmentation
 
-This can take several minutes depending on the number of images and their resolution.
+For the latter 2, refer to the [CellPose docs](https://cellpose.readthedocs.io/en/latest/models.html) for a full list of options.
+
+Segmentation can take several minutes depending on the number of images and their resolution.
 
 ```python
 segment_images("data/05062019_B3_3_imagedata", "data/masks")
@@ -67,7 +70,12 @@ segment_images("data/05062019_B3_3_imagedata", "data/masks")
 
 Confirm that the `masks` directory has been created and populated with TIFs containing cell masks.
 If it has, then you are ready to track the cells.
-`track_images` takes at minimum 3 arguments: the location of the masks created by `segment_images`, the filename to save the output metadata to, and a filename for the output ROI zip.
+`track_images` takes at minimum 3 arguments:
+
+  - the location of the masks created by `segment_images`
+  - the filename to save the output metadata to
+  - a filename for the output ROI zip
+
 Optionally you can also change the tracking options - by default the Simple LAP method is employed - with the `tracker` and `tracker_settings` arguments.
 
 ```python
