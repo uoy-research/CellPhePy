@@ -192,7 +192,12 @@ def load_tracker(settings, tracker: str, tracker_settings: dict) -> None:
     settings.trackerSettings = settings.trackerFactory.getDefaultSettings()
     if tracker_settings is not None:
         for k, v in tracker_settings.items():
-            settings.trackerSettings[k] = v
+            if isinstance(v, dict):
+                hash_map = sj.jimport("java.util.HashMap")
+                val = hash_map(v)
+            else:
+                val = v
+            settings.trackerSettings[k] = val
 
 
 def configure_trackmate(model, settings):
