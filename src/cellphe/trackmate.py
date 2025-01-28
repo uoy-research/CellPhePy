@@ -192,7 +192,19 @@ def load_tracker(settings, tracker: str, tracker_settings: dict) -> None:
     settings.trackerSettings = settings.trackerFactory.getDefaultSettings()
     if tracker_settings is not None:
         for k, v in tracker_settings.items():
-            settings.trackerSettings[k] = v
+            # The automatic type conversion fails in some cases
+            if isinstance(v, dict):
+                hash_map = sj.jimport("java.util.HashMap")
+                val = hash_map(v)
+            elif isinstance(v, bool):
+                jbool = sj.jimport("java.lang.Boolean")
+                val = jbool(v)
+            elif isinstance(v, int):
+                jint = sj.jimport("java.lang.Integer")
+                val = jint(v)
+            else:
+                val = v
+            settings.trackerSettings[k] = val
 
 
 def configure_trackmate(model, settings):
