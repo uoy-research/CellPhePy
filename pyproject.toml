@@ -38,7 +38,7 @@ dependencies = [
     "scipy",
     "scikit-image",
     "scikit-learn",
-    "shapely",
+    "shapely==2.0.7",
     "xgboost"
 ]
 
