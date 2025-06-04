@@ -138,7 +138,9 @@ def read_tiff(filename: str) -> np.array:
     :param filename: TIF filename.
     :return: A 2D Numpy array.
     """
-    image = Image.open(filename).convert("L")
+    image = Image.open(filename)
+    if image.mode == "RGB":
+        image = image.convert("L")
     image = np.array(image)
     return image
 

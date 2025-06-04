@@ -16,12 +16,15 @@ def test_classify_cells():
     test_treated = pd.read_csv("data/TreatedTest.csv").drop(columns="Unnamed: 0")
     training = pd.concat((train_untreated, train_treated))
     test = pd.concat((test_untreated, test_treated))
-    labels = np.concatenate(
+    train_labels = np.concatenate(
         (np.repeat("Untreated", train_untreated.shape[0]), np.repeat("Treated", train_treated.shape[0]))
     )
+    test_labels = np.concatenate(
+        (np.repeat("Untreated", test_untreated.shape[0]), np.repeat("Treated", test_treated.shape[0]))
+    )
 
-    # Allow 5% margin
-    expected = {"Treated": 0.4041096, "Untreated": 0.5958904}
-    actual = classify_cells(training, labels, test)
-    for label, target in expected.items():
-        assert target - 0.05 < np.mean(actual == label) < target + 0.05
+    # Allow 5% margin on accuracy
+    actual = classify_cells(training, train_labels, test)
+    accuracy = np.mean(actual == test_labels)
+    expected_accuracy = 0.91
+    assert (expected_accuracy - 0.05) < accuracy < (expected_accuracy + 0.05)
