@@ -24,7 +24,7 @@ classifiers = [
 ]
 requires-python = ">=3.8.1"
 dependencies = [
-    "cellpose==3.1.1.2",
+    "cellpose==4.0.4",
     "imbalanced-learn",
     "JPype1==1.5.2",
     "matplotlib",
