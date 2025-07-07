@@ -26,7 +26,7 @@ requires-python = ">=3.8.1"
 dependencies = [
     "cellpose==3.1.1.2",
     "imbalanced-learn",
-    "JPype1==1.5.2",
+    "JPype1==1.6.0",
     "matplotlib",
     "numpy",
     "pandas",
