@@ -221,7 +221,5 @@ def configure_trackmate(model, settings):
 
     tm_cls = sj.jimport("fiji.plugin.trackmate.TrackMate")
     trackmate = tm_cls(model, settings)
-    trackmate.computeSpotFeatures(True)
-    trackmate.computeTrackFeatures(True)
 
     return trackmate
