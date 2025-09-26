@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import pandas as pd
 import pytest
 from PIL import Image
@@ -35,3 +37,19 @@ def test_time_series_features():
     output = output.rename(columns={"x": "xpos", "y": "ypos"})
 
     assert_frame_equal_extended_diff(expected.reset_index(drop=True), output.reset_index(drop=True))
+
+
+def test_time_series_features_short_series():
+    # R package uses 'xpos' and 'ypos' - Python package uses 'x' and 'y'
+    frame_features = pd.read_csv("tests/resources/benchmark_features.csv")
+    frame_features = frame_features.loc[frame_features["FrameID"] < 6]
+    frame_features = frame_features.rename(columns={"xpos": "x", "ypos": "y"})
+    output = time_series_features(frame_features)
+
+    # All wavelet features should be NA
+    wavelet_regex = re.compile("_l1|l2|l3_")
+    wavelet_cols = list(filter(wavelet_regex.search, output.columns.values))
+    assert output[wavelet_cols].isna().all().all()
+
+
+# TODO test only sets cells with insufficient temporal resolution to NAs

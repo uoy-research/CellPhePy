@@ -121,12 +121,16 @@ def wavelet_features(x: pd.Series) -> pd.DataFrame:
     :return: A 1-row DataFrame comprising 9 columns, one for each of the 3
         elevation metrics for each of the 3 Wavelet levels.
     """
-    wave_coefs = haar_approximation_1d(x)
-
-    # For each set of wavelet coefficients calculate the elevation metrics
-    wave_coefs_dict = {f"l{i + 1}": x for i, x in enumerate(wave_coefs)}
     metrics = {"asc": lambda x: ascent(x, diff=False), "des": lambda x: descent(x, diff=False), "max": np.max}
-    res_dict = {f"{kw}_{km}": vm(vw) for kw, vw in wave_coefs_dict.items() for km, vm in metrics.items()}
+
+    try:
+        wave_coefs = haar_approximation_1d(x)
+        wave_coefs_dict = {f"l{i + 1}": x for i, x in enumerate(wave_coefs)}
+        # For each set of wavelet coefficients calculate the elevation metrics
+        res_dict = {f"{kw}_{km}": vm(vw) for kw, vw in wave_coefs_dict.items() for km, vm in metrics.items()}
+    except np.exceptions.AxisError:
+        wave_names = [f"l{i+1}" for i in range(3)]
+        res_dict = {f"{kw}_{km}": np.nan for kw in wave_names for km in metrics.keys()}
 
     # Convert into DataFrame for output
     return pd.DataFrame(res_dict, index=[0])
