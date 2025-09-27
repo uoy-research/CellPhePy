@@ -12,6 +12,18 @@ from cellphe.input import read_roi
 pytestmark = pytest.mark.integration
 
 
+@pytest.fixture()
+def frame_df():
+    df = pd.read_csv("tests/resources/benchmark_features.csv")
+    df.rename(columns={"xpos": "x", "ypos": "y"}, inplace=True)
+    yield df
+
+
+@pytest.fixture()
+def ts_df():
+    yield pd.read_csv("tests/resources/benchmark_time_series_features.csv")
+
+
 def assert_frame_equal_extended_diff(df1, df2):
     cols = df1.columns.values
     incorrect_cols = []
@@ -28,23 +40,17 @@ def assert_frame_equal_extended_diff(df1, df2):
         )
 
 
-def test_time_series_features():
+def test_time_series_features(frame_df, ts_df):
     # R package uses 'xpos' and 'ypos' - Python package uses 'x' and 'y'
-    frame_features = pd.read_csv("tests/resources/benchmark_features.csv")
-    frame_features = frame_features.rename(columns={"xpos": "x", "ypos": "y"})
-    expected = pd.read_csv("tests/resources/benchmark_time_series_features.csv")
-    output = time_series_features(frame_features)
-    output = output.rename(columns={"x": "xpos", "y": "ypos"})
-
-    assert_frame_equal_extended_diff(expected.reset_index(drop=True), output.reset_index(drop=True))
+    output = time_series_features(frame_df)
+    output.rename(columns={"x": "xpos", "y": "ypos"}, inplace=True)
+    assert_frame_equal_extended_diff(ts_df.reset_index(drop=True), output.reset_index(drop=True))
 
 
-def test_time_series_features_short_series():
+def test_time_series_features_short_series(frame_df):
     # R package uses 'xpos' and 'ypos' - Python package uses 'x' and 'y'
-    frame_features = pd.read_csv("tests/resources/benchmark_features.csv")
-    frame_features = frame_features.loc[frame_features["FrameID"] < 6]
-    frame_features = frame_features.rename(columns={"xpos": "x", "ypos": "y"})
-    output = time_series_features(frame_features)
+    df = frame_df.loc[frame_df["FrameID"] < 6]
+    output = time_series_features(df)
 
     # All wavelet features should be NA
     wavelet_regex = re.compile("_l1|l2|l3_")
@@ -52,4 +58,13 @@ def test_time_series_features_short_series():
     assert output[wavelet_cols].isna().all().all()
 
 
-# TODO test only sets cells with insufficient temporal resolution to NAs
+def test_time_series_features_1_short_1_long(frame_df):
+    # Test with 1 short time series (that will error on wavelet) and 1 long
+    df = frame_df.query("CellID == 30 | (CellID == 31 & FrameID <= 5)")
+    output = time_series_features(df)
+
+    # All wavelet features for CellID 31 should be NA, but not NA for 30
+    wavelet_regex = re.compile("_l1|l2|l3_")
+    wavelet_cols = list(filter(wavelet_regex.search, output.columns.values))
+    assert output.loc[output["CellID"] == 31, wavelet_cols].isna().all().all()
+    assert ~output.loc[output["CellID"] == 30, wavelet_cols].isna().any().any()
