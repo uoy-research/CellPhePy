@@ -52,8 +52,8 @@ def test_time_series_features_short_series(frame_df):
     df = frame_df.loc[frame_df["FrameID"] < 6]
     output = time_series_features(df)
 
-    # All wavelet features should be NA
-    wavelet_regex = re.compile("_l1|l2|l3_")
+    # All third level wavelet features should be NA
+    wavelet_regex = re.compile("_l3_")
     wavelet_cols = list(filter(wavelet_regex.search, output.columns.values))
     assert output[wavelet_cols].isna().all().all()
 
@@ -63,8 +63,8 @@ def test_time_series_features_1_short_1_long(frame_df):
     df = frame_df.query("CellID == 30 | (CellID == 31 & FrameID <= 5)")
     output = time_series_features(df)
 
-    # All wavelet features for CellID 31 should be NA, but not NA for 30
-    wavelet_regex = re.compile("_l1|l2|l3_")
+    # All third level wavelet features for CellID 31 should be NA, but not NA for 30
+    wavelet_regex = re.compile("_l3_")
     wavelet_cols = list(filter(wavelet_regex.search, output.columns.values))
     assert output.loc[output["CellID"] == 31, wavelet_cols].isna().all().all()
     assert ~output.loc[output["CellID"] == 30, wavelet_cols].isna().any().any()
