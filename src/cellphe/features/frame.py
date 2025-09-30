@@ -171,7 +171,11 @@ def cell_features(
                 continue
 
             # Calculate static features of the frame/cell pair
-            static_features = extract_static_features(image, roi)
+            try:
+                static_features = extract_static_features(image, roi)
+            except RuntimeError as e:
+                print(f"Error processing cell {cell_id} on frame {frame_id}: {e}")
+                continue
 
             # Collate into a dict that will later populate a data frame
             record = dict(zip(STATIC_FEATURE_NAMES, static_features))
@@ -576,6 +580,9 @@ def extract_static_features(image: np.array, roi: np.array) -> np.array:
     # Extract sub image info
     sub_image = extract_subimage(image, roi)
     roi = roi - roi.min(axis=0)
+
+    if np.sum(sub_image.type_mask == 1) == 0:
+        raise RuntimeError("No interior pixels found")
 
     # Shape features
     # Averag radius & variance of boundary pixel distance to centre
