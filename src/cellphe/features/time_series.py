@@ -121,7 +121,16 @@ def wavelet_features(x: pd.Series) -> pd.DataFrame:
     :return: A 1-row DataFrame comprising 9 columns, one for each of the 3
         elevation metrics for each of the 3 Wavelet levels.
     """
-    wave_coefs = haar_approximation_1d(x)
+    # For some reason can't use try except here UNLESS have a line beforehand
+    # that does something with x, even just printing it. Somehow this results in
+    # only returning a single column data frame rather than 9 columns.
+    # No idea how this is occurring but we know that the wavelet transform
+    # needs at least 4 timepoints so will directly check, which doesn't break
+    # anything.
+    if x.size > 3:
+        wave_coefs = haar_approximation_1d(x)
+    else:
+        wave_coefs = [np.array([])] * 3
 
     # For each level of wavelet coefficients calculate the elevation metrics
     metrics = {"asc": lambda y: ascent(y, diff=False), "des": lambda z: descent(z, diff=False), "max": np.max}
