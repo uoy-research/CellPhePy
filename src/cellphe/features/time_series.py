@@ -166,7 +166,7 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     # Remove columns that aren't used, as they aren't either unique identifiers
     # or feature columns
-    df.drop(columns=["ROI_filename"], inplace=True)
+    df = df.drop(columns=["ROI_filename"])
     feature_cols = np.setdiff1d(df.columns.values, ["CellID", "FrameID", "x", "y"])
 
     # Calculate summary statistics
