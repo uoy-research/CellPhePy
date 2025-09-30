@@ -136,7 +136,7 @@ def wavelet_features(x: pd.Series) -> pd.DataFrame:
     metrics = {"asc": lambda y: ascent(y, diff=False), "des": lambda z: descent(z, diff=False), "max": np.max}
     res_dict = {}
     for i, coefs in enumerate(wave_coefs):
-        kw = f"l{i+1}"
+        kw = f"l{i + 1}"
         for km, vm in metrics.items():
             if coefs.size < 1:
                 val = np.nan
