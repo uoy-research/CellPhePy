@@ -1,12 +1,32 @@
-name: Python Publish Workflow
+name: Publish to PyPI
 on:
-  workflow_call:
+push:
+  tags:
+    - '**'
+  workflow_dispatch:
 
 jobs:
   publish:
-    uses: microsoft/action-python/.github/workflows/publish.yml@0.7.3
-    with:
-      python-version: 3.12.3
-    secrets:
-      PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD  }}
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/cellphe
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+    - name: Install build deps
+      run: |
+        uv pip install --upgrade build
+    - name: Build package
+      run: |
+        uv run python -m build
+    - name: Publish to PyPi
+      uses: pypa/gh-action-pypi-publish@release/v1
