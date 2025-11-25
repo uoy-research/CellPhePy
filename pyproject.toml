@@ -43,6 +43,7 @@ dependencies = [
 [project.optional-dependencies]
 full = [
     "cellpose==3.1.1.2",
+    "defusedxml==0.7.1",
     "JPype1==1.5.2",
     "pyimagej==1.7.0",
 ]

@@ -7,11 +7,10 @@ Functions related to importing TrackMate functionality.
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
-
 import numpy as np
 import pandas as pd
 import scyjava as sj
+from defusedxml.ElementTree import fromstring
 
 
 def get_trackmate_xml(model, settings) -> str:
@@ -49,7 +48,7 @@ def parse_trackmate_xml(xml: str) -> list[pd.DataFrame, list]:
             - coords: 2D Numpy array of the ROI coordinates as (x,y) pairs
             - filename: Filename to save the ROI to
     """
-    tree = ET.fromstring(xml)
+    tree = fromstring(xml)
     spot_records = []
     rois = {}
     # Get all Spots firstly
