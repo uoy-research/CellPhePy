@@ -24,15 +24,12 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "cellpose==3.1.1.2",
     "imbalanced-learn==0.14.0",
-    "JPype1==1.5.2",
     "matplotlib==3.10.7",
     "numpy==2.0.2",
     "pandas==2.3.3",
     "pandas-flavor==0.7.0",
     "pillow==12.0.0",
-    "pyimagej==1.7.0",
     "pyjanitor==0.32.1",
     "pywavelets==1.9.0",
     "roifile==2025.5.10",
@@ -44,10 +41,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+full = [
+    "cellpose==3.1.1.2",
+    "JPype1==1.5.2",
+    "pyimagej==1.7.0",
+]
 spark = [
     "pyspark>=3.0.0"
 ]
 test = [
+    "cellphe[full]",
     "bandit[toml]==1.8.6",
     "black==25.11.0",
     "check-manifest==0.51",

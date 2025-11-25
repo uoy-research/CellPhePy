@@ -88,18 +88,15 @@ wheels = [
 
 [[package]]
 name = "cellphe"
-version = "0.4.4"
+version = "0.4.5"
 source = { editable = "." }
 dependencies = [
-    { name = "cellpose" },
     { name = "imbalanced-learn" },
-    { name = "jpype1" },
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "pandas-flavor" },
     { name = "pillow" },
-    { name = "pyimagej" },
     { name = "pyjanitor" },
     { name = "pywavelets" },
     { name = "roifile" },
@@ -111,19 +108,27 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+full = [
+    { name = "cellpose" },
+    { name = "jpype1" },
+    { name = "pyimagej" },
+]
 spark = [
     { name = "pyspark" },
 ]
 test = [
     { name = "bandit" },
     { name = "black" },
+    { name = "cellpose" },
     { name = "check-manifest" },
     { name = "flake8" },
     { name = "flake8-bugbear" },
     { name = "flake8-docstrings" },
     { name = "flake8-formatter-junit-xml" },
     { name = "flake8-pyproject" },
+    { name = "jpype1" },
     { name = "pre-commit" },
+    { name = "pyimagej" },
     { name = "pylint" },
     { name = "pylint-junit" },
     { name = "pytest" },
@@ -138,7 +143,8 @@ test = [
 requires-dist = [
     { name = "bandit", extras = ["toml"], marker = "extra == 'test'", specifier = "==1.8.6" },
     { name = "black", marker = "extra == 'test'", specifier = "==25.11.0" },
-    { name = "cellpose", specifier = "==3.1.1.2" },
+    { name = "cellphe", extras = ["full"], marker = "extra == 'test'" },
+    { name = "cellpose", marker = "extra == 'full'", specifier = "==3.1.1.2" },
     { name = "check-manifest", marker = "extra == 'test'", specifier = "==0.51" },
     { name = "flake8", marker = "extra == 'test'" },
     { name = "flake8-bugbear", marker = "extra == 'test'", specifier = "==24.12.12" },
@@ -146,14 +152,14 @@ requires-dist = [
     { name = "flake8-formatter-junit-xml", marker = "extra == 'test'" },
     { name = "flake8-pyproject", marker = "extra == 'test'" },
     { name = "imbalanced-learn", specifier = "==0.14.0" },
-    { name = "jpype1", specifier = "==1.5.2" },
+    { name = "jpype1", marker = "extra == 'full'", specifier = "==1.5.2" },
     { name = "matplotlib", specifier = "==3.10.7" },
     { name = "numpy", specifier = "==2.0.2" },
     { name = "pandas", specifier = "==2.3.3" },
     { name = "pandas-flavor", specifier = "==0.7.0" },
     { name = "pillow", specifier = "==12.0.0" },
     { name = "pre-commit", marker = "extra == 'test'", specifier = "==4.3.0" },
-    { name = "pyimagej", specifier = "==1.7.0" },
+    { name = "pyimagej", marker = "extra == 'full'", specifier = "==1.7.0" },
     { name = "pyjanitor", specifier = "==0.32.1" },
     { name = "pylint", marker = "extra == 'test'", specifier = "==3.3.9" },
     { name = "pylint-junit", marker = "extra == 'test'" },
@@ -172,7 +178,7 @@ requires-dist = [
     { name = "shellcheck-py", marker = "extra == 'test'", specifier = "==0.11.0.1" },
     { name = "xgboost", specifier = "==3.1.2" },
 ]
-provides-extras = ["spark", "test"]
+provides-extras = ["full", "spark", "test"]
 
 [[package]]
 name = "cellpose"
