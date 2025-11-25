@@ -31,7 +31,7 @@ jobs:
         uvx ruff check src
     - name: Bandit
       run: |
-        uvx bandit src
+        uvx bandit -r src
     - name: Unit tests
       run: |
         uvx pytest
