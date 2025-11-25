@@ -4,7 +4,7 @@ build-backend = "flit.buildapi"
 
 [project]
 name =  "cellphe"
-version = "0.4.3"
+version = "0.4.4"
 authors = [
     {name = "Stuart Lacy", email = "stuart.lacy@york.ac.uk"},
     {name = "Laura Wiggins", email = "l.wiggins@sheffield.ac.uk"},
@@ -30,6 +30,7 @@ dependencies = [
     "matplotlib",
     "numpy",
     "pandas",
+    "pandas-flavor==0.7.0",
     "pillow",
     "pyimagej",
     "pyjanitor",
@@ -47,23 +48,23 @@ spark = [
     "pyspark>=3.0.0"
 ]
 test = [
-    "bandit[toml]==1.8.3",
-    "black==25.1.0",
-    "check-manifest==0.50",
+    "bandit[toml]==1.8.6",
+    "black==25.11.0",
+    "check-manifest==0.51",
     "flake8-bugbear==24.12.12",
     "flake8-docstrings",
     "flake8-formatter_junit_xml",
     "flake8",
     "flake8-pyproject",
-    "pre-commit==4.2.0",
-    "pylint==3.3.7",
+    "pre-commit==4.3.0",
+    "pylint==3.3.9",
     "pylint_junit",
-    "pytest-cov==6.1.1",
-    "pytest-mock<3.14.2",
+    "pytest-cov==7.0.0",
+    "pytest-mock<3.15.2",
     "pytest-runner",
-    "pytest==8.4.0",
+    "pytest==8.4.2",
     "pytest-github-actions-annotate-failures",
-    "shellcheck-py==0.10.0.1"
+    "shellcheck-py==0.11.0.1"
 ]
 
 [project.urls]

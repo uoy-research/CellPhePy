@@ -121,14 +121,29 @@ def wavelet_features(x: pd.Series) -> pd.DataFrame:
     :return: A 1-row DataFrame comprising 9 columns, one for each of the 3
         elevation metrics for each of the 3 Wavelet levels.
     """
-    wave_coefs = haar_approximation_1d(x)
+    # For some reason can't use try except here UNLESS have a line beforehand
+    # that does something with x, even just printing it. Somehow this results in
+    # only returning a single column data frame rather than 9 columns.
+    # No idea how this is occurring but we know that the wavelet transform
+    # needs at least 4 timepoints so will directly check, which doesn't break
+    # anything.
+    if x.size > 3:
+        wave_coefs = haar_approximation_1d(x)
+    else:
+        wave_coefs = [np.array([])] * 3
 
-    # For each set of wavelet coefficients calculate the elevation metrics
-    wave_coefs_dict = {f"l{i + 1}": x for i, x in enumerate(wave_coefs)}
-    metrics = {"asc": lambda x: ascent(x, diff=False), "des": lambda x: descent(x, diff=False), "max": np.max}
-    res_dict = {f"{kw}_{km}": vm(vw) for kw, vw in wave_coefs_dict.items() for km, vm in metrics.items()}
+    # For each level of wavelet coefficients calculate the elevation metrics
+    metrics = {"asc": lambda y: ascent(y, diff=False), "des": lambda z: descent(z, diff=False), "max": np.max}
+    res_dict = {}
+    for i, coefs in enumerate(wave_coefs):
+        kw = f"l{i + 1}"
+        for km, vm in metrics.items():
+            if coefs.size < 1:
+                val = np.nan
+            else:
+                val = vm(coefs)
+            res_dict[f"{kw}_{km}"] = val
 
-    # Convert into DataFrame for output
     return pd.DataFrame(res_dict, index=[0])
 
 
@@ -151,7 +166,7 @@ def time_series_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     # Remove columns that aren't used, as they aren't either unique identifiers
     # or feature columns
-    df.drop(columns=["ROI_filename"], inplace=True)
+    df = df.drop(columns=["ROI_filename"])
     feature_cols = np.setdiff1d(df.columns.values, ["CellID", "FrameID", "x", "y"])
 
     # Calculate summary statistics
