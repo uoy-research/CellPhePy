@@ -1,9 +1,9 @@
 """
-    cellphe.input
-    ~~~~~~~~~~~~~
+cellphe.input
+~~~~~~~~~~~~~
 
-    Functions related to importing feature tables into CellPhe from various
-    microscopy platforms.
+Functions related to importing feature tables into CellPhe from various
+microscopy platforms.
 """
 
 from __future__ import annotations

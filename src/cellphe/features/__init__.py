@@ -1,8 +1,8 @@
 """
-    cellfeature.features
-    ~~~~~~~~~~~~~~~~~~~~
+cellfeature.features
+~~~~~~~~~~~~~~~~~~~~
 
-    Provides functions relating to extracting features.
+Provides functions relating to extracting features.
 """
 
 from __future__ import annotations

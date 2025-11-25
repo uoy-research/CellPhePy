@@ -1,5 +1,5 @@
 """
-    Functions related to predicting and removing segmentation errors.
+Functions related to predicting and removing segmentation errors.
 """
 
 from __future__ import annotations

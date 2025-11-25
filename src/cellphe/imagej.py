@@ -1,8 +1,8 @@
 """
-    cellphe.imagej
-    ~~~~~~~~~~~~~~
+cellphe.imagej
+~~~~~~~~~~~~~~
 
-    Functions related to using ImageJ functionality.
+Functions related to using ImageJ functionality.
 """
 
 from __future__ import annotations

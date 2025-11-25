@@ -1,8 +1,8 @@
 """
-    cellphe
-    ~~~~~~~
+cellphe
+~~~~~~~
 
-    Top level package.
+Top level package.
 """
 
 from __future__ import annotations

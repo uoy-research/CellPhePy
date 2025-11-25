@@ -1,8 +1,8 @@
 """
-    cellphe.classification
-    ~~~~~~~~~~~~~~~~~~~~~~
+cellphe.classification
+~~~~~~~~~~~~~~~~~~~~~~
 
-    Functions for classifying cells.
+Functions for classifying cells.
 """
 
 from __future__ import annotations

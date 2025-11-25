@@ -1,9 +1,9 @@
 """
-    cellphe.features.helpers
-    ~~~~~~~~~~~~~~~~~~~~~~~~
+cellphe.features.helpers
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Helper functions for use in both frame and time-series level feature
-    calculations.
+Helper functions for use in both frame and time-series level feature
+calculations.
 """
 
 from __future__ import annotations

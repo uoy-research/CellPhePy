@@ -1,8 +1,8 @@
 """
-    cellphe.features.frame
-    ~~~~~~~~~~~~~~~~~~~~~~
+cellphe.features.frame
+~~~~~~~~~~~~~~~~~~~~~~
 
-    Functions for extracting frame-level features.
+Functions for extracting frame-level features.
 """
 
 from __future__ import annotations

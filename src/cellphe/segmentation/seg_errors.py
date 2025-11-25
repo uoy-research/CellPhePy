@@ -1,8 +1,8 @@
 """
-    cellphe.segmentation.seg_errors
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cellphe.segmentation.seg_errors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Functions relating to handling segmentation errors.
+Functions relating to handling segmentation errors.
 """
 
 from __future__ import annotations

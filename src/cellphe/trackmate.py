@@ -1,8 +1,8 @@
 """
-    cellphe.trackmate
-    ~~~~~~~~~~~~~~~~~
+cellphe.trackmate
+~~~~~~~~~~~~~~~~~
 
-    Functions related to importing TrackMate functionality.
+Functions related to importing TrackMate functionality.
 """
 
 from __future__ import annotations
