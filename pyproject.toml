@@ -30,7 +30,7 @@ dependencies = [
     "matplotlib==3.10.7",
     "numpy==2.0.2",
     "pandas==2.3.3",
-    "pandas-flavor==0.7.0",
+    "pandas-flavor==0.8.1",
     "pillow==12.0.0",
     "pyimagej==1.7.0",
     "pyjanitor==0.32.1",
