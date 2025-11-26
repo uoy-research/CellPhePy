@@ -110,6 +110,7 @@ dependencies = [
 [package.optional-dependencies]
 full = [
     { name = "cellpose" },
+    { name = "defusedxml" },
     { name = "jpype1" },
     { name = "pyimagej" },
 ]
@@ -119,16 +120,13 @@ spark = [
 test = [
     { name = "bandit" },
     { name = "black" },
-    { name = "cellpose" },
     { name = "check-manifest" },
     { name = "flake8" },
     { name = "flake8-bugbear" },
     { name = "flake8-docstrings" },
     { name = "flake8-formatter-junit-xml" },
     { name = "flake8-pyproject" },
-    { name = "jpype1" },
     { name = "pre-commit" },
-    { name = "pyimagej" },
     { name = "pylint" },
     { name = "pylint-junit" },
     { name = "pytest" },
@@ -143,9 +141,9 @@ test = [
 requires-dist = [
     { name = "bandit", extras = ["toml"], marker = "extra == 'test'", specifier = "==1.8.6" },
     { name = "black", marker = "extra == 'test'", specifier = "==25.11.0" },
-    { name = "cellphe", extras = ["full"], marker = "extra == 'test'" },
     { name = "cellpose", marker = "extra == 'full'", specifier = "==3.1.1.2" },
     { name = "check-manifest", marker = "extra == 'test'", specifier = "==0.51" },
+    { name = "defusedxml", marker = "extra == 'full'", specifier = "==0.7.1" },
     { name = "flake8", marker = "extra == 'test'" },
     { name = "flake8-bugbear", marker = "extra == 'test'", specifier = "==24.12.12" },
     { name = "flake8-docstrings", marker = "extra == 'test'" },
@@ -524,6 +522,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a9/95/a3dbbb5028f35eafb79008e7522a75244477d2838f38cbb722248dabc2a8/cycler-0.12.1.tar.gz", hash = "sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c", size = 7615, upload-time = "2023-10-07T05:32:18.335Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e7/05/c19819d5e3d95294a6f5947fb9b9629efb316b96de511b418c53d245aae6/cycler-0.12.1-py3-none-any.whl", hash = "sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30", size = 8321, upload-time = "2023-10-07T05:32:16.783Z" },
+]
+
+[[package]]
+name = "defusedxml"
+version = "0.7.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0f/d5/c66da9b79e5bdb124974bfe172b4daf3c984ebd9c2a06e2b8a4dc7331c72/defusedxml-0.7.1.tar.gz", hash = "sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69", size = 75520, upload-time = "2021-03-08T10:59:26.269Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61", size = 25604, upload-time = "2021-03-08T10:59:24.45Z" },
 ]
 
 [[package]]

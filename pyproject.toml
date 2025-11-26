@@ -51,7 +51,6 @@ spark = [
     "pyspark>=3.0.0"
 ]
 test = [
-    "cellphe[full]",
     "bandit[toml]==1.8.6",
     "black==25.11.0",
     "check-manifest==0.51",
