@@ -20,9 +20,6 @@ jobs:
         python-version: '3.11'
     - name: Install uv
       uses: astral-sh/setup-uv@v7
-    - name: Install deps
-      run: |
-        uv sync .[test]
     - name: Black
       run: |
         uvx black src
@@ -32,6 +29,9 @@ jobs:
     - name: Bandit
       run: |
         uvx bandit -r src
+    - name: Install deps
+      run: |
+        uv sync --extra test
     - name: Unit tests
       run: |
         uvx pytest
