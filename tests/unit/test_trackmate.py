@@ -3,15 +3,13 @@ from __future__ import annotations
 import pytest
 
 # Only run tests if have optional dependencies available
-pytest.importorskip("cellphe.imagej")
-pytest.importorskip("cellphe.trackmate")
-
+pytest.importorskip("imagej")
 
 import numpy as np
 import scyjava as sj
 
-from cellphe.imagej import setup_imagej
-from cellphe.trackmate import load_tracker
+from cellphe.tracking.imagej import setup_imagej
+from cellphe.tracking.trackmate import load_tracker
 
 pytestmark = pytest.mark.full
 

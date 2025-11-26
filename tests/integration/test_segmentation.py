@@ -10,8 +10,7 @@ import pandas as pd
 
 from cellphe.segmentation import predict_segmentation_errors
 
-pytestmark = pytest.mark.integration
-pytestmark = pytest.mark.full
+pytestmark = [pytest.mark.integration, pytest.mark.full]
 
 
 @pytest.fixture()
