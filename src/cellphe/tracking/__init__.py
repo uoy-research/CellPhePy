@@ -8,6 +8,7 @@ import sys
 
 import scyjava as sj
 
+from cellphe.processing.roi import save_rois
 from cellphe.tracking.imagej import read_image_stack, setup_imagej
 from cellphe.tracking.trackmate import (
     configure_trackmate,

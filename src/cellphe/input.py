@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from roifile import ImagejRoi
-from skimage import io
 
 from cellphe.processing.roi import save_rois
 
