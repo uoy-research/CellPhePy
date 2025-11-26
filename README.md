@@ -21,6 +21,12 @@ You can install the latest version of CellPhe from
 pip install cellphe
 ```
 
+The default installation provides access to the core phenotyping functionality, but if you would also like to segment and track your images, the full installation will need to be installed as below. Segmentation and tracking have large dependencies and so are not included by default.
+
+```
+pip install cellphe[full]
+```
+
 ## Example
 
 An example dataset to demonstrate CellPhe’s capabilities is hosted on [Dryad](https://doi.org/10.5061/dryad.4xgxd25f0) in the archive `example_data.zip` and comprises 3 parts:
@@ -42,7 +48,8 @@ CellPhe, or pre-segmented and tracked data from two widely used software
 
 ### Segmenting and tracking
 
-**NB: This feature is still experimental, please report any bugs at the [issue tracker](https://github.com/uoy-research/CellPhePy/issues)**
+**NB: Please ensure that you have installed the full version of CellPhe as shown above before segmenting or tracking.**
+This feature is still experimental, please report any bugs at the [issue tracker](https://github.com/uoy-research/CellPhePy/issues).
 
 CellPhe provides 2 functions to segment and track an image sequence:
 
