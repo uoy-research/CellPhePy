@@ -34,16 +34,16 @@ jobs:
         uv sync --extra test
     - name: Unit tests
       run: |
-        uvx pytest
+        uv run pytest pytest
     - name: Integration tests
       run: |
-        uvx pytest -m 'integration'
+        uv run pytest -m 'integration'
     - name: Install full deps
       run: |
         uv sync --extra test --extra full
     - name: Unit tests of full deps
       run: |
-        uvx pytest -m 'full and not integration'
+        uv run pytest -m 'full and not integration'
     - name: Integration tests of full deps
       run: |
-        uvx pytest -m 'full and integration'
+        uv run pytest -m 'full and integration'
