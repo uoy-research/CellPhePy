@@ -15,8 +15,6 @@ import pandas as pd
 from PIL import Image
 from roifile import ImagejRoi
 
-from cellphe.processing.roi import save_rois
-
 
 def import_data(file: str, source: str, minframes: int = 0) -> pd.DataFrame:
     """Copy metadata and cell-frame features from an existing TrackMate or
