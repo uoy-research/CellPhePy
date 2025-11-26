@@ -34,7 +34,7 @@ jobs:
         uv sync --extra test
     - name: Unit tests
       run: |
-        uv run pytest pytest
+        uv run pytest
     - name: Integration tests
       run: |
         uv run pytest -m 'integration'
