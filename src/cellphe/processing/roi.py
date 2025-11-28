@@ -1,8 +1,8 @@
 """
-    cellphe.processing.roi
-    ~~~~~~~~~~~~~~~~~~~~~~
+cellphe.processing.roi
+~~~~~~~~~~~~~~~~~~~~~~
 
-    Functions related to processing ROIs.
+Functions related to processing ROIs.
 """
 
 from __future__ import annotations

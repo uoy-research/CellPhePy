@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import pytest
+
+# Only run tests if have optional dependencies available
+pytest.importorskip("cellphe.segmentation")
+
 import numpy as np
 import pandas as pd
-import pytest
 
 from cellphe.segmentation import predict_segmentation_errors
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.full]
 
 
 @pytest.fixture()

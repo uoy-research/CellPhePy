@@ -1,8 +1,8 @@
 """
-    cellphe.clustering
-    ~~~~~~~~~~~~~~~~~~
+cellphe.clustering
+~~~~~~~~~~~~~~~~~~
 
-    Functions related to clustering cells.
+Functions related to clustering cells.
 """
 
 from __future__ import annotations

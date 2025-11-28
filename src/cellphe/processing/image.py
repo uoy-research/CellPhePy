@@ -1,8 +1,8 @@
 """
-    cellphe.processing.image
-    ~~~~~~~~~~~~~~~~~~~~~~~~
+cellphe.processing.image
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Functions related to processing images.
+Functions related to processing images.
 """
 
 # pylint doesn't recognise grid_points_in_poly

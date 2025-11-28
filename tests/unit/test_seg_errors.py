@@ -1,9 +1,17 @@
 from __future__ import annotations
 
+import pytest
+
+# Only run tests if have optional dependencies available
+pytest.importorskip("cellphe.segmentation")
+
 import numpy as np
 import pandas as pd
 
 from cellphe.segmentation import balance_training_set, remove_predicted_seg_errors
+
+# TODO fix this so don't have to have cellpose installed
+pytestmark = pytest.mark.full
 
 
 def test_remove_predicted_seg_errors():

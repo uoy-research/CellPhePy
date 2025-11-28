@@ -1,8 +1,8 @@
 """
-    cellphe.features.frame
-    ~~~~~~~~~~~~~~~~~~~~~~
+cellphe.features.frame
+~~~~~~~~~~~~~~~~~~~~~~
 
-    Functions for extracting frame-level features.
+Functions for extracting frame-level features.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from shapely import Polygon, simplify
 
 from cellphe.features.helpers import skewness
 from cellphe.input import read_rois, read_tiff
-from cellphe.processing import extract_subimage, normalise_image
+from cellphe.processing.image import extract_subimage, normalise_image
 
 STATIC_FEATURE_NAMES = [
     "Rad",

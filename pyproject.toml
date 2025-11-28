@@ -4,7 +4,7 @@ build-backend = "flit.buildapi"
 
 [project]
 name =  "cellphe"
-version = "0.4.5"
+version = "0.4.6"
 authors = [
     {name = "Stuart Lacy", email = "stuart.lacy@york.ac.uk"},
     {name = "Laura Wiggins", email = "l.wiggins@sheffield.ac.uk"},
@@ -24,15 +24,12 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "cellpose==3.1.1.2",
     "imbalanced-learn==0.14.0",
-    "JPype1==1.5.2",
     "matplotlib==3.10.7",
     "numpy==2.0.2",
     "pandas==2.3.3",
     "pandas-flavor==0.7.0",
     "pillow==12.0.0",
-    "pyimagej==1.7.0",
     "pyjanitor==0.32.1",
     "pywavelets==1.9.0",
     "roifile==2025.5.10",
@@ -44,8 +41,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-spark = [
-    "pyspark>=3.0.0"
+full = [
+    "cellpose==3.1.1.2",
+    "defusedxml==0.7.1",
+    "JPype1==1.5.2",
+    "pyimagej==1.7.0",
 ]
 test = [
     "bandit[toml]==1.9.2",
@@ -142,9 +142,7 @@ testpaths = "tests"
 junit_family = "xunit2"
 markers = [
     "integration: marks as integration test",
-    "notebooks: marks as notebook test",
-    "gpu: marks as gpu test",
-    "spark: marks tests which need Spark",
+    "full: marks as requiring [full] install",
     "slow: marks tests as slow",
     "unit: fast offline tests",
 ]
@@ -152,29 +150,18 @@ markers = [
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py, integration, spark, all
+envlist = py, integration, all
 
 [testenv]
 commands =
-    pytest -m "not integration and not spark" {posargs}
+    pytest -m "not integration" {posargs}
 
 [testenv:integration]
 commands =
     pytest -m "integration" {posargs}
 
-[testenv:spark]
-extras = spark
-setenv =
-       PYSPARK_DRIVER_PYTHON = {envpython}
-       PYSPARK_PYTHON = {envpython}
-commands =
-    pytest -m "spark" {posargs}
-
 [testenv:all]
 extras = all
-setenv =
-       PYSPARK_DRIVER_PYTHON = {envpython}
-       PYSPARK_PYTHON = {envpython}
 commands =
     pytest {posargs}
 """

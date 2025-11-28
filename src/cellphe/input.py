@@ -1,29 +1,19 @@
 """
-    cellphe.input
-    ~~~~~~~~~~~~~
+cellphe.input
+~~~~~~~~~~~~~
 
-    Functions related to importing feature tables into CellPhe from various
-    microscopy platforms.
+Functions related to importing feature tables into CellPhe from various
+microscopy platforms.
 """
 
 from __future__ import annotations
 
-import glob
-import os
-import sys
 import zipfile
 
 import numpy as np
 import pandas as pd
-import scyjava as sj
-from cellpose import models
 from PIL import Image
 from roifile import ImagejRoi
-from skimage import io
-
-from cellphe.imagej import read_image_stack, setup_imagej
-from cellphe.processing.roi import save_rois
-from cellphe.trackmate import configure_trackmate, get_trackmate_xml, load_detector, load_tracker, parse_trackmate_xml
 
 
 def import_data(file: str, source: str, minframes: int = 0) -> pd.DataFrame:
@@ -143,117 +133,3 @@ def read_tiff(filename: str) -> np.array:
         image = image.convert("L")
     image = np.array(image)
     return image
-
-
-def segment_images(
-    input_dir: str, output_dir: str, model_params: dict = {"model_type": "cyto3"}, eval_params: dict = {}  # noqa: B006
-) -> None:  # noqa: B006
-    # Can ignore {} warning in both pylint and flake8 as the dicts aren't being
-    # modified within the function.
-    # pylint: disable=dangerous-default-value
-    """
-    Segments a batch of images using cellpose.
-
-    Currently only TIFs are supported. The output segmentations are saved to
-    disk as TIFs with index labelling. I.e. on each frame, all pixels belonging
-    to the first identified cell are given value 1, the second cell are
-    assigned 3 etc... Background pixels are 0.
-
-    :param input_dir: The path to the directory containing the TIFs.
-    :param output_dir: The path to the directory where the masks will be saved
-    to.
-    :param model_params: Parameters to pass into the Cellpose instantiation,
-    including the model type. See
-    https://cellpose.readthedocs.io/en/latest/api.html#cellpose.models.Cellpose
-    for a full list of options.
-    :param eval_params: Parameters to pass into the Cellpose eval function
-    governing the segmentation.
-    https://cellpose.readthedocs.io/en/latest/api.html#cellpose.models.CellposeModel.eval
-    for a full list of options.
-    :return: None, saves masks to disk as a side-effect.
-    """
-    model = models.Cellpose(**model_params)
-    tif_files = sorted(glob.glob(os.path.join(input_dir, "*.tif")))
-    try:
-        os.makedirs(output_dir, exist_ok=True)
-    except FileExistsError:
-        pass  # exist_ok doesn't work if dir exists but with different mode
-    for tif_file in tif_files:
-        print(f"Processing image: {tif_file}")
-        try:
-            image = read_tiff(tif_file)
-            masks, _, _, _ = model.eval(image, **eval_params)
-
-            # Save masks
-            filename = os.path.splitext(os.path.basename(tif_file))[0] + "_mask.tif"
-            save_path = os.path.join(output_dir, filename)
-            io.imsave(save_path, masks.astype("uint16"))  # Assuming masks are uint16
-
-            print(f"Masks saved for {tif_file} at {save_path}")
-        except Exception as e:
-            print(f"Error processing file {tif_file}: {e}")
-
-
-def track_images(
-    mask_dir: str,
-    csv_filename: str,
-    roi_filename: str = "rois.zip",
-    tracker: str = "SimpleSparseLAP",
-    tracker_settings: dict = None,
-    max_heap: int | None = None,
-) -> None:
-    # pylint: disable=too-many-positional-arguments
-    # pylint: disable=too-many-arguments
-    """
-    Tracks cells across a set of frames using TrackMate, storing the frame
-    features in a CSV, and the ROIs in a specified folder.
-
-    The CSV will have the same columns as that extracted by the TrackMate GUI
-    (from the Spots tab of the Tracks Table).
-    The ROIs will be saved in the binary ROI format and can be read into
-    TrackMate.
-    NB: The IDs will not necessarily be identical to those from outputs from the
-    GUI TrackMate.
-
-    As this function doesn't require a local install of ImageJ, it downloads a
-    remote version from the SciJava Maven repository. As such the first run can
-    a while (~10 mins), although this will be cached for subsequent uses.
-
-    :param mask_dir: Path to the directory containing the image masks created by
-    CellPose as in segment_images.
-    :param csv_filename: Filename for the resultant CSV.
-    :param roi_folder: Folder where ROIs will be saved to. Will be created if it
-        doesn't exist.
-    :param roi_filename: Filename of output archive.
-    :param max_heap: Size in GB of the maximum heap size allocated to the JVM.
-        Use if you are encountering memory problems with large datasets. Be careful
-        when using this parameter, the rule of thumb is not to assign more than 80%
-        of your computer's available memory.
-    :return: None, writes the CSV file and ROI files to disk as a side-effect.
-    """
-    setup_imagej(max_heap)
-
-    imp = read_image_stack(mask_dir)
-    settings = sj.jimport("fiji.plugin.trackmate.Settings")(imp)
-    load_detector(settings)
-    load_tracker(settings, tracker, tracker_settings)
-
-    # Configure TrackMate instance
-    model = sj.jimport("fiji.plugin.trackmate.Model")()
-    trackmate = configure_trackmate(model, settings)
-    if not trackmate.checkInput():
-        print("Settings error")
-        sys.exit(str(trackmate.getErrorMessage()))
-
-    # Run the full detection + tracking process
-    if not trackmate.process():
-        print("process error")
-        sys.exit(str(trackmate.getErrorMessage()))
-
-    # Export to and extract the Spots, Tracks, and ROIs
-    raw_xml = get_trackmate_xml(model, settings)
-    comb_df, rois = parse_trackmate_xml(raw_xml)
-
-    # Write CSV and ROIs to disk
-    comb_df.to_csv(csv_filename, index=False)
-    save_rois(rois, roi_filename)

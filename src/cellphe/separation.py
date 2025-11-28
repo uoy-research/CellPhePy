@@ -1,8 +1,8 @@
 """
-    cellphe.separation
-    ~~~~~~~~~~~~~~~~~~
+cellphe.separation
+~~~~~~~~~~~~~~~~~~
 
-    Functions related to calculating separation scores.
+Functions related to calculating separation scores.
 """
 
 from __future__ import annotations

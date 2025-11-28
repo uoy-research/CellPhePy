@@ -88,18 +88,15 @@ wheels = [
 
 [[package]]
 name = "cellphe"
-version = "0.4.5"
+version = "0.4.6"
 source = { editable = "." }
 dependencies = [
-    { name = "cellpose" },
     { name = "imbalanced-learn" },
-    { name = "jpype1" },
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "pandas-flavor" },
     { name = "pillow" },
-    { name = "pyimagej" },
     { name = "pyjanitor" },
     { name = "pywavelets" },
     { name = "roifile" },
@@ -111,8 +108,11 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-spark = [
-    { name = "pyspark" },
+full = [
+    { name = "cellpose" },
+    { name = "defusedxml" },
+    { name = "jpype1" },
+    { name = "pyimagej" },
 ]
 test = [
     { name = "bandit" },
@@ -138,26 +138,26 @@ test = [
 requires-dist = [
     { name = "bandit", extras = ["toml"], marker = "extra == 'test'", specifier = "==1.9.2" },
     { name = "black", marker = "extra == 'test'", specifier = "==25.11.0" },
-    { name = "cellpose", specifier = "==3.1.1.2" },
+    { name = "cellpose", marker = "extra == 'full'", specifier = "==3.1.1.2" },
     { name = "check-manifest", marker = "extra == 'test'", specifier = "==0.51" },
+    { name = "defusedxml", marker = "extra == 'full'", specifier = "==0.7.1" },
     { name = "flake8", marker = "extra == 'test'" },
     { name = "flake8-bugbear", marker = "extra == 'test'", specifier = "==25.10.21" },
     { name = "flake8-docstrings", marker = "extra == 'test'" },
     { name = "flake8-formatter-junit-xml", marker = "extra == 'test'" },
     { name = "flake8-pyproject", marker = "extra == 'test'" },
     { name = "imbalanced-learn", specifier = "==0.14.0" },
-    { name = "jpype1", specifier = "==1.5.2" },
+    { name = "jpype1", marker = "extra == 'full'", specifier = "==1.5.2" },
     { name = "matplotlib", specifier = "==3.10.7" },
     { name = "numpy", specifier = "==2.0.2" },
     { name = "pandas", specifier = "==2.3.3" },
     { name = "pandas-flavor", specifier = "==0.7.0" },
     { name = "pillow", specifier = "==12.0.0" },
     { name = "pre-commit", marker = "extra == 'test'", specifier = "==4.5.0" },
-    { name = "pyimagej", specifier = "==1.7.0" },
+    { name = "pyimagej", marker = "extra == 'full'", specifier = "==1.7.0" },
     { name = "pyjanitor", specifier = "==0.32.1" },
     { name = "pylint", marker = "extra == 'test'", specifier = "==4.0.3" },
     { name = "pylint-junit", marker = "extra == 'test'" },
-    { name = "pyspark", marker = "extra == 'spark'", specifier = ">=3.0.0" },
     { name = "pytest", marker = "extra == 'test'", specifier = "==9.0.1" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = "==7.0.0" },
     { name = "pytest-github-actions-annotate-failures", marker = "extra == 'test'" },
@@ -172,7 +172,7 @@ requires-dist = [
     { name = "shellcheck-py", marker = "extra == 'test'", specifier = "==0.11.0.1" },
     { name = "xgboost", specifier = "==3.1.2" },
 ]
-provides-extras = ["spark", "test"]
+provides-extras = ["full", "test"]
 
 [[package]]
 name = "cellpose"
@@ -518,6 +518,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a9/95/a3dbbb5028f35eafb79008e7522a75244477d2838f38cbb722248dabc2a8/cycler-0.12.1.tar.gz", hash = "sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c", size = 7615, upload-time = "2023-10-07T05:32:18.335Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e7/05/c19819d5e3d95294a6f5947fb9b9629efb316b96de511b418c53d245aae6/cycler-0.12.1-py3-none-any.whl", hash = "sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30", size = 8321, upload-time = "2023-10-07T05:32:16.783Z" },
+]
+
+[[package]]
+name = "defusedxml"
+version = "0.7.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0f/d5/c66da9b79e5bdb124974bfe172b4daf3c984ebd9c2a06e2b8a4dc7331c72/defusedxml-0.7.1.tar.gz", hash = "sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69", size = 75520, upload-time = "2021-03-08T10:59:26.269Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61", size = 25604, upload-time = "2021-03-08T10:59:24.45Z" },
 ]
 
 [[package]]
@@ -1746,15 +1755,6 @@ wheels = [
 ]
 
 [[package]]
-name = "py4j"
-version = "0.10.9.9"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/38/31/0b210511177070c8d5d3059556194352e5753602fa64b85b7ab81ec1a009/py4j-0.10.9.9.tar.gz", hash = "sha256:f694cad19efa5bd1dee4f3e5270eb406613c974394035e5bfc4ec1aba870b879", size = 761089, upload-time = "2025-01-15T03:53:18.624Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/bd/db/ea0203e495be491c85af87b66e37acfd3bf756fd985f87e46fc5e3bf022c/py4j-0.10.9.9-py2.py3-none-any.whl", hash = "sha256:c7c26e4158defb37b0bb124933163641a2ff6e3a3913f7811b0ddbe07ed61533", size = 203008, upload-time = "2025-01-15T03:53:15.648Z" },
-]
-
-[[package]]
 name = "pycodestyle"
 version = "2.14.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1874,15 +1874,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/e7/82/28175b2414effca1c
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bd/24/12818598c362d7f300f18e74db45963dbcb85150324092410c8b49405e42/pyproject_hooks-1.2.0-py3-none-any.whl", hash = "sha256:9e5c6bfa8dcc30091c74b0cf803c81fdd29d94f01992a7707bc97babb1141913", size = 10216, upload-time = "2024-09-29T09:24:11.978Z" },
 ]
-
-[[package]]
-name = "pyspark"
-version = "4.0.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "py4j" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ae/40/1414582f16c1d7b051c668c2e19c62d21a18bd181d944cb24f5ddbb2423f/pyspark-4.0.1.tar.gz", hash = "sha256:9d1f22d994f60369228397e3479003ffe2dd736ba79165003246ff7bd48e2c73", size = 434204896, upload-time = "2025-09-06T07:15:57.091Z" }
 
 [[package]]
 name = "pytest"

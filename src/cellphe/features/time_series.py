@@ -1,8 +1,8 @@
 """
-    cellphe.features.time_series
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cellphe.features.time_series
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Functions for extracting features from time-series.
+Functions for extracting features from time-series.
 """
 
 from __future__ import annotations

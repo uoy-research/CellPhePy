@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from matplotlib.path import Path
 
-from cellphe.processing import *
-from cellphe.processing.image import SubImage
+from cellphe.processing.image import *
+from cellphe.processing.roi import *
 
 
 def test_create_type_mask_matplotlib():

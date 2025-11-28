@@ -10,13 +10,40 @@ on:
 
 jobs:
   validation:
-    uses: microsoft/action-python/.github/workflows/validation.yml@0.7.3
-    with:
-      python-version: 3.12.3
-      workdir: '.'
-
-  publish:
-    uses: microsoft/action-python/.github/workflows/publish.yml@0.7.3
-    secrets:
-      PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD  }}
+    name: Python CI checks
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+    - name: Black
+      run: |
+        uvx black src
+    - name: Ruff
+      run: |
+        uvx ruff check src
+    - name: Bandit
+      run: |
+        uvx bandit -r src
+    - name: Install deps
+      run: |
+        uv sync --extra test
+    - name: Unit tests
+      run: |
+        uv run pytest
+    - name: Integration tests
+      run: |
+        uv run pytest -m 'integration'
+    - name: Install full deps
+      run: |
+        uv sync --extra test --extra full
+    - name: Unit tests of full deps
+      run: |
+        uv run pytest -m 'full and not integration'
+    - name: Integration tests of full deps
+      run: |
+        uv run pytest -m 'full and integration'
