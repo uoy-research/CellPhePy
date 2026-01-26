@@ -164,7 +164,7 @@ requires-dist = [
     { name = "pytest-mock", marker = "extra == 'test'", specifier = "<3.15.2" },
     { name = "pytest-runner", marker = "extra == 'test'" },
     { name = "pywavelets", specifier = "==1.9.0" },
-    { name = "roifile", specifier = "==2025.5.10" },
+    { name = "roifile", specifier = "==2026.1.22" },
     { name = "scikit-image", specifier = "==0.25.2" },
     { name = "scikit-learn", specifier = "==1.7.2" },
     { name = "scipy", specifier = "==1.16.3" },
@@ -2124,14 +2124,14 @@ wheels = [
 
 [[package]]
 name = "roifile"
-version = "2025.5.10"
+version = "2026.1.22"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ce/ee/8ab570959011aac7d5705b7c284ab90734aed297672711444e21c11ab4d0/roifile-2025.5.10.tar.gz", hash = "sha256:8e5d1f799695ac59f52d4d62bb9016de74ef2493b4d83e24ce7fb25e19f53cce", size = 18768, upload-time = "2025-05-10T19:22:33.042Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/d6/f49e4ef1ec43efa9b927b60ea134cd7b6f78f2c9a5cf6397bbeaa43aa52c/roifile-2026.1.22.tar.gz", hash = "sha256:5bd6c3c4423505c09adf48769f80681c246738c035518f4aa4153792e4b24176", size = 21787, upload-time = "2026-01-22T20:42:33.458Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5b/9b/f689742c06f377e33090d78e370d013e7e062ab8ac407f03f1105ddfc934/roifile-2025.5.10-py3-none-any.whl", hash = "sha256:92ef64a775167542cd98c4beb7c5f867412c572d1a111f03ee0fede7fdf64155", size = 17557, upload-time = "2025-05-10T19:22:25.256Z" },
+    { url = "https://files.pythonhosted.org/packages/c6/60/3a07d40fe5117f99840a6bd63320896da0f33adf1770e5c8d07f9a31dca6/roifile-2026.1.22-py3-none-any.whl", hash = "sha256:1da3648df5dbfee141e5fa214947073269634e0f10adfe178604c2ea7620c34b", size = 16665, upload-time = "2026-01-22T20:42:32.141Z" },
 ]
 
 [[package]]
