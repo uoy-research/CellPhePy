@@ -29,7 +29,7 @@ dependencies = [
     "numpy==2.0.2",
     "pandas==2.3.3",
     "pandas-flavor==0.7.0",
-    "pillow==12.0.0",
+    "pillow==12.1.1",
     "pyjanitor==0.32.1",
     "pywavelets==1.9.0",
     "roifile==2025.5.10",
