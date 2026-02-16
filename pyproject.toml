@@ -32,7 +32,7 @@ dependencies = [
     "pillow==12.0.0",
     "pyjanitor==0.32.1",
     "pywavelets==1.9.0",
-    "roifile==2025.5.10",
+    "roifile==2026.2.10",
     "scipy==1.16.3",
     "scikit-image==0.25.2",
     "scikit-learn==1.7.2",
