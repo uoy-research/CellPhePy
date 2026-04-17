@@ -323,3 +323,8 @@ overgeneral-exceptions= [
     "BaseException",
     "Exception"
 ]
+
+[tool.uv.workspace]
+members = [
+    "docs",
+]
