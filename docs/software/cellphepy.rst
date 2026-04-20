@@ -2,7 +2,7 @@
 Python Package
 ==============
 
-.. image:: https://zenodo.org/badge/449769672.svg
+.. image:: https://zenodo.org/badge/latestdoi/449769672.svg
    :target: https://zenodo.org/badge/latestdoi/449769672
    :alt: DOI
 
@@ -15,8 +15,8 @@ https://doi.org/10.1038/s41467-023-37447-3
 
 The Python package is a port of the `original R implementation <https://github.com/uoy-research/CellPhe>`_.
 
-Installation
-------------
+Basic Installation (phenotyping only)
+-------------------------------------
 
 You can install the latest version of CellPhe from `PyPi <https://pypi.org/project/cellphe/>`_ with:
 
@@ -25,6 +25,33 @@ You can install the latest version of CellPhe from `PyPi <https://pypi.org/proje
    pip install cellphe
 
 The default installation provides access to the core phenotyping functionality, but if you would also like to segment and track your images, the full installation will need to be installed as below. Segmentation and tracking have large dependencies and so are not included by default.
+
+Full installation (segmentation + tracking)
+-------------------------------------------
+
+The tracking functionality depends on the ImageJ plugin TrackMate, which in turn depends on having a Java runtime available. We recommend the **Eclipse Temurin** variant, which is built on OpenJDK and is free, stable, and widely supported.
+
+1. **Download:** Go to the `Adoptium Temurin website <https://adoptium.net/>`_.
+2. **Select & Install:**
+
+   * **Windows:** Click the "Latest LTS Release" button. Run the downloaded ``.msi`` file and follow the prompts. (Ensure the "Set ``JAVA_HOME`` variable" option is checked during installation).
+   * **macOS:** Download the ``.pkg`` file for your chip type (Apple Silicon or Intel). Open it and follow the installation prompts.
+   * **Linux (Debian/Ubuntu):** Open a terminal and run the following (NB: you can also install Canonical's build from the ``openjdk-21-jdk`` package):
+
+     .. code-block:: bash
+
+        sudo apt update
+        sudo apt install temurin-21-jdk
+
+After installing, open a **new** terminal/command prompt and run:
+
+.. code-block:: bash
+
+   java -version
+
+If you see the version details, your Java installation is successful.
+
+The full version of CellPhe can now be installed:
 
 .. code-block:: bash
 
@@ -46,9 +73,8 @@ The first step in the CellPhe workflow is to prepare a dataframe containing meta
 Segmenting and tracking
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note::
-   **Please ensure that you have installed the full version of CellPhe as shown above before segmenting or tracking.**
-   This feature is still experimental; please report any bugs at the `issue tracker <https://github.com/uoy-research/CellPhePy/issues>`_.
+**NB: Please ensure that you have installed the full version of CellPhe as shown above before segmenting or tracking.**
+This feature is still experimental, please report any bugs at the `issue tracker <https://github.com/uoy-research/CellPhePy/issues>`_.
 
 CellPhe provides 2 functions to segment and track an image sequence:
 
@@ -81,6 +107,7 @@ Confirm that the ``masks`` directory has been created and populated with TIFs co
 * a filename for the output ROI zip
 
 Optionally you can also change the tracking options - by default the Simple LAP method is employed - with the ``tracker`` and ``tracker_settings`` arguments.
+NB: the first time tracking is run will be slow as an ImageJ instance will be setup. Subsequent runs will skip this step.
 
 .. code-block:: python
 
@@ -91,9 +118,7 @@ Confirm that the ``tracked.csv`` file was created and the ``rois`` folder has be
 Importing pre-segmented and tracked data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once a metadata file (CSV format) and a zip of ROIs are available, either directly output from external software (PhaseFocus Livecyte or TrackMate in ImageJ), or from within CellPhe as in the previous section, they can be read into CellPhe. The ``import_data`` function accepts metadata files from one of these sources and converts it into a standard format.
-
-It takes 3 arguments: the metadata file path, the source, and the minimum number of frames that a cell must be tracked for to be retained in the dataset (optional).
+Once a metadata file (CSV format) and a zip of ROIs are available, either directly output from external software (PhaseFocus Livecyte or TrackMate in ImageJ), or from within CellPhe as in the previous section, they can be read into CellPhe. The ``import_data`` function accepts metadata files from one of these sources and converts it into a standard format. It takes 3 arguments: the metadata file path, the source, and the minimum number of frames that a cell must be tracked for to be retained in the dataset (optional).
 
 For example, the dataset that was segmented and tracked in the previous section can be imported as:
 
@@ -121,13 +146,13 @@ Additional columns providing cell features can be included and will be retained 
 Generating cell features
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-In addition to any pre-calculated features, the ``cell_features()`` function generates 74 descriptive features for each cell on every frame using the frame images and pre-generated cell boundaries, based on size, shape, texture, and the local cell density.
+In addition to any pre-calculated features, the ``cell_features()`` function generates 74 descriptive features for each cell on every frame using the frame images and pre-generated cell boundaries, based on size, shape, texture, and the local cell density. The output is a dataframe comprising the ``FrameID``, ``CellID``, and ``ROI_filename`` columns from the feature table input, the 74 features as columns, and any additional features that may be present (such as from ``import_data()``) in further columns.
 
-The output is a dataframe comprising the ``FrameID``, ``CellID``, and ``ROI_filename`` columns from the feature table input, the 74 features as columns, and any additional features that may be present (such as from ``import_data()``) in further columns.
+``cell_features()`` takes as arguments the feature table, the archive where ROIs are saved, the folder where the images are, and the framerate. It expects images to be saved with a filename ending with the frame id just before the file extension. The file extension can be ``.tif``, ``.tiff``, or the ``ome.tif`` and ``.ome.tiff`` equivalents. The frame id can be zero-padded or not. ``myexperiment-1.tif``, ``myexperiment_1.tiff``, ``2.ome.tif`` are all valid names.
 
-``cell_features()`` takes as arguments the feature table, the archive where ROIs are saved, the folder where the images are, and the framerate. It expects images to be saved with a filename ending with the frame id just before the file extension. The file extension can be ``.tif``, ``.tiff``, or the ``ome.tif`` and ``.ome.tiff`` equivalents.
+ROI files are named according to the ``ROI_filename`` column but with a ``.roi`` extension.
 
-The example below uses the PhaseFocus ROIs:
+The example below uses the PhaseFocus ROIs, but the ones generated using TrackMate just before can be used with the corresponding feature table. There are 74 features generated during this step, which added to the 3 identifiers (``FrameID``, ``CellID``, ``ROI_filename``) and 2 PhaseFocus features (``Volume``, ``Sphericity``) results in 79 columns.
 
 .. code-block:: python
 
@@ -141,26 +166,9 @@ Generating time-series features
 
 The next step is to calculate features that incorporate the time-dimension. This is done with the ``time_series_features`` function, which accepts a dataframe with the cell-level features as output earlier from ``cell_features``.
 
-Variables are calculated from the time series providing both summary statistics and indicators of time-series behaviour at different levels of detail obtained via wavelet analysis. 15 summary scores are calculated for each feature, in addition to the cell trajectory, thereby resulting in a default output of 1081 features (15x72 + 1).
+Variables are calculated from the time series providing both summary statistics and indicators of time-series behaviour at different levels of detail obtained via wavelet analysis. 15 summary scores are calculated for each feature, in addition to the cell trajectory, thereby resulting in a default output of 1081 features (15x72 + 1). With the 2 PhaseFocus features as well, this increases to 1111. The output is a dataframe with the first column being the ``CellID`` used previously.
 
 .. code-block:: python
 
    from cellphe import time_series_features
    ts_variables = time_series_features(new_features)
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   ../api
-   ../generated/cellphe.features
-   ../generated/cellphe.processing
-   ../generated/cellphe.segmentation
-   ../generated/modules
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

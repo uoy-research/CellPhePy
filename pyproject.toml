@@ -66,6 +66,13 @@ test = [
     "pytest-github-actions-annotate-failures",
     "shellcheck-py==0.11.0.1"
 ]
+docs = [
+    "sphinx>=9.0.4",
+    "sphinx-autobuild>=2025.8.25",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-rtd-theme>=3.1.0",
+    "sphinxcontrib-mermaid>=2.0.1",
+]
 
 [project.urls]
 Documentation = "https://uoy-research.github.io/CellPhePy"
@@ -322,9 +329,4 @@ deprecated-modules="optparse,tkinter.tix"
 overgeneral-exceptions= [
     "BaseException",
     "Exception"
-]
-
-[tool.uv.workspace]
-members = [
-    "docs",
 ]
