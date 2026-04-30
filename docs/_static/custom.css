@@ -49,3 +49,18 @@ div .navigation {
     margin-bottom: 5px;
     font-size: 1rem;
 }
+
+.funder-logos {
+    display: flex;
+    align-items: center;  /* Aligns logos vertically in the middle */
+    justify-content: center;
+    gap: 30px;            /* Adds space between the logos */
+    flex-wrap: wrap;      /* Allows wrapping on mobile screens */
+}
+
+.funder-logos img {
+    max-width: 250px !important;
+    max-height: 100px !important;
+    width: auto;
+    height: auto;
+}
