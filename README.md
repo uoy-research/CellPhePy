@@ -12,7 +12,9 @@ https://doi.org/10.1038/s41467-023-37447-3
 
 The Python package is a port of the [original R implementation](https://github.com/uoy-research/CellPhe).
 
-## Basic Installation (phenotyping only)
+# Installation
+
+## Basic install (phenotyping only)
 
 You can install the latest version of CellPhe from
 [PyPi](https://pypi.org/project/cellphe/) with:
@@ -23,7 +25,7 @@ pip install cellphe
 
 The default installation provides access to the core phenotyping functionality, but if you would also like to segment and track your images, the full installation will need to be installed as below. Segmentation and tracking have large dependencies and so are not included by default.
 
-## Full installation (segmentation + tracking)
+## Full install (segmentation + tracking)
 
 The tracking functionality depends on the ImageJ plugin TrackMate, which in turn depends on having a Java runtime available.
 We recommend the **Eclipse Temurin** variant, which is built on OpenJDK and is free, stable, and widely supported.
@@ -49,7 +51,36 @@ The full version of CellPhe can now be installed:
 pip install cellphe[full]
 ```
 
-## Example
+## Windows issues
+
+Windows users might encounter some additional OS-specific issues.
+This section aims to document some of these in order to remove any barriers to use.
+
+### Installing Python
+
+Unlike MacOS or Linux, Python doesn't come installed with Windows by default.
+The best way to install Python is from the [official website](https://www.python.org/downloads/windows/), with the following considerations:
+
+  - CellPhe isn't compatible with Python 3.14 - we'd recommend either 3.12 or 3.13
+  - Check the box for adding Python to `PATH` during the install process
+  - It's a good idea to also install the separate Install Manager from the same website to allow for [quicker switching between Python versions](https://docs.python.org/3/using/windows.html#installing-runtimes) in future
+
+### Visual C++ Build Tools
+
+If you come across an error message like the below when installing CellPhe (or other Python packages), the solution is to install C++ Build Tools from the [Microsoft website](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (tick 'Desktop development with C++').
+
+```python
+  WARNING: Failed to activate VS environment: Could not find C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe
+
+      ..\meson.build:1:0: ERROR: Unknown compiler(s): [['icl'], ['cl'], ['cc'], ['gcc'], ['clang'], ['clang-cl'], ['pgcc']]
+```
+
+### Pip not found
+
+If you get an error when running `pip install cellphe` about `pip` not being found ("'pip' is not recognized as an internal or external command" or similar), try running `python -m pip install cellphe` instead.
+This is because `pip` isn't always added to the `PATH` in Windows.
+
+# Example Usage
 
 An example dataset to demonstrate CellPhe’s capabilities is hosted on [Dryad](https://doi.org/10.5061/dryad.4xgxd25f0) in the archive `example_data.zip` and comprises 3 parts:
 
@@ -68,7 +99,7 @@ pre-existing attributes. The segmenting and tracking can be performed within
 CellPhe, or pre-segmented and tracked data from two widely used software
 (PhaseFocus Livecyte & Trackmate) can be directly imported.
 
-### Segmenting and tracking
+## Segmenting and tracking
 
 **NB: Please ensure that you have installed the full version of CellPhe as shown above before segmenting or tracking.**
 This feature is still experimental, please report any bugs at the [issue tracker](https://github.com/uoy-research/CellPhePy/issues).
@@ -115,7 +146,7 @@ track_images("data/masks", "data/tracked.csv", "data/rois.zip")
 Confirm that the `tracked.csv` file was created and the `rois` folder has been populated with ROI files.
 These outputs can now be loaded into CellPhe.
 
-### Importing pre-segmented and tracked data
+## Importing pre-segmented and tracked data
 
 Once a metadata file (CSV format) and a zip of ROIs are available, either directly output from external software (PhaseFocus Livecyte or TrackMate in ImageJ), or from within CellPhe as in the previous section, they can be read into CellPhe.
 The `import_data` function accepts metadata files from one of these sources and converts it into a standard format.
@@ -145,7 +176,7 @@ If a segmented and tracked dataset is available from a different source then it 
 Additional columns providing cell features can be included and will be retained and incorporated into the CellPhe analysis.
 The PhaseFocus dataset keeps the volume and sphericity features, for example.
 
-### Generating cell features
+## Generating cell features
 
 In addition to any pre-calculated features, the `cell_features()`
 function generates 74 descriptive features for each cell on every frame
@@ -173,7 +204,7 @@ image_folder = "data/05062019_B3_3_imagedata"
 new_features = cell_features(feature_table_phase, roi_archive, image_folder, framerate=0.0028)
 ```
 
-### Generating time-series features
+## Generating time-series features
 
 The next step is to calculate features that incorporate the time-dimension.
 This is done with the `time_series_features` function, which accepts a dataframe with the cell-level features as output earlier from `cell_features`.
