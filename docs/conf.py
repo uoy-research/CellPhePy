@@ -70,6 +70,18 @@ html_css_files = [
 ]
 
 html_theme_options = {"accent_color": "violet", "color_mode": "light"}
+# Inject aria-label into the search input after the page loads
+html_js_files = [
+    (
+        None,
+        {
+            "body": "document.addEventListener('DOMContentLoaded', function() { "
+            "var searchInput = document.querySelector('input[name=\"q\"]'); "
+            "if (searchInput) { searchInput.setAttribute('aria-label', 'Search documentation'); }"
+            "});"
+        },
+    )
+]
 
 # Napoleon settings
 napoleon_include_init_with_doc = True
