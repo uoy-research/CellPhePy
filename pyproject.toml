@@ -29,12 +29,12 @@ dependencies = [
     "numpy==2.0.2",
     "pandas==2.3.3",
     "pandas-flavor==0.7.0",
-    "pillow==12.0.0",
+    "pillow==12.1.0",
     "pyjanitor==0.32.1",
     "pywavelets==1.9.0",
     "roifile==2026.2.10",
     "scipy==1.16.3",
-    "scikit-image==0.25.2",
+    "scikit-image==0.26.0",
     "scikit-learn==1.7.2",
     "shapely==2.0.7",
     "xgboost==3.1.2"
@@ -49,9 +49,9 @@ full = [
 ]
 test = [
     "bandit[toml]==1.9.2",
-    "black==25.11.0",
+    "black==26.1.0",
     "check-manifest==0.51",
-    "flake8-bugbear==25.10.21",
+    "flake8-bugbear==25.11.29",
     "flake8-docstrings",
     "flake8-formatter_junit_xml",
     "flake8",
@@ -65,6 +65,13 @@ test = [
     "pytest==9.0.1",
     "pytest-github-actions-annotate-failures",
     "shellcheck-py==0.11.0.1"
+]
+docs = [
+    "sphinx>=9.0.4",
+    "sphinx-autobuild>=2025.8.25",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-rtd-theme>=3.1.0",
+    "sphinxcontrib-mermaid>=2.0.1",
 ]
 
 [project.urls]
