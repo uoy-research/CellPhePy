@@ -18,3 +18,34 @@
 div .navigation {
     display: none !important;
 }
+
+/* UoY Legal disclaimer / privacy / cookies styling */
+.uoy-legal-links ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;       /* Allows wrapping on small screens */
+    list-style: none;      /* Removes default bullets */
+    padding: 0;
+    margin: 10px 0;
+    gap: 0;                /* We'll handle spacing via the separator */
+}
+
+/* Individual list items */
+.uoy-legal-links li {
+    display: flex;
+    align-items: center;
+}
+
+/* Add the | separator after every item except the last one */
+.uoy-legal-links li:not(:last-child)::after {
+    content: "|";
+    margin: 0 12px;        /* Adjust this for more/less space around the pipe */
+    color: var(--sy-c-text-weak); /* Uses Shibuya's subtle text color */
+    font-weight: normal;
+}
+
+/* Optional: styling for the header */
+.uoy-legal-links h4 {
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
