@@ -29,15 +29,15 @@ dependencies = [
     "numpy==2.0.2",
     "pandas==2.3.3",
     "pandas-flavor==0.7.0",
-    "pillow==12.0.0",
+    "pillow==12.2.0",
     "pyjanitor==0.32.1",
     "pywavelets==1.9.0",
-    "roifile==2025.5.10",
-    "scipy==1.16.3",
-    "scikit-image==0.25.2",
+    "roifile==2026.2.10",
+    "scipy==1.17.0",
+    "scikit-image==0.26.0",
     "scikit-learn==1.7.2",
     "shapely==2.0.7",
-    "xgboost==3.1.2"
+    "xgboost==3.2.0"
 ]
 
 [project.optional-dependencies]
@@ -49,9 +49,9 @@ full = [
 ]
 test = [
     "bandit[toml]==1.9.2",
-    "black==25.11.0",
+    "black==26.3.1",
     "check-manifest==0.51",
-    "flake8-bugbear==25.10.21",
+    "flake8-bugbear==25.11.29",
     "flake8-docstrings",
     "flake8-formatter_junit_xml",
     "flake8",
@@ -62,7 +62,7 @@ test = [
     "pytest-cov==7.0.0",
     "pytest-mock<3.15.2",
     "pytest-runner",
-    "pytest==9.0.1",
+    "pytest==9.0.3",
     "pytest-github-actions-annotate-failures",
     "shellcheck-py==0.11.0.1"
 ]
