@@ -34,7 +34,7 @@ dependencies = [
     "pywavelets==1.9.0",
     "roifile==2025.5.10",
     "scipy==1.16.3",
-    "scikit-image==0.25.2",
+    "scikit-image==0.26.0",
     "scikit-learn==1.7.2",
     "shapely==2.0.7",
     "xgboost==3.1.2"
