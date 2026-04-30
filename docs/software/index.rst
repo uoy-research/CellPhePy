@@ -14,9 +14,9 @@ The CellPhe ecosystem comprises four distinct software interfaces, each tailored
 Choosing a product
 ------------------
 
-The CellPhe R package serves as the original implementation and is ideal for researchers already comfortable within the R ecosystem who only require the core phenotyping functions, such as feature extraction and time-series analysis. However, its primary disadvantages are that it lacks the newer features found in the Python package and does not support integrated segmentation or tracking. For users who require a more comprehensive, "all-in-one" solution with a low-level interface for fine-grained control, the Python package is the more suitable choice. While it offers full functionality, including experimental segmentation and tracking capabilities via cellpose and Trackmate respectively, it requires users to manually manage complex dependencies and navigate a code-based environment, which may be a barrier for those without programming expertise.
+The :ref:`r-package` serves as the original implementation and is ideal for researchers already comfortable within the R ecosystem who only require the core phenotyping functions, such as feature extraction and time-series analysis. However, its primary disadvantages are that it lacks the newer features found in the :ref:`python-package` and does not support integrated segmentation or tracking. For users who require a more comprehensive, all-in-one solution with a low-level interface for fine-grained control, the Python package is the more suitable choice. While it offers full functionality, including experimental segmentation and tracking capabilities via `cellpose <https://cellpose.readthedocs.io/en/latest/>`_ and `Trackmate <https://imagej.net/plugins/trackmate/>`_ respectively, it requires users to manually manage complex dependencies and navigate a code-based environment, which may be a barrier for those without programming expertise.
 
-For users seeking a balance between power and accessibility, the CellPhe Dashboard provides a user-friendly GUI that runs in a web-browser and offers full functionality without requiring coding experience. An additional advantage is its ease of deployment if Docker is available, making it much faster to set up than the manual Python installation. Conversely, the Nextflow pipeline is designed specifically for power users and High-Performance Computing (HPC) environments. Its strengths lie in its modularity and scalability, allowing for the simultaneous processing of multiple long timelapses and seamless integration with a variety of hardware environments including traditional HPC and cloud-based (it comes with a Slurm configuration). It is the most flexible option, offering more features than are available in either the Dashboard or the Python package, e.g. being able to choose cellpose version, switch between CPU and GPU segmentation seamlessly, and generating automated QC reports. It only has 2 dependencies in Nextflow and Apptainer, but extending will require tweaking the Nextflow definition. It is the best choice for large-scale, reproducible research projects that extend beyond the limitations of a single Python environment.
+For users seeking a balance between power and accessibility, the :ref:`dashboard` provides a user-friendly GUI that runs in a web-browser and offers full functionality without requiring coding experience. An additional advantage is its ease of deployment if Docker is available, making it much faster to set up than the manual Python installation. Conversely, the :ref:`pipeline` is designed specifically for power users and High-Performance Computing (HPC) environments. Its strengths lie in its modularity and scalability, allowing for the simultaneous processing of multiple long timelapses and seamless integration with a variety of hardware environments including traditional HPC and cloud-based (it comes with a `Slurm <https://slurm.schedmd.com/overview.html>`_ configuration). It is the most flexible option, offering more features than are available in either the Dashboard or the Python package, e.g. being able to choose cellpose version, switch between CPU and GPU segmentation seamlessly, and generating automated QC reports. It only has 2 dependencies in `Nextflow <https://www.nextflow.io/>`_ and `Apptainer <https://apptainer.org/>`_, but extending will require tweaking the Nextflow definition. It is the best choice for large-scale, reproducible research projects that extend beyond the limitations of a single Python environment.
 
 The software options are summarized in the table below.
 
@@ -28,30 +28,30 @@ The software options are summarized in the table below.
    * - Product
      - Interface
      - Phenotyping
-     - Seg + Track
+     - Segmentation + Tracking
      - Parallel
      - Dependencies
-   * - Python package
-     - Python
-     - ✓
-     - ✓
-     - ✗
-     - Python + scientific stack (+ Torch, Java, Maven for seg/track)
    * - R package
      - R
-     - ✓
-     - ✗
-     - ✗
+     - ✅
+     - ❌
+     - ❌
      - R
+   * - Python package
+     - Python
+     - ✅
+     - ✅
+     - ❌
+     - Python + scientific stack (+ Torch, Java, Maven for segmentation & tracking)
    * - Dashboard
      - Web-app
-     - ✓
-     - ✓
-     - ✗
+     - ✅
+     - ✅
+     - ❌
      - Either Docker or Python + Torch + Java + Maven
    * - Pipeline
      - Nextflow / JSON
-     - ✓
-     - ✓
-     - ✓
+     - ✅
+     - ✅
+     - ✅
      - Nextflow + Apptainer

@@ -1,3 +1,4 @@
+.. _dashboard:
 =========
 Dashboard
 =========
