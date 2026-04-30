@@ -1,10 +1,12 @@
+.. _python-package:
 ==============
 Python Package
 ==============
 
-.. image:: https://zenodo.org/badge/latestdoi/449769672.svg
+.. image:: https://zenodo.org/badge/449769672.svg
    :target: https://zenodo.org/badge/latestdoi/449769672
    :alt: DOI
+
 
 CellPhe provides functions to phenotype cells from time-lapse videos and accompanies the paper:
 

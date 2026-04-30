@@ -1,3 +1,4 @@
+.. _r-package:
 =========
 R Package
 =========
