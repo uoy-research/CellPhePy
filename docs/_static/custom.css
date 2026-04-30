@@ -14,3 +14,7 @@
 .wy-nav-content-wrap {
     max-width: none !important;
 }
+/* Hides the footer navigation links */
+div .navigation {
+    display: none !important;
+}
