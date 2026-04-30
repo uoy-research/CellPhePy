@@ -58,7 +58,8 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "shibuya"
+html_title = "CellPhe Project"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -66,6 +67,20 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_css_files = [
     "custom.css",
+]
+
+html_theme_options = {"accent_color": "violet", "color_mode": "light"}
+# Inject aria-label into the search input after the page loads
+html_js_files = [
+    (
+        None,
+        {
+            "body": "document.addEventListener('DOMContentLoaded', function() { "
+            "var searchInput = document.querySelector('input[name=\"q\"]'); "
+            "if (searchInput) { searchInput.setAttribute('aria-label', 'Search documentation'); }"
+            "});"
+        },
+    )
 ]
 
 # Napoleon settings

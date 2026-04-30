@@ -1,3 +1,4 @@
+.. _dashboard:
 =========
 Dashboard
 =========
@@ -56,27 +57,6 @@ The tracking functionality depends on the ImageJ plugin TrackMate, which in turn
         sudo apt update
         sudo apt install temurin-21-jdk
 
-After installing, open a **new** terminal/command prompt and run:
+After installing, open a **new** terminal/command prompt and run ``java -version`` to verify. Then, clone this repository and change into it:
 
 .. code-block:: bash
-
-   java -version
-
-If you see the version details, your Java installation is successful and you are ready to setup the Python environment. Firstly, clone this repository and change into it:
-
-.. code-block:: bash
-
-   git clone https://github.com/uoy-research/CellPhe-dashboard.git
-   cd CellPhe-dashboard
-
-Then install the Python prequisites, ideally in a `new virtual environment <https://docs.python.org/3/library/venv.html>`_:
-
-.. code-block:: bash
-
-   pip install -r requirements.txt
-
-Then you can run the app (NB: the first time tracking is run it will take some time to setup an ImageJ instance):
-
-.. code-block:: bash
-
-   streamlit run CellPheDashboard.py --server.port=8501 --server.address=0.0.0.0

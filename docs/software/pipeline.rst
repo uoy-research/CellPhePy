@@ -1,3 +1,4 @@
+.. _pipeline:
 =================
 Nextflow Pipeline
 =================

@@ -139,6 +139,7 @@ dependencies = [
 
 [package.optional-dependencies]
 docs = [
+    { name = "shibuya" },
     { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "sphinx-autobuild" },
@@ -208,6 +209,7 @@ requires-dist = [
     { name = "scipy", specifier = "==1.17.0" },
     { name = "shapely", specifier = "==2.0.7" },
     { name = "shellcheck-py", marker = "extra == 'test'", specifier = "==0.11.0.1" },
+    { name = "shibuya", marker = "extra == 'docs'" },
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=9.0.4" },
     { name = "sphinx-autobuild", marker = "extra == 'docs'", specifier = ">=2025.8.25" },
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
@@ -1775,6 +1777,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pygments-styles"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1c/2c/3886ed4783dd78bb62ccab7d43380f526a7e2ff0db8c77d9c87559b2f5de/pygments_styles-0.3.0.tar.gz", hash = "sha256:67746b8fc6ff72c1179ca4d9a8bc89c7f54c196c2ff9d087f07392cd6fde3ecf", size = 15258, upload-time = "2025-11-04T13:15:23.512Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/64/7e0266f0c541e26df86c31d2add9be3dd9914ae83785ce0aba7cbb693667/pygments_styles-0.3.0-py3-none-any.whl", hash = "sha256:c6c45e9939eb7590345bc9084113bac46c45f12b009d13422be02e80e84a034c", size = 36617, upload-time = "2025-11-04T13:15:21.989Z" },
+]
+
+[[package]]
 name = "pyimagej"
 version = "1.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2338,6 +2352,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/61/ac/2a84c37171c0cf5a10ea4b0a27d43eb0a1d29bd98b49c2c5ffe17ad24bbe/shellcheck_py-0.11.0.1-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:6b88d0a244c82ed07e06a53e444da841f69330ca59ae15d4a66c391655dae7a0", size = 11381835, upload-time = "2025-08-09T17:53:36.852Z" },
     { url = "https://files.pythonhosted.org/packages/96/55/250e0e3367613a5c22bd82e33b16b889287d81ab0f7dda67e6514a4cccf4/shellcheck_py-0.11.0.1-py2.py3-none-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:1b274df81de5b000ff78db433e7328b87e52e3c38481c60f8e488c3095beef05", size = 3800600, upload-time = "2025-08-09T17:53:38.643Z" },
     { url = "https://files.pythonhosted.org/packages/15/5b/bb14c0a7474463b1aa3c09e866cb172dffc66ed2993b7ea8f1db581e86ee/shellcheck_py-0.11.0.1-py2.py3-none-win_amd64.whl", hash = "sha256:784156289ecb17e91c692cd783ab5152333309588cabb10032a047331c63e759", size = 8027541, upload-time = "2025-08-09T17:53:40.889Z" },
+]
+
+[[package]]
+name = "shibuya"
+version = "2026.1.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pygments-styles" },
+    { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1d/b2/b94cb04adbb984973fe83fd670dd066514610241d829723f678366e691d2/shibuya-2026.1.9.tar.gz", hash = "sha256:b389f10fd9c07b048e940f32d1e1ac096a2d49736389173ac771b37a10b51fdf", size = 86002, upload-time = "2026-01-09T02:19:14.365Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/ae/06d7dfc5633c7250fefc61fd624990aa2c37e3495c08a2f23968b1acb23e/shibuya-2026.1.9-py3-none-any.whl", hash = "sha256:b58a3cc6e5619c71d00fcf0be4a3060c87040c2a62a1b3f1a93a6a41ca8eaf45", size = 103389, upload-time = "2026-01-09T02:19:12.798Z" },
 ]
 
 [[package]]
