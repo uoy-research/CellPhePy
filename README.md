@@ -12,18 +12,40 @@ https://doi.org/10.1038/s41467-023-37447-3
 
 The Python package is a port of the [original R implementation](https://github.com/uoy-research/CellPhe).
 
-## Installation
+## Basic Installation (phenotyping only)
 
 You can install the latest version of CellPhe from
 [PyPi](https://pypi.org/project/cellphe/) with:
 
-```
+```bash
 pip install cellphe
 ```
 
 The default installation provides access to the core phenotyping functionality, but if you would also like to segment and track your images, the full installation will need to be installed as below. Segmentation and tracking have large dependencies and so are not included by default.
 
+## Full installation (segmentation + tracking)
+
+The tracking functionality depends on the ImageJ plugin TrackMate, which in turn depends on having a Java runtime available.
+We recommend the **Eclipse Temurin** variant, which is built on OpenJDK and is free, stable, and widely supported.
+
+1.  **Download:** Go to the [Adoptium Temurin website](https://adoptium.net/).
+2.  **Select & Install:**
+    * **Windows:** Click the "Latest LTS Release" button. Run the downloaded `.msi` file and follow the prompts. (Ensure the "Set `JAVA_HOME` variable" option is checked during installation).
+    * **macOS:** Download the `.pkg` file for your chip type (Apple Silicon or Intel). Open it and follow the installation prompts.
+    * **Linux (Debian/Ubuntu):** Open a terminal and run the following (NB: you can also install Canonical's build from the `openjdk-21-jdk` package)
+        ```bash
+        sudo apt update
+        sudo apt install temurin-21-jdk
+        ```
+
+After installing, open a **new** terminal/command prompt and run:
+```bash
+java -version
 ```
+If you see the version details, your Java installation is successful.
+
+The full version of CellPhe can now be installed:
+```bash
 pip install cellphe[full]
 ```
 
@@ -84,6 +106,7 @@ If it has, then you are ready to track the cells.
   - a filename for the output ROI zip
 
 Optionally you can also change the tracking options - by default the Simple LAP method is employed - with the `tracker` and `tracker_settings` arguments.
+NB: the first time tracking is run will be slow as an ImageJ instance will be setup. Subsequent runs will skip this step.
 
 ```python
 track_images("data/masks", "data/tracked.csv", "data/rois.zip")

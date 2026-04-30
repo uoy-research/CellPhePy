@@ -1,0 +1,16 @@
+/* Center text in software products table columns 3, 4, and 5 */
+.centered-cols td:nth-child(3),
+.centered-cols td:nth-child(4),
+.centered-cols td:nth-child(5) {
+    text-align: center;
+}
+
+/* Increase the width of the main content area */
+.wy-nav-content {
+    max-width: 1200px !important; /* Or a fixed width like 1400px */
+}
+
+/* Optional: Ensure the background/wrapper fills the space */
+.wy-nav-content-wrap {
+    max-width: none !important;
+}
