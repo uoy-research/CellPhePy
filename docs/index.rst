@@ -6,10 +6,13 @@ Welcome to CellPhe, a multidisciplinary research initiative focused on redefinin
 .. container:: funder-logos
 
   .. image:: images/UOY-Logo-Stacked-shield-Black.svg
+    :alt: The University of York logo
 
   .. image:: images/Funded_by_Wellcome_logo_off_Black.png
+    :alt: The Wellcome Trust logo
 
   .. image:: images/bbsrclogo.png
+    :alt: The BBSRC logo
 
 
 .. toctree::
