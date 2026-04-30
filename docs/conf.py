@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath("../src/"))
 # -- Project information -----------------------------------------------------
 
 project = "CellPhe"
-copyright = "2024, Stuart Lacy"
+copyright = "2026, Stuart Lacy"
 author = "Stuart Lacy"
 
 # The full version, including alpha/beta/rc tags
@@ -41,6 +41,7 @@ extensions = [
     "sphinx.ext.napoleon",  # to render Google format docstrings
     "sphinx.ext.githubpages",
     "sphinx.ext.autosummary",
+    "sphinxcontrib.mermaid",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -63,6 +64,9 @@ html_theme = "sphinx_rtd_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_css_files = [
+    "custom.css",
+]
 
 # Napoleon settings
 napoleon_include_init_with_doc = True
