@@ -14,6 +14,8 @@ Welcome to CellPhe, a multidisciplinary research initiative focused on redefinin
   .. image:: images/bbsrclogo.png
     :alt: The BBSRC logo
 
+  .. image:: images/yac.jpg
+    :alt: The York Against Cancer logo
 
 .. toctree::
    :maxdepth: 2
