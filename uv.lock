@@ -193,7 +193,7 @@ requires-dist = [
     { name = "pandas-flavor", specifier = "==0.7.0" },
     { name = "pillow", specifier = "==12.2.0" },
     { name = "pre-commit", marker = "extra == 'test'", specifier = "==4.5.0" },
-    { name = "pyimagej", marker = "extra == 'full'", specifier = "==1.7.0" },
+    { name = "pyimagej", marker = "extra == 'full'", specifier = "==1.8.0" },
     { name = "pyjanitor", specifier = "==0.32.1" },
     { name = "pylint", marker = "extra == 'test'", specifier = "==4.0.3" },
     { name = "pylint-junit", marker = "extra == 'test'" },
@@ -1790,7 +1790,7 @@ wheels = [
 
 [[package]]
 name = "pyimagej"
-version = "1.7.0"
+version = "1.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "imglyb" },
@@ -1801,9 +1801,9 @@ dependencies = [
     { name = "scyjava" },
     { name = "xarray" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3a/bb/b912b525d48305bf66e43506de7d01f61278879eb9b938733f32da9aa8f7/pyimagej-1.7.0.tar.gz", hash = "sha256:a13d877de72c827ee45b46720f51e7b10e39097d9b8d5d9413b9d284f55e393d", size = 64723, upload-time = "2025-05-24T20:13:42.435Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/6e/d1104e3bb9e5f6108ec1831f3b8857750b7037eff6daec450bc9726ffac6/pyimagej-1.8.0.tar.gz", hash = "sha256:177010bd708a0b20e4bc71847b161a131e514cd4de93d58e9881eb1e680b580d", size = 77133, upload-time = "2026-03-15T19:08:08.742Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a1/96/bcf9f2e90460ac1d4707279a700cdc634e90b2fc30878ce4705b7edffc53/pyimagej-1.7.0-py3-none-any.whl", hash = "sha256:bdc604a659beccdb44670b6f170393f53c0f4ff76093e7dbc086b28124769428", size = 38540, upload-time = "2025-05-24T20:13:41.445Z" },
+    { url = "https://files.pythonhosted.org/packages/49/d3/b4f41b30fc5a529011b8776e9d764f3c2001b249551b10ea4baa523cb64c/pyimagej-1.8.0-py3-none-any.whl", hash = "sha256:9ca506d2f28f2e6b3acae39021084f68a5cc278460698636ca1b6adddc8fe48b", size = 40209, upload-time = "2026-03-15T19:08:07.503Z" },
 ]
 
 [[package]]
